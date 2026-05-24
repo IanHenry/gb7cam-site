@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
-Sitemap: https://g0lft.org/sitemap.xml
+Sitemap: https://gb7cam.org.uk/sitemap.xml
 
