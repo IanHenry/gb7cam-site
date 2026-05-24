@@ -14,11 +14,11 @@
     "text": "Disclaimer\n\nThe information provided here is for informational purposes only.\n\nWhile care is taken to ensure accuracy, no guarantees are made regarding completeness or suitability.\n\nAny external links do not imply endorsement of those sites.\n\nIf you have concerns regarding your privacy or site content, please contact me."
   },
   {
-    "objectID": "bbs.html",
-    "href": "bbs.html",
+    "objectID": "bbs.html#connecting-to-gb7cam-bbs",
+    "href": "bbs.html#connecting-to-gb7cam-bbs",
     "title": "BBS Access",
-    "section": "",
-    "text": "## Connecting to GB7CAM BBS\nThis node runs a LINBPQ-based AX.25 mailbox system."
+    "section": "Connecting to GB7CAM BBS",
+    "text": "Connecting to GB7CAM BBS\nThis node runs a LINBPQ-based AX.25 mailbox system."
   },
   {
     "objectID": "bbs.html#connect-command",
@@ -42,11 +42,11 @@
     "text": "Notes\nAccess method depends on local RF or network configuration."
   },
   {
-    "objectID": "tech.html",
-    "href": "tech.html",
+    "objectID": "tech.html#system-overview",
+    "href": "tech.html#system-overview",
     "title": "Technical Information",
-    "section": "",
-    "text": "## System Overview\nGB7CAM runs a LINBPQ-based packet radio node."
+    "section": "System Overview",
+    "text": "System Overview\nGB7CAM runs a LINBPQ-based packet radio node."
   },
   {
     "objectID": "tech.html#components",
@@ -70,11 +70,11 @@
     "text": "Operator Notes\nThis page is intended for sysops and technical reference."
   },
   {
-    "objectID": "status.html",
-    "href": "status.html",
+    "objectID": "status.html#current-status",
+    "href": "status.html#current-status",
     "title": "System Status",
-    "section": "",
-    "text": "## Current Status\n⚠️ NOT OPERATIONAL as under development\nSince: 23 May 2026"
+    "section": "Current Status",
+    "text": "Current Status\n⚠️ NOT OPERATIONAL as under development\nSince: 23 May 2026"
   },
   {
     "objectID": "status.html#system-details",
@@ -105,11 +105,11 @@
     "text": "Other Images\n\nAny additional images are either created by Dr Ian Henry or sourced from free-to-use libraries.\n\nLicense Notes:\n\nAll CC0 / public domain images are free to use without attribution, but attribution is provided where possible.\n\nOther images are used with permission or created in-house.\n\nAI-generated images are used under the respective AI tool’s terms and are intended solely for illustrative purposes.\n\n\nIf you believe any content here infringes copyright, or you would like additional attribution, please contact me and I will correct it immediately."
   },
   {
-    "objectID": "index.html",
-    "href": "index.html",
+    "objectID": "index.html#ax.25-packet-node-gb7cam",
+    "href": "index.html#ax.25-packet-node-gb7cam",
     "title": "GB7CAM Packet System",
-    "section": "",
-    "text": "## AX.25 Packet Node GB7CAM\nKeeper: Ian Henry (G0LFT)\n⚠️ Status: Not Operational (since 23 May 2026)"
+    "section": "AX.25 Packet Node GB7CAM",
+    "text": "AX.25 Packet Node GB7CAM\nKeeper: Ian Henry (G0LFT)\n⚠️ Status: Not Operational (since 23 May 2026)"
   },
   {
     "objectID": "index.html#quick-info",
@@ -126,11 +126,11 @@
     "text": "Services\n\n📡 Node Information\n💬 BBS Access\n📬 Mail System\n📊 System Status\n\n\nThis site provides access information for the GB7CAM packet radio node and associated services."
   },
   {
-    "objectID": "contact.html",
-    "href": "contact.html",
+    "objectID": "contact.html#sysop",
+    "href": "contact.html#sysop",
     "title": "Contact",
-    "section": "",
-    "text": "## Sysop\nIan Henry\nCallsign: G0LFT"
+    "section": "Sysop",
+    "text": "Sysop\nIan Henry\nCallsign: G0LFT\n\nEmail: ian@g0lft.org\nQRZ Page: G0LFT"
   },
   {
     "objectID": "contact.html#system",
@@ -147,11 +147,11 @@
     "text": "Reporting Issues\nContact the sysop for:\n\nconnectivity problems\nforwarding issues\nnode linking requests"
   },
   {
-    "objectID": "mail.html",
-    "href": "mail.html",
+    "objectID": "mail.html#mail-forwarding",
+    "href": "mail.html#mail-forwarding",
     "title": "Mail System",
-    "section": "",
-    "text": "## Mail Forwarding\nGB7CAM supports AX.25 mailbox-style message handling."
+    "section": "Mail Forwarding",
+    "text": "Mail Forwarding\nGB7CAM supports AX.25 mailbox-style message handling."
   },
   {
     "objectID": "mail.html#features",
@@ -175,11 +175,11 @@
     "text": "Status\nMail forwarding availability depends on node operational status."
   },
   {
-    "objectID": "node.html",
-    "href": "node.html",
+    "objectID": "node.html#gb7cam-ax.25-node",
+    "href": "node.html#gb7cam-ax.25-node",
     "title": "Node Overview",
-    "section": "",
-    "text": "## GB7CAM AX.25 Node"
+    "section": "GB7CAM AX.25 Node",
+    "text": "GB7CAM AX.25 Node\n\nRadio Parameters\n\n\n\nParameter\nValue\n\n\n\n\nBand\n2m\n\n\nTX Frequency\n144.9500 MHz\n\n\nRX Frequency\n144.9500 MHz\n\n\nMode\nAX.25 Packet / LINBPQ"
   },
   {
     "objectID": "node.html#location",
