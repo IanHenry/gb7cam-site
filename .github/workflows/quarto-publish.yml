@@ -20,7 +20,7 @@ jobs:
         run: quarto render
        
       - name: Add CNAME
-        run: echo "g0lft.org" > _site/CNAME
+        run: echo "gb7cam.org.uk" > _site/CNAME
       
       - name: Publish to gh-pages
         uses: quarto-dev/quarto-actions/publish@v2
