@@ -1,9 +1,7 @@
 ---
 title: "System Status"
 ---
-
 <img src="images/main_logo.png" class="centered-image">
-
 ## Current Status
 
 ⚠️ **NOT OPERATIONAL** as under development

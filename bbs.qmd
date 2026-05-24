@@ -1,9 +1,7 @@
 ---
 title: "BBS Access"
 ---
-
 <img src="images/main_logo.png" class="centered-image">
-
 ## Connecting to GB7CAM BBS
 
 This node runs a LINBPQ-based AX.25 mailbox system.

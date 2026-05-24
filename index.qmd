@@ -2,10 +2,9 @@
 title: "GB7CAM Packet System"
 ---
 <img src="images/main_logo.png" class="centered-image">
-
 ## AX.25 Packet Node GB7CAM
 
-Keeper: Ian Henry (G0LFT)
+Keeper: Ian Henry [(G0LFT)](g0lft.org)
 
 ⚠️ **Status: Not Operational (since 23 May 2026)**
 

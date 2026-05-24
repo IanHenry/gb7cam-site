@@ -2,9 +2,7 @@
 ---
 title: "Mail System"
 ---
-
 <img src="images/main_logo.png" class="centered-image">
-
 ## Mail Forwarding
 
 GB7CAM supports AX.25 mailbox-style message handling.

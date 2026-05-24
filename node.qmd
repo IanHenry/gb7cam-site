@@ -1,9 +1,7 @@
 ---
 title: "Node Overview"
 ---
-
 <img src="images/main_logo.png" class="centered-image">
-
 ## GB7CAM AX.25 Node
 
 ### Radio Parameters
