@@ -74,7 +74,7 @@
     "href": "status.html#current-status",
     "title": "System Status",
     "section": "Current Status",
-    "text": "Current Status\n⚠️ NOT OPERATIONAL as under development\nSince: 23 May 2026"
+    "text": "Current Status\n⚠️ NOT OPERATIONAL as under maintenance/setup\nSince: 23 May 2026"
   },
   {
     "objectID": "status.html#system-details",
@@ -109,7 +109,7 @@
     "href": "index.html#ax.25-packet-node-gb7cam",
     "title": "GB7CAM Packet System",
     "section": "AX.25 Packet Node GB7CAM",
-    "text": "AX.25 Packet Node GB7CAM\nKeeper: Ian Henry (G0LFT)\n⚠️ Status: Not Operational (since 23 May 2026)"
+    "text": "AX.25 Packet Node GB7CAM\nKeeper: Ian Henry (G0LFT)\n⚠️ Status: Under Maintenance / Inital Setup (since 23 May 2026)"
   },
   {
     "objectID": "index.html#quick-info",
