@@ -1,11 +1,29 @@
 ---
-title: Contact
+title: "Contact"
 ---
+
 <img src="images/main_logo.png" class="centered-image">
 
-## Contact
+## Sysop
 
-You can contact me via:
-
+Ian Henry  
+Callsign: G0LFT 
  - **Email:** [ian@g0lft.org](mailto:ian@g0lft.org)
  - **QRZ Page:** [G0LFT](https://www.qrz.com/db/G0LFT) 
+
+---
+
+## System
+
+GB7CAM Packet Node
+
+---
+
+## Reporting Issues
+
+Contact the sysop for:
+- connectivity problems
+- forwarding issues
+- node linking requests
+
+

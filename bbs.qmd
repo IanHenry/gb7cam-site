@@ -1,0 +1,57 @@
+---
+title: "BBS Access"
+---
+
+<img src="images/main_logo.png" class="centered-image">
+
+## Connecting to GB7CAM BBS
+
+This node runs a LINBPQ-based AX.25 mailbox system.
+
+---
+
+## Connect Command
+C GB7CAM
+
+---
+
+## Services Available
+
+- Personal messages
+- Bulletins
+- Node list (if linked)
+- Forwarded mail (if configured)
+
+---
+
+## Notes
+
+Access method depends on local RF or network configuration.
+📬 4. mail.qmd
+---
+title: "Mail System"
+---
+
+## Mail Forwarding
+
+GB7CAM supports AX.25 mailbox-style message handling.
+
+---
+
+## Features
+
+- Local message storage
+- Optional forwarding (if enabled)
+- Inter-node routing via LINBPQ
+
+---
+
+## Message Format
+
+Standard BPQ mail format is used for compatibility with other nodes.
+
+---
+
+## Status
+
+Mail forwarding availability depends on node operational status.

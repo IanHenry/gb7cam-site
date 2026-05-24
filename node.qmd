@@ -1,0 +1,35 @@
+---
+title: "Node Overview"
+---
+
+<img src="images/main_logo.png" class="centered-image">
+
+## GB7CAM AX.25 Node
+
+### Radio Parameters
+
+| Parameter | Value |
+|-----------|------|
+| Band | 2m |
+| TX Frequency | 144.9500 MHz |
+| RX Frequency | 144.9500 MHz |
+| Mode | AX.25 Packet / LINBPQ |
+
+---
+
+## Location
+
+- Locator: JO02AD  
+- Near: Harston  
+- Latitude: 52.14  
+- Longitude: 0.08  
+- Antenna height: 5 m AGL  
+- ERP: 7 dBW  
+
+---
+
+## Administration
+
+- ETCC Region: East Anglia (EA)  
+- RSGB Region: 12  
+- Keeper: G0LFT (Ian Henry)

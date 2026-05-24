@@ -5,19 +5,25 @@ project:
     - images
 
 website:
-  title: ""
-  site-url: "https://g0lft.org"
+  title: "GB7CAM Packet System"
+  site-url: "https://gb7cam.org.uk"
   favicon: images/favicon.ico
   navbar:
     left:
       - text: Home
         href: index.qmd
-      - text: Blog
-        href: blog.qmd
-      - text: Thinking
-        href: thinking.qmd
-      - text: Guides
-        href: guides.qmd
+      - text: Node
+        href: node.qmd
+      - text: BBS
+        href: bbs.qmd
+      - text: Mail
+        href: mail.qmd
+      - text: Status
+        href: status.qmd
+      - text: Tech
+        href: tech.qmd
+      - text: Contact
+        href: contact.qmd
 
 format:
   html:

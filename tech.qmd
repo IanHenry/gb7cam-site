@@ -1,0 +1,31 @@
+---
+title: "Technical Information"
+---
+
+<img src="images/main_logo.png" class="centered-image">
+
+## System Overview
+
+GB7CAM runs a LINBPQ-based packet radio node.
+
+---
+
+## Components
+
+- AX.25 packet radio stack  
+- LINBPQ switch/router  
+- VHF 2m RF interface  
+
+---
+
+## Configuration Notes
+
+- Frequency: 144.950 MHz  
+- Mode: AX.25 Packet  
+- Antenna: 5m AGL  
+
+---
+
+## Operator Notes
+
+This page is intended for sysops and technical reference.
