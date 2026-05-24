@@ -1,171 +1,24 @@
 [
   {
-    "objectID": "about.html#about",
-    "href": "about.html#about",
-    "title": "About",
-    "section": "About",
-    "text": "About\nI’m Dr Ian Henry and I live in a village just south of Cambridge. I am a licensed UK radio amateur and a member of Cambridge and District Amateur Radio Club (CDARC), a friendly club which has been serving the Cambridge area since 1919. I’m also a member of the Radio Society of Great Britain (RSGB) and a published author in the RSGB magazine RadCom with an article titled “Understanding FT8 through DNA-sequencing parallels” (May 2026).\nI discovered amateur radio by chance in April 2025 and progressed through the Foundation, Intermediate, and Full licences within the same year, achieving my Full licence with distinction in December 2025. The pace of that journey reflects what I enjoy most about the hobby: learning, experimentation, and deepening understanding.\nMy interests centre on digital modes, SDR, and the theory that sits behind modern amateur radio practice. I spend a lot of time working with modes such as FT8 and JS8, experimenting with packet radio, and building or configuring SDR-based systems. I’m equally interested in how people learn these technologies and how we explain complex ideas clearly.\nAlongside operating, I’m passionate about teaching, training, and helping others enjoy the hobby, particularly by demystifying the underlying concepts rather than focusing only on procedures or equipment.\nThis site brings together:\n\nreflective writing on amateur radio, teaching, and learning\ntheory-focused pieces on SDR and digital communication\npractical guides for operators who want to understand why things work, not just how\n\nIf you’d like to get in touch, collaborate, or talk radio, you can find contact details in the footer."
+    "objectID": "privacy.html#privacy-cookies",
+    "href": "privacy.html#privacy-cookies",
+    "title": "Privacy & Disclaimer",
+    "section": "Privacy & Cookies",
+    "text": "Privacy & Cookies\nWe use Google Analytics 4 (GA4) to collect anonymous site usage data.\nThis may involve cookies to track sessions, page views, and returning visitors.\n\nCookies used: _ga, _gid\nPurpose: Analyze site traffic and improve user experience\n\nIP anonymization: Enabled\n\nThird-party access: Data is processed by Google under their privacy policy: https://policies.google.com/privacy\n\nYou may withdraw consent at any time by clearing your cookies."
   },
   {
-    "objectID": "node.html#gb7cam-ax.25-node",
-    "href": "node.html#gb7cam-ax.25-node",
-    "title": "Node Overview",
-    "section": "GB7CAM AX.25 Node",
-    "text": "GB7CAM AX.25 Node\n\nRadio Parameters\n\n\n\nParameter\nValue\n\n\n\n\nBand\n2m\n\n\nTX Frequency\n144.9500 MHz\n\n\nRX Frequency\n144.9500 MHz\n\n\nMode\nAX.25 Packet / LINBPQ"
+    "objectID": "privacy.html#disclaimer",
+    "href": "privacy.html#disclaimer",
+    "title": "Privacy & Disclaimer",
+    "section": "Disclaimer",
+    "text": "Disclaimer\n\nThe information provided here is for informational purposes only.\n\nWhile care is taken to ensure accuracy, no guarantees are made regarding completeness or suitability.\n\nAny external links do not imply endorsement of those sites.\n\nIf you have concerns regarding your privacy or site content, please contact me."
   },
   {
-    "objectID": "node.html#location",
-    "href": "node.html#location",
-    "title": "Node Overview",
-    "section": "Location",
-    "text": "Location\n\nLocator: JO02AD\n\nNear: Harston\n\nLatitude: 52.14\n\nLongitude: 0.08\n\nAntenna height: 5 m AGL\n\nERP: 7 dBW"
-  },
-  {
-    "objectID": "node.html#administration",
-    "href": "node.html#administration",
-    "title": "Node Overview",
-    "section": "Administration",
-    "text": "Administration\n\nETCC Region: East Anglia (EA)\n\nRSGB Region: 12\n\nKeeper: G0LFT (Ian Henry)"
-  },
-  {
-    "objectID": "mail.html#mail-forwarding",
-    "href": "mail.html#mail-forwarding",
-    "title": "Mail System",
-    "section": "Mail Forwarding",
-    "text": "Mail Forwarding\nGB7CAM supports AX.25 mailbox-style message handling."
-  },
-  {
-    "objectID": "mail.html#features",
-    "href": "mail.html#features",
-    "title": "Mail System",
-    "section": "Features",
-    "text": "Features\n\nLocal message storage\nOptional forwarding (if enabled)\nInter-node routing via LINBPQ"
-  },
-  {
-    "objectID": "mail.html#message-format",
-    "href": "mail.html#message-format",
-    "title": "Mail System",
-    "section": "Message Format",
-    "text": "Message Format\nStandard BPQ mail format is used for compatibility with other nodes."
-  },
-  {
-    "objectID": "mail.html#status",
-    "href": "mail.html#status",
-    "title": "Mail System",
-    "section": "Status",
-    "text": "Status\nMail forwarding availability depends on node operational status."
-  },
-  {
-    "objectID": "contact.html#sysop",
-    "href": "contact.html#sysop",
-    "title": "Contact",
-    "section": "Sysop",
-    "text": "Sysop\nIan Henry\nCallsign: G0LFT\n\nEmail: ian@g0lft.org\nQRZ Page: G0LFT"
-  },
-  {
-    "objectID": "contact.html#system",
-    "href": "contact.html#system",
-    "title": "Contact",
-    "section": "System",
-    "text": "System\nGB7CAM Packet Node"
-  },
-  {
-    "objectID": "contact.html#reporting-issues",
-    "href": "contact.html#reporting-issues",
-    "title": "Contact",
-    "section": "Reporting Issues",
-    "text": "Reporting Issues\nContact the sysop for:\n\nconnectivity problems\nforwarding issues\nnode linking requests"
-  },
-  {
-    "objectID": "index.html#ax.25-packet-node-gb7cam",
-    "href": "index.html#ax.25-packet-node-gb7cam",
-    "title": "GB7CAM Packet System",
-    "section": "AX.25 Packet Node GB7CAM",
-    "text": "AX.25 Packet Node GB7CAM\nKeeper: Ian Henry (G0LFT)\n⚠️ Status: Not Operational (since 23 May 2026)"
-  },
-  {
-    "objectID": "index.html#quick-info",
-    "href": "index.html#quick-info",
-    "title": "GB7CAM Packet System",
-    "section": "Quick Info",
-    "text": "Quick Info\n\nBand: 2m\n\nFrequency: 144.950 MHz (TX/RX)\n\nMode: AX.25 Packet / Mailbox\n\nLocator: JO02AD (Harston)"
-  },
-  {
-    "objectID": "index.html#services",
-    "href": "index.html#services",
-    "title": "GB7CAM Packet System",
-    "section": "Services",
-    "text": "Services\n\n📡 Node Information\n💬 BBS Access\n📬 Mail System\n📊 System Status\n\n\nThis site provides access information for the GB7CAM packet radio node and associated services."
-  },
-  {
-    "objectID": "credits.html#hero-images",
-    "href": "credits.html#hero-images",
-    "title": "Credits & Attributions",
-    "section": "Hero Images",
-    "text": "Hero Images\n\n\n\nImage\nSource / Method\nLicense / Notes"
-  },
-  {
-    "objectID": "credits.html#other-images",
-    "href": "credits.html#other-images",
-    "title": "Credits & Attributions",
-    "section": "Other Images",
-    "text": "Other Images\n\nAny additional images are either created by Dr Ian Henry or sourced from free-to-use libraries.\n\nLicense Notes:\n\nAll CC0 / public domain images are free to use without attribution, but attribution is provided where possible.\n\nOther images are used with permission or created in-house.\n\nAI-generated images are used under the respective AI tool’s terms and are intended solely for illustrative purposes.\n\n\nIf you believe any content here infringes copyright, or you would like additional attribution, please contact me and I will correct it immediately."
-  },
-  {
-    "objectID": "status.html#current-status",
-    "href": "status.html#current-status",
-    "title": "System Status",
-    "section": "Current Status",
-    "text": "Current Status\n⚠️ NOT OPERATIONAL as under development\nSince: 23 May 2026"
-  },
-  {
-    "objectID": "status.html#system-details",
-    "href": "status.html#system-details",
-    "title": "System Status",
-    "section": "System Details",
-    "text": "System Details\n\nNode: GB7CAM\n\nMode: AX.25 / LINBPQ\n\nFrequency: 144.950 MHz"
-  },
-  {
-    "objectID": "status.html#operational-history",
-    "href": "status.html#operational-history",
-    "title": "System Status",
-    "section": "Operational History",
-    "text": "Operational History\n\nDatabase entry: 23-May-2026\n\nNext review: 23-Jul-2028"
-  },
-  {
-    "objectID": "tech.html#system-overview",
-    "href": "tech.html#system-overview",
-    "title": "Technical Information",
-    "section": "System Overview",
-    "text": "System Overview\nGB7CAM runs a LINBPQ-based packet radio node."
-  },
-  {
-    "objectID": "tech.html#components",
-    "href": "tech.html#components",
-    "title": "Technical Information",
-    "section": "Components",
-    "text": "Components\n\nAX.25 packet radio stack\n\nLINBPQ switch/router\n\nVHF 2m RF interface"
-  },
-  {
-    "objectID": "tech.html#configuration-notes",
-    "href": "tech.html#configuration-notes",
-    "title": "Technical Information",
-    "section": "Configuration Notes",
-    "text": "Configuration Notes\n\nFrequency: 144.950 MHz\n\nMode: AX.25 Packet\n\nAntenna: 5m AGL"
-  },
-  {
-    "objectID": "tech.html#operator-notes",
-    "href": "tech.html#operator-notes",
-    "title": "Technical Information",
-    "section": "Operator Notes",
-    "text": "Operator Notes\nThis page is intended for sysops and technical reference."
-  },
-  {
-    "objectID": "bbs.html#connecting-to-gb7cam-bbs",
-    "href": "bbs.html#connecting-to-gb7cam-bbs",
+    "objectID": "bbs.html",
+    "href": "bbs.html",
     "title": "BBS Access",
-    "section": "Connecting to GB7CAM BBS",
-    "text": "Connecting to GB7CAM BBS\nThis node runs a LINBPQ-based AX.25 mailbox system."
+    "section": "",
+    "text": "## Connecting to GB7CAM BBS\nThis node runs a LINBPQ-based AX.25 mailbox system."
   },
   {
     "objectID": "bbs.html#connect-command",
@@ -189,17 +42,157 @@
     "text": "Notes\nAccess method depends on local RF or network configuration."
   },
   {
-    "objectID": "privacy.html#privacy-cookies",
-    "href": "privacy.html#privacy-cookies",
-    "title": "Privacy & Disclaimer",
-    "section": "Privacy & Cookies",
-    "text": "Privacy & Cookies\nWe use Google Analytics 4 (GA4) to collect anonymous site usage data.\nThis may involve cookies to track sessions, page views, and returning visitors.\n\nCookies used: _ga, _gid\nPurpose: Analyze site traffic and improve user experience\n\nIP anonymization: Enabled\n\nThird-party access: Data is processed by Google under their privacy policy: https://policies.google.com/privacy\n\nYou may withdraw consent at any time by clearing your cookies."
+    "objectID": "tech.html",
+    "href": "tech.html",
+    "title": "Technical Information",
+    "section": "",
+    "text": "## System Overview\nGB7CAM runs a LINBPQ-based packet radio node."
   },
   {
-    "objectID": "privacy.html#disclaimer",
-    "href": "privacy.html#disclaimer",
-    "title": "Privacy & Disclaimer",
-    "section": "Disclaimer",
-    "text": "Disclaimer\n\nThe information provided here is for informational purposes only.\n\nWhile care is taken to ensure accuracy, no guarantees are made regarding completeness or suitability.\n\nAny external links do not imply endorsement of those sites.\n\nIf you have concerns regarding your privacy or site content, please contact me."
+    "objectID": "tech.html#components",
+    "href": "tech.html#components",
+    "title": "Technical Information",
+    "section": "Components",
+    "text": "Components\n\nAX.25 packet radio stack\n\nLINBPQ switch/router\n\nVHF 2m RF interface"
+  },
+  {
+    "objectID": "tech.html#configuration-notes",
+    "href": "tech.html#configuration-notes",
+    "title": "Technical Information",
+    "section": "Configuration Notes",
+    "text": "Configuration Notes\n\nFrequency: 144.950 MHz\n\nMode: AX.25 Packet\n\nAntenna: 5m AGL"
+  },
+  {
+    "objectID": "tech.html#operator-notes",
+    "href": "tech.html#operator-notes",
+    "title": "Technical Information",
+    "section": "Operator Notes",
+    "text": "Operator Notes\nThis page is intended for sysops and technical reference."
+  },
+  {
+    "objectID": "status.html",
+    "href": "status.html",
+    "title": "System Status",
+    "section": "",
+    "text": "## Current Status\n⚠️ NOT OPERATIONAL as under development\nSince: 23 May 2026"
+  },
+  {
+    "objectID": "status.html#system-details",
+    "href": "status.html#system-details",
+    "title": "System Status",
+    "section": "System Details",
+    "text": "System Details\n\nNode: GB7CAM\n\nMode: AX.25 / LINBPQ\n\nFrequency: 144.950 MHz"
+  },
+  {
+    "objectID": "status.html#operational-history",
+    "href": "status.html#operational-history",
+    "title": "System Status",
+    "section": "Operational History",
+    "text": "Operational History\n\nDatabase entry: 23-May-2026\n\nNext review: 23-Jul-2028"
+  },
+  {
+    "objectID": "credits.html#hero-images",
+    "href": "credits.html#hero-images",
+    "title": "Credits & Attributions",
+    "section": "Hero Images",
+    "text": "Hero Images\n\n\n\nImage\nSource / Method\nLicense / Notes"
+  },
+  {
+    "objectID": "credits.html#other-images",
+    "href": "credits.html#other-images",
+    "title": "Credits & Attributions",
+    "section": "Other Images",
+    "text": "Other Images\n\nAny additional images are either created by Dr Ian Henry or sourced from free-to-use libraries.\n\nLicense Notes:\n\nAll CC0 / public domain images are free to use without attribution, but attribution is provided where possible.\n\nOther images are used with permission or created in-house.\n\nAI-generated images are used under the respective AI tool’s terms and are intended solely for illustrative purposes.\n\n\nIf you believe any content here infringes copyright, or you would like additional attribution, please contact me and I will correct it immediately."
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "GB7CAM Packet System",
+    "section": "",
+    "text": "## AX.25 Packet Node GB7CAM\nKeeper: Ian Henry (G0LFT)\n⚠️ Status: Not Operational (since 23 May 2026)"
+  },
+  {
+    "objectID": "index.html#quick-info",
+    "href": "index.html#quick-info",
+    "title": "GB7CAM Packet System",
+    "section": "Quick Info",
+    "text": "Quick Info\n\nBand: 2m\n\nFrequency: 144.950 MHz (TX/RX)\n\nMode: AX.25 Packet / Mailbox\n\nLocator: JO02AD (Harston)"
+  },
+  {
+    "objectID": "index.html#services",
+    "href": "index.html#services",
+    "title": "GB7CAM Packet System",
+    "section": "Services",
+    "text": "Services\n\n📡 Node Information\n💬 BBS Access\n📬 Mail System\n📊 System Status\n\n\nThis site provides access information for the GB7CAM packet radio node and associated services."
+  },
+  {
+    "objectID": "contact.html",
+    "href": "contact.html",
+    "title": "Contact",
+    "section": "",
+    "text": "## Sysop\nIan Henry\nCallsign: G0LFT"
+  },
+  {
+    "objectID": "contact.html#system",
+    "href": "contact.html#system",
+    "title": "Contact",
+    "section": "System",
+    "text": "System\nGB7CAM Packet Node"
+  },
+  {
+    "objectID": "contact.html#reporting-issues",
+    "href": "contact.html#reporting-issues",
+    "title": "Contact",
+    "section": "Reporting Issues",
+    "text": "Reporting Issues\nContact the sysop for:\n\nconnectivity problems\nforwarding issues\nnode linking requests"
+  },
+  {
+    "objectID": "mail.html",
+    "href": "mail.html",
+    "title": "Mail System",
+    "section": "",
+    "text": "## Mail Forwarding\nGB7CAM supports AX.25 mailbox-style message handling."
+  },
+  {
+    "objectID": "mail.html#features",
+    "href": "mail.html#features",
+    "title": "Mail System",
+    "section": "Features",
+    "text": "Features\n\nLocal message storage\nOptional forwarding (if enabled)\nInter-node routing via LINBPQ"
+  },
+  {
+    "objectID": "mail.html#message-format",
+    "href": "mail.html#message-format",
+    "title": "Mail System",
+    "section": "Message Format",
+    "text": "Message Format\nStandard BPQ mail format is used for compatibility with other nodes."
+  },
+  {
+    "objectID": "mail.html#status",
+    "href": "mail.html#status",
+    "title": "Mail System",
+    "section": "Status",
+    "text": "Status\nMail forwarding availability depends on node operational status."
+  },
+  {
+    "objectID": "node.html",
+    "href": "node.html",
+    "title": "Node Overview",
+    "section": "",
+    "text": "## GB7CAM AX.25 Node"
+  },
+  {
+    "objectID": "node.html#location",
+    "href": "node.html#location",
+    "title": "Node Overview",
+    "section": "Location",
+    "text": "Location\n\nLocator: JO02AD\n\nNear: Harston\n\nLatitude: 52.14\n\nLongitude: 0.08\n\nAntenna height: 5 m AGL\n\nERP: 7 dBW"
+  },
+  {
+    "objectID": "node.html#administration",
+    "href": "node.html#administration",
+    "title": "Node Overview",
+    "section": "Administration",
+    "text": "Administration\n\nETCC Region: East Anglia (EA)\n\nRSGB Region: 12\n\nKeeper: G0LFT (Ian Henry)"
   }
 ]
