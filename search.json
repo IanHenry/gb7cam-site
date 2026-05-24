@@ -28,32 +28,39 @@
     "text": "Administration\n\nETCC Region: East Anglia (EA)\n\nRSGB Region: 12\n\nKeeper: G0LFT (Ian Henry)"
   },
   {
-    "objectID": "mail.html#current-status",
-    "href": "mail.html#current-status",
-    "title": "System Status",
-    "section": "Current Status",
-    "text": "Current Status\n⚠️ NOT OPERATIONAL\nSince: 23 May 2026"
+    "objectID": "mail.html#mail-forwarding",
+    "href": "mail.html#mail-forwarding",
+    "title": "Mail System",
+    "section": "Mail Forwarding",
+    "text": "Mail Forwarding\nGB7CAM supports AX.25 mailbox-style message handling."
   },
   {
-    "objectID": "mail.html#system-details",
-    "href": "mail.html#system-details",
-    "title": "System Status",
-    "section": "System Details",
-    "text": "System Details\n\nNode: GB7CAM\n\nMode: AX.25 / LINBPQ\n\nFrequency: 144.950 MHz"
+    "objectID": "mail.html#features",
+    "href": "mail.html#features",
+    "title": "Mail System",
+    "section": "Features",
+    "text": "Features\n\nLocal message storage\nOptional forwarding (if enabled)\nInter-node routing via LINBPQ"
   },
   {
-    "objectID": "mail.html#operational-history",
-    "href": "mail.html#operational-history",
-    "title": "System Status",
-    "section": "Operational History",
-    "text": "Operational History\n\nDatabase entry: 23-May-2026\n\nNext review: 23-Jul-2028"
+    "objectID": "mail.html#message-format",
+    "href": "mail.html#message-format",
+    "title": "Mail System",
+    "section": "Message Format",
+    "text": "Message Format\nStandard BPQ mail format is used for compatibility with other nodes."
+  },
+  {
+    "objectID": "mail.html#status",
+    "href": "mail.html#status",
+    "title": "Mail System",
+    "section": "Status",
+    "text": "Status\nMail forwarding availability depends on node operational status."
   },
   {
     "objectID": "contact.html#sysop",
     "href": "contact.html#sysop",
     "title": "Contact",
     "section": "Sysop",
-    "text": "Sysop\nIan Henry\nCallsign: G0LFT - Email: ian@g0lft.org - QRZ Page: G0LFT"
+    "text": "Sysop\nIan Henry\nCallsign: G0LFT\n\nEmail: ian@g0lft.org\nQRZ Page: G0LFT"
   },
   {
     "objectID": "contact.html#system",
@@ -67,7 +74,7 @@
     "href": "contact.html#reporting-issues",
     "title": "Contact",
     "section": "Reporting Issues",
-    "text": "Reporting Issues\nContact the sysop for: - connectivity problems - forwarding issues - node linking requests"
+    "text": "Reporting Issues\nContact the sysop for:\n\nconnectivity problems\nforwarding issues\nnode linking requests"
   },
   {
     "objectID": "index.html#ax.25-packet-node-gb7cam",
@@ -105,32 +112,25 @@
     "text": "Other Images\n\nAny additional images are either created by Dr Ian Henry or sourced from free-to-use libraries.\n\nLicense Notes:\n\nAll CC0 / public domain images are free to use without attribution, but attribution is provided where possible.\n\nOther images are used with permission or created in-house.\n\nAI-generated images are used under the respective AI tool’s terms and are intended solely for illustrative purposes.\n\n\nIf you believe any content here infringes copyright, or you would like additional attribution, please contact me and I will correct it immediately."
   },
   {
-    "objectID": "status.html#mail-forwarding",
-    "href": "status.html#mail-forwarding",
-    "title": "Mail System",
-    "section": "Mail Forwarding",
-    "text": "Mail Forwarding\nGB7CAM supports AX.25 mailbox-style message handling."
+    "objectID": "status.html#current-status",
+    "href": "status.html#current-status",
+    "title": "System Status",
+    "section": "Current Status",
+    "text": "Current Status\n⚠️ NOT OPERATIONAL as under development\nSince: 23 May 2026"
   },
   {
-    "objectID": "status.html#features",
-    "href": "status.html#features",
-    "title": "Mail System",
-    "section": "Features",
-    "text": "Features\n\nLocal message storage\nOptional forwarding (if enabled)\nInter-node routing via LINBPQ"
+    "objectID": "status.html#system-details",
+    "href": "status.html#system-details",
+    "title": "System Status",
+    "section": "System Details",
+    "text": "System Details\n\nNode: GB7CAM\n\nMode: AX.25 / LINBPQ\n\nFrequency: 144.950 MHz"
   },
   {
-    "objectID": "status.html#message-format",
-    "href": "status.html#message-format",
-    "title": "Mail System",
-    "section": "Message Format",
-    "text": "Message Format\nStandard BPQ mail format is used for compatibility with other nodes."
-  },
-  {
-    "objectID": "status.html#status",
-    "href": "status.html#status",
-    "title": "Mail System",
-    "section": "Status",
-    "text": "Status\nMail forwarding availability depends on node operational status."
+    "objectID": "status.html#operational-history",
+    "href": "status.html#operational-history",
+    "title": "System Status",
+    "section": "Operational History",
+    "text": "Operational History\n\nDatabase entry: 23-May-2026\n\nNext review: 23-Jul-2028"
   },
   {
     "objectID": "tech.html#system-overview",
@@ -186,35 +186,7 @@
     "href": "bbs.html#notes",
     "title": "BBS Access",
     "section": "Notes",
-    "text": "Notes\nAccess method depends on local RF or network configuration. 📬 4. mail.qmd — title: “Mail System” —"
-  },
-  {
-    "objectID": "bbs.html#mail-forwarding",
-    "href": "bbs.html#mail-forwarding",
-    "title": "BBS Access",
-    "section": "Mail Forwarding",
-    "text": "Mail Forwarding\nGB7CAM supports AX.25 mailbox-style message handling."
-  },
-  {
-    "objectID": "bbs.html#features",
-    "href": "bbs.html#features",
-    "title": "BBS Access",
-    "section": "Features",
-    "text": "Features\n\nLocal message storage\nOptional forwarding (if enabled)\nInter-node routing via LINBPQ"
-  },
-  {
-    "objectID": "bbs.html#message-format",
-    "href": "bbs.html#message-format",
-    "title": "BBS Access",
-    "section": "Message Format",
-    "text": "Message Format\nStandard BPQ mail format is used for compatibility with other nodes."
-  },
-  {
-    "objectID": "bbs.html#status",
-    "href": "bbs.html#status",
-    "title": "BBS Access",
-    "section": "Status",
-    "text": "Status\nMail forwarding availability depends on node operational status."
+    "text": "Notes\nAccess method depends on local RF or network configuration."
   },
   {
     "objectID": "privacy.html#privacy-cookies",
