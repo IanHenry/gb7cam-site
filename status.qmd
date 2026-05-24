@@ -6,7 +6,7 @@ title: "System Status"
 
 ## Current Status
 
-⚠️ **NOT OPERATIONAL** as under development
+⚠️ **NOT OPERATIONAL** as under maintenance/setup
 
 Since: 23 May 2026
 
