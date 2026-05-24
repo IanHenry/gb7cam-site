@@ -1,0 +1,40 @@
+project:
+  type: website
+  output-dir: _site
+  resources:
+    - images
+
+website:
+  title: ""
+  site-url: "https://g0lft.org"
+  favicon: images/favicon.ico
+  navbar:
+    left:
+      - text: Home
+        href: index.qmd
+      - text: Blog
+        href: blog.qmd
+      - text: Thinking
+        href: thinking.qmd
+      - text: Guides
+        href: guides.qmd
+
+format:
+  html:
+    theme: cosmo
+    toc: false
+    sitemap: true
+    title-block-style: none
+    page-layout: full
+    css: 
+      - _theme/_base.css
+      - _theme/_colors.css
+    include-in-header: 
+      - _includes/_structured-data-main.html
+      - _includes/_ga4.html
+      - _includes/_favicons.html
+    include-after-body: 
+      - _includes/_cookie-consent.html
+      - _includes/_footer.html
+      - _includes/_navbar-logo.html
+

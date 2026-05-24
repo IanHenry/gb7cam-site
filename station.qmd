@@ -1,0 +1,18 @@
+---
+title: My Station
+---
+<img src="images/main_logo.png" class="centered-image">
+
+## Station
+
+I operate HF, VHF, and UHF using a mixture of fixed, mobile, and portable equipment, with a particular focus on digital modes and SDR-based systems.
+
+My current setup includes:
+
+- HF base and portable operation (including POTA)
+- VHF/UHF FM and digital voice
+- Homebrew and commercial SDR receivers
+- Raspberry Pi–based digital voice infrastructure
+
+I periodically update this page as my setup evolves.
+
