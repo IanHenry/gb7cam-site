@@ -8,6 +8,7 @@ title: "Contact"
 
 Ian Henry  
 Callsign: G0LFT 
+
  - **Email:** [ian@g0lft.org](mailto:ian@g0lft.org)
  - **QRZ Page:** [G0LFT](https://www.qrz.com/db/G0LFT) 
 
@@ -22,6 +23,7 @@ GB7CAM Packet Node
 ## Reporting Issues
 
 Contact the sysop for:
+
 - connectivity problems
 - forwarding issues
 - node linking requests

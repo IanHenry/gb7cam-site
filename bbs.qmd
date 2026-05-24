@@ -27,31 +27,3 @@ C GB7CAM
 ## Notes
 
 Access method depends on local RF or network configuration.
-📬 4. mail.qmd
----
-title: "Mail System"
----
-
-## Mail Forwarding
-
-GB7CAM supports AX.25 mailbox-style message handling.
-
----
-
-## Features
-
-- Local message storage
-- Optional forwarding (if enabled)
-- Inter-node routing via LINBPQ
-
----
-
-## Message Format
-
-Standard BPQ mail format is used for compatibility with other nodes.
-
----
-
-## Status
-
-Mail forwarding availability depends on node operational status.

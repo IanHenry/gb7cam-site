@@ -1,27 +1,26 @@
 ---
-title: "Mail System"
+title: "System Status"
 ---
 
-## Mail Forwarding
+<img src="images/main_logo.png" class="centered-image">
 
-GB7CAM supports AX.25 mailbox-style message handling.
+## Current Status
 
----
+⚠️ **NOT OPERATIONAL** as under development
 
-## Features
-
-- Local message storage
-- Optional forwarding (if enabled)
-- Inter-node routing via LINBPQ
+Since: 23 May 2026
 
 ---
 
-## Message Format
+## System Details
 
-Standard BPQ mail format is used for compatibility with other nodes.
+- Node: GB7CAM  
+- Mode: AX.25 / LINBPQ  
+- Frequency: 144.950 MHz  
 
 ---
 
-## Status
+## Operational History
 
-Mail forwarding availability depends on node operational status.
+- Database entry: 23-May-2026  
+- Next review: 23-Jul-2028  
