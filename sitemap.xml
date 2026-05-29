@@ -1,39 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://gb7cam.org.uk/privacy.html</loc>
-    <lastmod>2026-05-24T20:37:07.301Z</lastmod>
-  </url>
-  <url>
-    <loc>https://gb7cam.org.uk/bbs.html</loc>
-    <lastmod>2026-05-24T20:37:07.294Z</lastmod>
-  </url>
-  <url>
-    <loc>https://gb7cam.org.uk/tech.html</loc>
-    <lastmod>2026-05-24T20:37:07.301Z</lastmod>
-  </url>
-  <url>
     <loc>https://gb7cam.org.uk/status.html</loc>
-    <lastmod>2026-05-24T20:37:07.301Z</lastmod>
-  </url>
-  <url>
-    <loc>https://gb7cam.org.uk/credits.html</loc>
-    <lastmod>2026-05-24T20:37:07.294Z</lastmod>
+    <lastmod>2026-05-29T13:31:24.276Z</lastmod>
   </url>
   <url>
     <loc>https://gb7cam.org.uk/index.html</loc>
-    <lastmod>2026-05-24T20:37:07.301Z</lastmod>
-  </url>
-  <url>
-    <loc>https://gb7cam.org.uk/contact.html</loc>
-    <lastmod>2026-05-24T20:37:07.294Z</lastmod>
-  </url>
-  <url>
-    <loc>https://gb7cam.org.uk/mail.html</loc>
-    <lastmod>2026-05-24T20:37:07.301Z</lastmod>
+    <lastmod>2026-05-29T13:31:24.276Z</lastmod>
   </url>
   <url>
     <loc>https://gb7cam.org.uk/node.html</loc>
-    <lastmod>2026-05-24T20:37:07.301Z</lastmod>
+    <lastmod>2026-05-29T13:31:24.276Z</lastmod>
+  </url>
+  <url>
+    <loc>https://gb7cam.org.uk/credits.html</loc>
+    <lastmod>2026-05-29T13:31:24.269Z</lastmod>
+  </url>
+  <url>
+    <loc>https://gb7cam.org.uk/bbs.html</loc>
+    <lastmod>2026-05-29T13:31:24.269Z</lastmod>
+  </url>
+  <url>
+    <loc>https://gb7cam.org.uk/tech.html</loc>
+    <lastmod>2026-05-29T13:31:24.276Z</lastmod>
+  </url>
+  <url>
+    <loc>https://gb7cam.org.uk/contact.html</loc>
+    <lastmod>2026-05-29T13:31:24.269Z</lastmod>
+  </url>
+  <url>
+    <loc>https://gb7cam.org.uk/privacy.html</loc>
+    <lastmod>2026-05-29T13:31:24.276Z</lastmod>
+  </url>
+  <url>
+    <loc>https://gb7cam.org.uk/mail.html</loc>
+    <lastmod>2026-05-29T13:31:24.276Z</lastmod>
   </url>
 </urlset>
