@@ -34,9 +34,7 @@ title: "System Status"
 - Database entry: 23-May-2026  
 - Next review: 23-Jul-2028
 
-```{r, echo=FALSE, results='asis'}
-#| html
-cat('
+```{=html}
 <script>
 async function fetchNodeData() {
   const statusEl = document.getElementById("api-status");
@@ -86,11 +84,10 @@ async function fetchNodeData() {
   } catch (error) {
     console.error("Telemetry fetch failed:", error);
     statusEl.innerHTML = "⚠️ <strong>MAINTENANCE / OFFLINE</strong> (Unable to connect to home server)";
-    linksEl.innerHTML = "<p style=\'color: #721c24; background-color: #f8d7da; padding: 10px; border-radius: 4px;\'>Telemetry server is currently unreachable. The node may be undergoing maintenance.</p>";
+    linksEl.innerHTML = "<p style='color: #721c24; background-color: #f8d7da; padding: 10px; border-radius: 4px;'>Telemetry server is currently unreachable. The node may be undergoing maintenance.</p>";
   }
 }
 
 document.addEventListener("DOMContentLoaded", fetchNodeData);
 </script>
-')
 ```
