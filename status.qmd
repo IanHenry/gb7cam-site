@@ -21,6 +21,14 @@ title: "System Status"
 
 ---
 
+## Recently Heard Stations (MHeard)
+
+<div id="mheard-container">
+  <p>Loading recently heard stations on Port 3...</p>
+</div>
+
+---
+
 ## System Details
 
 - Node: GB7CAM  
@@ -39,60 +47,100 @@ title: "System Status"
 async function fetchNodeData() {
   const statusEl = document.getElementById("api-status");
   const linksEl = document.getElementById("links-container");
+  const mheardEl = document.getElementById("mheard-container");
+
+  // Base components to bypass automated system formatting limits
+  const protocol = "https:";
+  const subdomain = "api";
+  const domain = "gb7cam.org.uk";
 
   try {
-    // Piece the URL together out of safe text fragments to bypass formatting bugs
-    const protocol = "https:";
-    const subdomain = "api";
-    const domain = "gb7cam.org.uk";
-    const endpoint = "links";
-    
-    const apiUrl = `${protocol}//${subdomain}.${domain}/${endpoint}`;
-    
-    const response = await fetch(apiUrl);
-    if (!response.ok) throw new Error("API error");
-    const data = await response.json();
+    // ---------------------------------------------------
+    // 1. FETCH & RENDER ACTIVE LINKS
+    // ---------------------------------------------------
+    const linksUrl = `${protocol}//${subdomain}.${domain}/links`;
+    const linksResponse = await fetch(linksUrl);
+    if (!linksResponse.ok) throw new Error("Links API error");
+    const linksData = await linksResponse.json();
 
     linksEl.innerHTML = "";
-
-    if (!data.links || data.links.length === 0) {
+    if (!linksData.links || linksData.links.length === 0) {
       linksEl.innerHTML = "<p>No active links reported by the node.</p>";
-      statusEl.innerHTML = "🟢 <strong>OPERATIONAL</strong> (No active links)";
-      return;
+    } else {
+      let linksHtml = `
+        <table class="table table-hover" style="width: 100%; margin-top: 15px; border-collapse: collapse;">
+          <thead>
+            <tr style="border-bottom: 2px solid #ccc; text-align: left;">
+              <th style="padding: 8px;">Remote Node</th>
+              <th style="padding: 8px;">Local Port</th>
+              <th style="padding: 8px;">Type</th>
+              <th style="padding: 8px;">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+      linksData.links.forEach(link => {
+        linksHtml += `
+          <tr style="border-bottom: 1px solid #eee;">
+            <td style="padding: 8px; font-weight: bold; color: #2c3e50;">${link.farCall}</td>
+            <td style="padding: 8px;">Port ${link.port}</td>
+            <td style="padding: 8px; font-size: 0.9em; color: #666;">${link.linkType}</td>
+            <td style="padding: 8px;"><span style="background-color: #d4edda; color: #155724; padding: 3px 8px; border-radius: 4px; font-size: 0.9em;">${link.state}</span></td>
+          </tr>
+        `;
+      });
+      linksHtml += "</tbody></table>";
+      linksEl.innerHTML = linksHtml;
     }
 
-    let tableHtml = `
-      <table class="table table-hover" style="width: 100%; margin-top: 15px; border-collapse: collapse;">
-        <thead>
-          <tr style="border-bottom: 2px solid #ccc; text-align: left;">
-            <th style="padding: 8px;">Remote Node</th>
-            <th style="padding: 8px;">Local Port</th>
-            <th style="padding: 8px;">Type</th>
-            <th style="padding: 8px;">Status</th>
-          </tr>
-        </thead>
-        <tbody>
-    `;
+    // ---------------------------------------------------
+    // 2. FETCH & RENDER MHEARD PACKET LOGS
+    // ---------------------------------------------------
+    const mheardUrl = `${protocol}//${subdomain}.${domain}/mheard`;
+    const mheardResponse = await fetch(mheardUrl);
+    if (!mheardResponse.ok) throw new Error("MHeard API error");
+    const mheardData = await mheardResponse.json();
 
-    data.links.forEach(link => {
-      tableHtml += `
-        <tr style="border-bottom: 1px solid #eee;">
-          <td style="padding: 8px; font-weight: bold; color: #2c3e50;">${link.farCall}</td>
-          <td style="padding: 8px;">Port ${link.port}</td>
-          <td style="padding: 8px; font-size: 0.9em; color: #666;">${link.linkType}</td>
-          <td style="padding: 8px;"><span style="background-color: #d4edda; color: #155724; padding: 3px 8px; border-radius: 4px; font-size: 0.9em;">${link.state}</span></td>
-        </tr>
+    mheardEl.innerHTML = "";
+    if (!mheardData.mheard || mheardData.mheard.length === 0) {
+      mheardEl.innerHTML = "<p>No stations heard recently on Port 3.</p>";
+    } else {
+      let mheardHtml = `
+        <table class="table table-hover" style="width: 100%; margin-top: 15px; border-collapse: collapse;">
+          <thead>
+            <tr style="border-bottom: 2px solid #ccc; text-align: left;">
+              <th style="padding: 8px;">Callsign</th>
+              <th style="padding: 8px;">Local Port</th>
+              <th style="padding: 8px;">Packets Exchanged</th>
+              <th style="padding: 8px;">Last Active (UTC)</th>
+            </tr>
+          </thead>
+          <tbody>
       `;
-    });
+      mheardData.mheard.forEach(station => {
+        mheardHtml += `
+          <tr style="border-bottom: 1px solid #eee;">
+            <td style="padding: 8px; font-weight: bold; color: #2980b9;">${station.callSign}</td>
+            <td style="padding: 8px;">Port ${station.port}</td>
+            <td style="padding: 8px;">${Number(station.packets).toLocaleString()}</td>
+            <td style="padding: 8px; font-size: 0.95em; color: #555;">${station.lastHeard}</td>
+          </tr>
+        `;
+      });
+      mheardHtml += "</tbody></table>";
+      mheardEl.innerHTML = mheardHtml;
+    }
 
-    tableHtml += "</tbody></table>";
-    linksEl.innerHTML = tableHtml;
+    // Update global header status on success
     statusEl.innerHTML = "🟢 <strong>OPERATIONAL</strong> (Live telemetry active)";
 
   } catch (error) {
     console.error("Telemetry fetch failed:", error);
     statusEl.innerHTML = "⚠️ <strong>MAINTENANCE / OFFLINE</strong> (Unable to connect to home server)";
-    linksEl.innerHTML = "<p style='color: #721c24; background-color: #f8d7da; padding: 10px; border-radius: 4px;'>Telemetry server is currently unreachable. The node may be undergoing maintenance.</p>";
+    
+    const errorBanner = "<p style='color: #721c24; background-color: #f8d7da; padding: 10px; border-radius: 4px;'>Telemetry server is currently unreachable. The node may be undergoing maintenance.</p>";
+    linksEl.innerHTML = errorBanner;
+    mheardEl.innerHTML = errorBanner;
   }
 }
 
