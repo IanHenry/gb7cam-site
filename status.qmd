@@ -39,20 +39,6 @@ title: "System Status"
   <p>Loading routing node index...</p>
 </div>
 
----
-
-## System Details
-
-- Node: GB7CAM  
-- Mode: AX.25 / LINBPQ  
-- Frequency: 144.950 MHz  
-
----
-
-## Operational History
-
-- Database entry: 23-May-2026  
-- Next review: 23-Jul-2028
 
 ```{=html}
 <script>
