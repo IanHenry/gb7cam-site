@@ -4,7 +4,14 @@
     "href": "status.html#current-status",
     "title": "System Status",
     "section": "Current Status",
-    "text": "Current Status\n⚠️ NOT OPERATIONAL as under maintenance/setup\nSince: 23 May 2026"
+    "text": "Current Status\n\n\n\n\n\n\nNoteReal-Time Node Telemetry\n\n\n\n\n🔄 Connecting to GB7CAM API…"
+  },
+  {
+    "objectID": "status.html#active-network-links",
+    "href": "status.html#active-network-links",
+    "title": "System Status",
+    "section": "Active Network Links",
+    "text": "Active Network Links\n\n\nLoading active AXUDP links…"
   },
   {
     "objectID": "status.html#system-details",
