@@ -193,6 +193,18 @@ Loading recently heard stations on Port 3…
 </div>
 <hr>
 </section>
+<section id="network-routing-nodes" class="level2">
+<h2 class="anchored" data-anchor-id="network-routing-nodes">Network Routing Nodes</h2>
+<div style="margin-bottom: 15px;">
+<p><input type="text" id="node-search" placeholder="🔍 Search nodes by callsign or alias..." style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 1em;"></p>
+</div>
+<div id="nodes-container" style="max-height: 400px; overflow-y: auto; border: 1px solid #eee; padding: 10px; border-radius: 4px; background: #fafafa;">
+<p>
+Loading routing node index…
+</p>
+</div>
+<hr>
+</section>
 <section id="system-details" class="level2">
 <h2 class="anchored" data-anchor-id="system-details">System Details</h2>
 <ul>
@@ -212,10 +224,14 @@ Loading recently heard stations on Port 3…
 <li>Next review: 23-Jul-2028</li>
 </ul>
 <script>
+// Global storage to let the search filter interact with the downloaded node list
+let allNodes = [];
+
 async function fetchNodeData() {
   const statusEl = document.getElementById("api-status");
   const linksEl = document.getElementById("links-container");
   const mheardEl = document.getElementById("mheard-container");
+  const nodesEl = document.getElementById("nodes-container");
 
   // Base components to bypass automated system formatting limits
   const protocol = "https:";
@@ -299,7 +315,18 @@ async function fetchNodeData() {
       mheardEl.innerHTML = mheardHtml;
     }
 
-    // Update global header status on success
+    // ---------------------------------------------------
+    // 3. FETCH & RENDER THE GLOBAL ROUTING NODES
+    // ---------------------------------------------------
+    const nodesUrl = `${protocol}//${subdomain}.${domain}/nodes`;
+    const nodesResponse = await fetch(nodesUrl);
+    if (!nodesResponse.ok) throw new Error("Nodes API error");
+    const nodesData = await nodesResponse.json();
+
+    allNodes = nodesData.nodes || [];
+    renderNodes(allNodes);
+
+    // Update global header status on complete pipeline success
     statusEl.innerHTML = "🟢 <strong>OPERATIONAL</strong> (Live telemetry active)";
 
   } catch (error) {
@@ -309,10 +336,56 @@ async function fetchNodeData() {
     const errorBanner = "<p style='color: #721c24; background-color: #f8d7da; padding: 10px; border-radius: 4px;'>Telemetry server is currently unreachable. The node may be undergoing maintenance.</p>";
     linksEl.innerHTML = errorBanner;
     mheardEl.innerHTML = errorBanner;
+    nodesEl.innerHTML = errorBanner;
   }
 }
 
-document.addEventListener("DOMContentLoaded", fetchNodeData);
+// Separate render module to keep updates snappy during keyword typing
+function renderNodes(nodesList) {
+  const nodesEl = document.getElementById("nodes-container");
+  
+  if (nodesList.length === 0) {
+    nodesEl.innerHTML = "<p style='color: #666; padding: 10px;'>No matching nodes found index matching that pattern.</p>";
+    return;
+  }
+
+  let nodesHtml = `
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; padding: 5px;">
+  `;
+
+  nodesList.forEach(node => {
+    const aliasText = node.Alias ? `<span style="color: #e67e22; font-size: 0.9em;">:${node.Alias}</span>` : '';
+    const routeCount = node.Routes ? node.Routes.length : 0;
+    
+    nodesHtml += `
+      <div style="background: white; border: 1px solid #e2e8f0; padding: 8px 12px; border-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">
+        <div style="font-weight: bold; color: #2c3e50; font-size: 1.05em;">${node.Call}${aliasText}</div>
+        <div style="font-size: 0.85em; color: #7f8c8d; margin-top: 4px;">🗺️ Routes Available: <strong>${routeCount}</strong></div>
+      </div>
+    `;
+  });
+
+  nodesHtml += "</div>";
+  nodesEl.innerHTML = nodesHtml;
+}
+
+// Bind search field logic on load
+document.addEventListener("DOMContentLoaded", () => {
+  fetchNodeData();
+
+  const searchInput = document.getElementById("node-search");
+  searchInput.addEventListener("input", (e) => {
+    const searchTerm = e.target.value.toUpperCase().trim();
+    
+    const filtered = allNodes.filter(node => {
+      const matchCall = node.Call.toUpperCase().includes(searchTerm);
+      const matchAlias = node.Alias && node.Alias.toUpperCase().includes(searchTerm);
+      return matchCall || matchAlias;
+    });
+    
+    renderNodes(filtered);
+  });
+});
 </script>
 
 
