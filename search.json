@@ -28,20 +28,6 @@
     "text": "Network Routing Nodes\n\n\n\n\n\nLoading routing node index…"
   },
   {
-    "objectID": "status.html#system-details",
-    "href": "status.html#system-details",
-    "title": "System Status",
-    "section": "System Details",
-    "text": "System Details\n\nNode: GB7CAM\n\nMode: AX.25 / LINBPQ\n\nFrequency: 144.950 MHz"
-  },
-  {
-    "objectID": "status.html#operational-history",
-    "href": "status.html#operational-history",
-    "title": "System Status",
-    "section": "Operational History",
-    "text": "Operational History\n\nDatabase entry: 23-May-2026\n\nNext review: 23-Jul-2028"
-  },
-  {
     "objectID": "index.html#ax.25-packet-node-gb7cam",
     "href": "index.html#ax.25-packet-node-gb7cam",
     "title": "GB7CAM Packet System",
