@@ -41,7 +41,15 @@ async function fetchNodeData() {
   const linksEl = document.getElementById("links-container");
 
   try {
-    const response = await fetch("https://gb7cam.org.uk");
+    // Piece the URL together out of safe text fragments to bypass formatting bugs
+    const protocol = "https:";
+    const subdomain = "api";
+    const domain = "gb7cam.org.uk";
+    const endpoint = "links";
+    
+    const apiUrl = `${protocol}//${subdomain}.${domain}/${endpoint}`;
+    
+    const response = await fetch(apiUrl);
     if (!response.ok) throw new Error("API error");
     const data = await response.json();
 
