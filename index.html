@@ -177,38 +177,15 @@ ul.task-list li input[type="checkbox"] {
 </div>
 </div>
 </div>
-<hr>
 </section>
 <section id="station-overview" class="level2">
 <h2 class="anchored" data-anchor-id="station-overview">Station Overview</h2>
 <section id="radio-parameters" class="level3">
 <h3 class="anchored" data-anchor-id="radio-parameters">Radio Parameters</h3>
-<table class="caption-top table">
-<thead>
-<tr class="header">
-<th>Parameter</th>
-<th>Value</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>Band</td>
-<td>2m</td>
-</tr>
-<tr class="even">
-<td>TX Frequency</td>
-<td>144.9500 MHz</td>
-</tr>
-<tr class="odd">
-<td>RX Frequency</td>
-<td>144.9500 MHz</td>
-</tr>
-<tr class="even">
-<td>Mode</td>
-<td>AX.25 Packet / LINBPQ</td>
-</tr>
-</tbody>
-</table>
+<div class="line-block">Band | 2m |<br>
+TX Frequency | 144.9500 MHz |<br>
+RX Frequency | 144.9500 MHz |<br>
+Mode | AX.25 Packet / LINBPQ |</div>
 <hr>
 </section>
 <section id="location" class="level3">
@@ -305,7 +282,7 @@ async function fetchNodeSummary() {
     }
 
     // Compile separated ports summary text
-    let stationsSummary = `${rfCount} RF, ${axipCount} AXIP`;
+    let stationsSummary = `${rfCount} via RF, ${axipCount} via AXIP`;
     if (otherCount > 0) {
       stationsSummary += `, ${otherCount} other`;
     }
@@ -314,7 +291,7 @@ async function fetchNodeSummary() {
     statusEl.innerHTML = `
       🟢 <strong>OPERATIONAL</strong> — 
       ${activeLinksCount} active links | 
-      Stations heard (4h): ${stationsSummary} 
+      Stations heard in last 4 hours: ${stationsSummary} 
       (<small>${activityText}</small>)
     `;
 
