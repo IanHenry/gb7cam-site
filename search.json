@@ -32,11 +32,18 @@
     "href": "status.html#network-routing-nodes",
     "title": "System Status",
     "section": "Network Routing Nodes",
-    "text": "Network Routing Nodes\n\n\n\nLoading…"
+    "text": "Network Routing Nodes"
   },
   {
     "objectID": "status.html#network-topology-map",
     "href": "status.html#network-topology-map",
+    "title": "System Status",
+    "section": "Network Topology Map",
+    "text": "Network Topology Map"
+  },
+  {
+    "objectID": "status.html#network-topology-map-1",
+    "href": "status.html#network-topology-map-1",
     "title": "System Status",
     "section": "Network Topology Map",
     "text": "Network Topology Map"
