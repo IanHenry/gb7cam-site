@@ -60,10 +60,10 @@ title: "System Status"
 
 <hr>
 
-## Node Connection Graph
+## Network Topology Map
 
 <div id="network-graph"
-     style="height:450px;border:1px solid #e5e7eb;border-radius:6px;background:#fafafa;">
+     style="height:500px;border:1px solid #e5e7eb;border-radius:6px;background:#fafafa;">
 </div>
 
 <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
@@ -205,7 +205,7 @@ async function fetchDashboardData() {
   document.getElementById("w-status").innerText = "Operational";
 
   renderNodes(allNodes);
-  renderGraph(allNodes);
+  renderGraph(allNodes, mheard);
 }
 
 // ---------------- NODES ----------------
@@ -249,13 +249,60 @@ function renderNodes(list) {
   `;
 }
 
-function renderGraph(nodes) {
+function buildTopology(nodes, mheard) {
+  const edges = new Map();
+
+  const windowMs = 30 * 60 * 1000; // 30 min correlation window
+
+  // Pre-index activity by time buckets
+  const events = mheard.map(m => ({
+    call: m.callSign,
+    port: Number(m.port),
+    ts: m.ts
+  }));
+
+  // Build co-occurrence relationships
+  for (let i = 0; i < events.length; i++) {
+    for (let j = i + 1; j < events.length; j++) {
+
+      const a = events[i];
+      const b = events[j];
+
+      if (Math.abs(a.ts - b.ts) > windowMs) continue;
+      if (a.call === b.call) continue;
+
+      const key = [a.call, b.call].sort().join("|");
+
+      if (!edges.has(key)) {
+        edges.set(key, {
+          from: a.call,
+          to: b.call,
+          weight: 0,
+          rf: 0,
+          axip: 0
+        });
+      }
+
+      const e = edges.get(key);
+      e.weight++;
+
+      if (a.port === 1 || b.port === 1) e.rf++;
+      if (a.port === 3 || b.port === 3) e.axip++;
+    }
+  }
+
+  return Array.from(edges.values());
+}
+
+function renderGraph(nodes, mheard) {
   const container = document.getElementById("network-graph");
 
   const nodeSet = new vis.DataSet();
   const edgeSet = new vis.DataSet();
 
-  // Build nodes
+  const topology = buildTopology(nodes, mheard);
+
+  // Add nodes
   nodes.forEach(n => {
     nodeSet.add({
       id: n.Call,
@@ -264,43 +311,40 @@ function renderGraph(nodes) {
       color: {
         background: "#ffffff",
         border: "#2c3e50",
-        highlight: { background: "#e8f4ff", border: "#1565c0" }
+        highlight: { background: "#e3f2fd", border: "#1565c0" }
       },
-      font: {
-        color: "#2c3e50",
-        size: 13
-      }
+      font: { size: 13, color: "#2c3e50" }
     });
   });
 
-  // Build edges from Routes[]
-  nodes.forEach(n => {
-    (n.Routes || []).forEach(r => {
-      edgeSet.add({
-        from: n.Call,
-        to: r,
-        color: "#b0b0b0",
-        arrows: "to"
-      });
+  // Add inferred edges
+  topology.forEach(e => {
+    const isRF = e.rf > e.axip;
+
+    edgeSet.add({
+      from: e.from,
+      to: e.to,
+      value: Math.min(5, e.weight), // thickness cap
+      color: isRF ? "#2e7d32" : "#1565c0",
+      title: `Strength: ${e.weight} (RF:${e.rf}, AXIP:${e.axip})`
     });
   });
 
-  const data = { nodes: nodeSet, edges: edgeSet };
-
-  const options = {
+  new vis.Network(container, {
+    nodes: nodeSet,
+    edges: edgeSet
+  }, {
     physics: {
       stabilization: true,
       barnesHut: {
-        gravitationalConstant: -4000,
-        springLength: 120
+        gravitationalConstant: -5000,
+        springLength: 140
       }
     },
     interaction: {
       hover: true
     }
-  };
-
-  new vis.Network(container, data, options);
+  });
 }
 
 // ---------------- EVENTS ----------------
