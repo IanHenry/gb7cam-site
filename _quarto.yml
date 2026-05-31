@@ -29,8 +29,8 @@ format:
     title-block-style: none
     page-layout: full
     css: 
-      - _theme/_base.scss
-      - _theme/_colors.scss
+      - _theme/_base.css
+      - _theme/_colors.css
     include-in-header: 
       - _includes/_structured-data-main.html
       - _includes/_ga4.html
