@@ -246,7 +246,22 @@ async function fetchDashboardData() {
     .filter(st => !isNaN(st.ts))
     .sort((a, b) => b.ts - a.ts);
 
-  // ---------------- FEED (UPDATED ONLY) ----------------
+  /* =========================
+     TIME WINDOWS (FIXED LOGIC)
+     ========================= */
+
+  const rfWindow = Date.now() - (7 * 24 * 60 * 60 * 1000);     // 7 days
+  const axipWindow = Date.now() - (12 * 60 * 60 * 1000);       // 12 hours
+
+  const mheardRF = mheardAll.filter(st =>
+    st.ts >= rfWindow && Number(st.port) === 1
+  );
+
+  const mheardAXIP = mheardAll.filter(st =>
+    st.ts >= axipWindow && Number(st.port) === 3
+  );
+
+  // ---------------- FEED ----------------
   const activityWindow = Date.now() - (24 * 60 * 60 * 1000);
 
   document.getElementById("activity-feed-container").innerHTML =
@@ -299,11 +314,11 @@ async function fetchDashboardData() {
       </table>`;
 
   // ---------------- MHEARD ----------------
-  const filtered = mheard.filter(st => {
-    if (mheardMode === "RF") return Number(st.port) === 1;
-    if (mheardMode === "AXIP") return Number(st.port) === 3;
-    return true;
-  });
+  const filtered = mheardMode === "RF"
+    ? mheardRF
+    : mheardMode === "AXIP"
+      ? mheardAXIP
+      : mheardAll;
 
   document.getElementById("mheard-container").innerHTML =
     filtered.length === 0
@@ -333,10 +348,9 @@ async function fetchDashboardData() {
       latest = st.ts;
       latestCall = st.callSign;
     }
-    if (st.ts >= Date.now() - 4*60*60*1000) {
-      if (Number(st.port) === 1) rf++;
-      if (Number(st.port) === 3) axip++;
-    }
+
+    if (st.ts >= rfWindow && Number(st.port) === 1) rf++;
+    if (st.ts >= axipWindow && Number(st.port) === 3) axip++;
   });
 
   document.getElementById("w-links").innerText = links.length;
