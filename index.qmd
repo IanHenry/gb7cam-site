@@ -11,15 +11,6 @@ GB7CAM is a 2m AX.25 packet radio node serving the Cambridge area.  The station 
 
 ## Current Status
 
-::: {.callout-note}
-## Real-Time Node Telemetry
-<div id="api-status">🔄 Connecting to GB7CAM API...</div>
-:::
-
-More detailed status information can be found on the [status page](status.qmd)
-
-## New Test Widget
-
 <div id="api-status-widget" style="background: #f8f9fa; border: 1px solid #dee2e6; border-left: 4px solid #28a745; padding: 15px; border-radius: 4px; font-family: monospace; line-height: 1.5; max-width: 450px; margin: 20px 0;">
   <div><strong>Status:</strong> <span id="w-status" style="color: #28a745; font-weight: bold;">Operational</span></div>
   <div><strong>Active Links:</strong> <span id="w-links">...</span></div>
@@ -27,6 +18,8 @@ More detailed status information can be found on the [status page](status.qmd)
   <div><strong>Stations Heard via AXIP (last 4 hours):</strong> <span id="w-axip">...</span></div>
   <div><strong>Last Packet:</strong> <span id="w-last">...</span></div>
 </div>
+
+More detailed status information can be found on the [status page](status.qmd)
 
 ## Station Overview
 
