@@ -207,13 +207,6 @@ Loading…
 </section>
 <section id="network-topology-map" class="level2">
 <h2 class="anchored" data-anchor-id="network-topology-map">Network Topology Map</h2>
-<div style="background:#fafafa;border:1px solid #ddd;border-radius:6px;padding:10px;">
-<p><svg id="topology-svg" width="100%" height="420"></svg></p>
-</div>
-<hr>
-</section>
-<section id="network-topology-map-1" class="level2">
-<h2 class="anchored" data-anchor-id="network-topology-map-1">Network Topology Map</h2>
 <div id="network-graph" style="height:500px;border:1px solid #e5e7eb;border-radius:6px;background:#fafafa;">
 
 </div>
@@ -221,6 +214,7 @@ Loading…
 <script>
 let allNodes = [];
 let mheardMode = "ALL";
+let networkInstance = null;
 
 function parseTime(st) {
   let t = st.lastHeard;
@@ -258,7 +252,7 @@ async function fetchDashboardData() {
     .filter(st => !isNaN(st.ts) && st.ts >= twelveHoursAgo)
     .sort((a,b) => b.ts - a.ts);
 
-  // ---------------- ACTIVITY FEED ----------------
+  // ---------------- FEED ----------------
   document.getElementById("activity-feed-container").innerHTML =
     mheard.map(st => {
       const color = Number(st.port) === 1 ? "#2e7d32" : "#1565c0";
@@ -283,7 +277,9 @@ async function fetchDashboardData() {
           <th>Node</th><th>Port</th><th>Type</th><th>Status</th>
         </tr>
         ${links.map(l => {
-          const up = ["ACTIVE","ESTABLISHED","CONNECTED"].includes((l.state||"").toUpperCase());
+          const up = ["ACTIVE","ESTABLISHED","CONNECTED"]
+            .includes((l.state||"").toUpperCase());
+
           return `
             <tr>
               <td>${l.farCall}</td>
@@ -355,7 +351,6 @@ async function fetchDashboardData() {
   document.getElementById("w-status").innerText = "Operational";
 
   renderNodes(allNodes);
-  renderTopology(allNodes);
   renderGraph(allNodes, mheard);
 }
 
@@ -382,16 +377,11 @@ function renderNodes(list) {
           border-radius:6px;
           box-shadow:0 1px 2px rgba(0,0,0,0.04);
         ">
-          <div style="font-weight:bold; color:#2c3e50; font-size:1.05em;">
+          <div style="font-weight:bold; color:#2c3e50;">
             ${n.Call}
-            ${n.Alias ? `<span style="color:#e67e22; font-size:0.9em;"> :${n.Alias}</span>` : ""}
+            ${n.Alias ? `<span style="color:#e67e22;"> :${n.Alias}</span>` : ""}
           </div>
-
-          <div style="
-            font-size:0.85em;
-            color:#7f8c8d;
-            margin-top:6px;
-          ">
+          <div style="font-size:0.85em;color:#7f8c8d;">
             🗺️ Routes: <strong>${n.Routes?.length || 0}</strong>
           </div>
         </div>
@@ -400,114 +390,28 @@ function renderNodes(list) {
   `;
 }
 
-function renderTopology(nodes) {
-  const svg = document.getElementById("topology-svg");
-  if (!svg) return;
-
-  const width = svg.clientWidth;
-  const height = 420;
-
-  svg.innerHTML = "";
-
-  const MY_NODE = "GB7CAM"; // 👈 CHANGE THIS to your node callsign
-
-  const center = { x: width / 2, y: height / 2 };
-
-  const nodeMap = {};
-  nodes.forEach(n => nodeMap[n.Call] = n);
-
-  const centerNode = nodeMap[MY_NODE];
-  const others = nodes.filter(n => n.Call !== MY_NODE);
-
-  const radius = 160;
-
-  const positioned = others.map((n, i) => {
-    const angle = (i / others.length) * Math.PI * 2;
-    return {
-      ...n,
-      x: center.x + Math.cos(angle) * radius,
-      y: center.y + Math.sin(angle) * radius
-    };
-  });
-
-  function line(x1,y1,x2,y2,color="#999") {
-    const l = document.createElementNS("http://www.w3.org/2000/svg","line");
-    l.setAttribute("x1",x1);
-    l.setAttribute("y1",y1);
-    l.setAttribute("x2",x2);
-    l.setAttribute("y2",y2);
-    l.setAttribute("stroke",color);
-    l.setAttribute("stroke-width","1.5");
-    svg.appendChild(l);
-  }
-
-  function node(x,y,label,isCenter=false,color="#1565c0") {
-    const c = document.createElementNS("http://www.w3.org/2000/svg","circle");
-    c.setAttribute("cx",x);
-    c.setAttribute("cy",y);
-    c.setAttribute("r", isCenter ? 10 : 6);
-    c.setAttribute("fill", isCenter ? "#28a745" : color);
-    svg.appendChild(c);
-
-    const t = document.createElementNS("http://www.w3.org/2000/svg","text");
-    t.setAttribute("x", x + 8);
-    t.setAttribute("y", y + 4);
-    t.style.fontSize = "11px";
-    t.textContent = label;
-    svg.appendChild(t);
-  }
-
-  // draw center
-  if (centerNode) {
-    node(center.x, center.y, centerNode.Call, true);
-  }
-
-  // draw links from center → routed nodes
-  positioned.forEach(n => {
-    if (centerNode?.Routes?.includes(n.Call)) {
-      line(center.x, center.y, n.x, n.y, "#28a745");
-    }
-  });
-
-  // draw nodes
-  positioned.forEach(n => {
-    const color = (n.Routes?.length || 0) > 1 ? "#1565c0" : "#e67e22";
-    node(n.x, n.y, n.Call, false, color);
-  });
-}
-
+// ---------------- GRAPH (FIXED) ----------------
 function buildTopology(nodes, mheard) {
   const edges = new Map();
+  const windowMs = 30 * 60 * 1000;
 
-  const windowMs = 30 * 60 * 1000; // 30 min correlation window
-
-  // Pre-index activity by time buckets
   const events = mheard.map(m => ({
     call: m.callSign,
     port: Number(m.port),
     ts: m.ts
   }));
 
-  // Build co-occurrence relationships
   for (let i = 0; i < events.length; i++) {
     for (let j = i + 1; j < events.length; j++) {
 
-      const a = events[i];
-      const b = events[j];
-
+      const a = events[i], b = events[j];
       if (Math.abs(a.ts - b.ts) > windowMs) continue;
       if (a.call === b.call) continue;
 
       const key = [a.call, b.call].sort().join("|");
 
       if (!edges.has(key)) {
-        edges.set(key, {
-          from: a.call,
-          to: b.call,
-          weight: 0,
-          rf: 0,
-          axip: 0
-        });
+        edges.set(key, { from: a.call, to: b.call, weight: 0, rf: 0, axip: 0 });
       }
 
       const e = edges.get(key);
@@ -523,54 +427,44 @@ function buildTopology(nodes, mheard) {
 
 function renderGraph(nodes, mheard) {
   const container = document.getElementById("network-graph");
+  if (!container) return;
 
   const nodeSet = new vis.DataSet();
   const edgeSet = new vis.DataSet();
 
   const topology = buildTopology(nodes, mheard);
 
-  // Add nodes
   nodes.forEach(n => {
     nodeSet.add({
       id: n.Call,
       label: n.Call,
       shape: "box",
-      color: {
-        background: "#ffffff",
-        border: "#2c3e50",
-        highlight: { background: "#e3f2fd", border: "#1565c0" }
-      },
-      font: { size: 13, color: "#2c3e50" }
+      color: { background: "#fff", border: "#2c3e50" }
     });
   });
 
-  // Add inferred edges
   topology.forEach(e => {
     const isRF = e.rf > e.axip;
 
     edgeSet.add({
       from: e.from,
       to: e.to,
-      value: Math.min(5, e.weight), // thickness cap
-      color: isRF ? "#2e7d32" : "#1565c0",
-      title: `Strength: ${e.weight} (RF:${e.rf}, AXIP:${e.axip})`
+      value: Math.min(5, e.weight),
+      color: isRF ? "#2e7d32" : "#1565c0"
     });
   });
 
-  new vis.Network(container, {
+  if (networkInstance) networkInstance.destroy();
+
+  networkInstance = new vis.Network(container, {
     nodes: nodeSet,
     edges: edgeSet
   }, {
     physics: {
       stabilization: true,
-      barnesHut: {
-        gravitationalConstant: -5000,
-        springLength: 140
-      }
+      barnesHut: { gravitationalConstant: -4000, springLength: 140 }
     },
-    interaction: {
-      hover: true
-    }
+    interaction: { hover: true }
   });
 }
 
