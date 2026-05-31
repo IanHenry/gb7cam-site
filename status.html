@@ -214,355 +214,167 @@ Loading routing node index…
 let allNodes = [];
 
 async function fetchDashboardData() {
-const wStatus = document.getElementById("w-status");
-const wLinks = document.getElementById("w-links");
-const wRf = document.getElementById("w-rf");
-const wAxip = document.getElementById("w-axip");
-const wLast = document.getElementById("w-last");
-const wBox = document.getElementById("api-status-widget");
+  const wStatus = document.getElementById("w-status");
+  const wLinks = document.getElementById("w-links");
+  const wRf = document.getElementById("w-rf");
+  const wAxip = document.getElementById("w-axip");
+  const wLast = document.getElementById("w-last");
+  const wBox = document.getElementById("api-status-widget");
 
-const feedEl = document.getElementById("activity-feed-container");
-const linksEl = document.getElementById("links-container");
-const mheardEl = document.getElementById("mheard-container");
-const nodesEl = document.getElementById("nodes-container");
+  const feedEl = document.getElementById("activity-feed-container");
+  const linksEl = document.getElementById("links-container");
+  const mheardEl = document.getElementById("mheard-container");
+  const nodesEl = document.getElementById("nodes-container");
 
-const base = "https://api.gb7cam.org.uk";
+  const base = "https://api.gb7cam.org.uk";
 
-try {
-const [linksRes, mheardRes, nodesRes] = await Promise.all([
-fetch(base + "/links"),
-fetch(base + "/mheard"),
-fetch(base + "/nodes")
-]);
+  try {
+    const [linksRes, mheardRes, nodesRes] = await Promise.all([
+      fetch(base + "/links"),
+      fetch(base + "/mheard"),
+      fetch(base + "/nodes")
+    ]);
 
-```
-if (!linksRes.ok || !mheardRes.ok || !nodesRes.ok)
-  throw new Error("API broken");
+    if (!linksRes.ok || !mheardRes.ok || !nodesRes.ok) throw new Error("API broken");
 
-const linksData = await linksRes.json();
-const mheardData = await mheardRes.json();
-const nodesData = await nodesRes.json();
+    const linksData = await linksRes.json();
+    const mheardData = await mheardRes.json();
+    const nodesData = await nodesRes.json();
 
-const activeLinksList = linksData.links || [];
-const mheardList = mheardData.mheard || [];
-allNodes = nodesData.nodes || [];
+    const activeLinksList = linksData.links || [];
+    const mheardList = mheardData.mheard || [];
+    allNodes = nodesData.nodes || [];
 
-// =====================================================
-// FILTER MHEARD TO LAST 12 HOURS
-// =====================================================
+    // 1. ACTIVITY FEED
+    let timelineEvents = [];
 
-const twelveHoursAgo = Date.now() - (12 * 60 * 60 * 1000);
-
-const recentMheard = mheardList
-  .filter(st => {
-    let rawTime = st.lastHeard;
-
-    if (
-      rawTime &&
-      !rawTime.endsWith("Z") &&
-      !rawTime.includes("+")
-    ) {
-      rawTime += "Z";
-    }
-
-    const parsed = Date.parse(rawTime);
-
-    return !isNaN(parsed) && parsed >= twelveHoursAgo;
-  })
-  .sort((a, b) => {
-    let ta = a.lastHeard;
-    let tb = b.lastHeard;
-
-    if (ta && !ta.endsWith("Z") && !ta.includes("+")) ta += "Z";
-    if (tb && !tb.endsWith("Z") && !tb.includes("+")) tb += "Z";
-
-    return Date.parse(tb) - Date.parse(ta);
-  });
-
-// =====================================================
-// ACTIVITY FEED (REAL TRAFFIC ONLY)
-// =====================================================
-
-const timelineEvents = [];
-
-recentMheard.forEach(st => {
-  let rawTime = st.lastHeard;
-
-  if (
-    rawTime &&
-    !rawTime.endsWith("Z") &&
-    !rawTime.includes("+")
-  ) {
-    rawTime += "Z";
-  }
-
-  const parsedTime = Date.parse(rawTime);
-
-  if (!isNaN(parsedTime)) {
-    const displayTime =
-      new Date(parsedTime)
-        .toISOString()
-        .substring(0, 16)
-        .replace("T", " ");
-
-    timelineEvents.push({
-      timeSort: parsedTime,
-      html:
-        '<div style="margin-bottom:4px;">🕒 ' +
-        displayTime +
-        ' UTC <span style="color:#1565c0;font-weight:bold;">Heard ' +
-        st.callSign +
-        "</span> on Port " +
-        st.port +
-        "</div>"
+    activeLinksList.forEach(link => {
+      const stateLabel = (link.state && link.state.toUpperCase() === "ESTABLISHED") ? "Link up" : "Link down";
+      const color = stateLabel === "Link up" ? "#2e7d32" : "#c62828";
+      timelineEvents.push({
+        timeSort: Date.now(),
+        html: '<div style="margin-bottom:4px;">⏱️ [Live State] <span style="color:' + color + '; font-weight:bold;">' + stateLabel + ': ' + link.farCall + '</span> (Port ' + link.port + ')</div>'
+      });
     });
-  }
-});
 
-timelineEvents.sort((a, b) => b.timeSort - a.timeSort);
+    mheardList.forEach(st => {
+      let rawTime = st.lastHeard;
+      if (rawTime && !rawTime.endsWith('Z') && !rawTime.includes('+')) rawTime += 'Z';
+      const parsedTime = Date.parse(rawTime);
+      if (!isNaN(parsedTime)) {
+        const hhmm = new Date(parsedTime).toISOString().substring(11, 16);
+        timelineEvents.push({
+          timeSort: parsedTime,
+          html: '<div style="margin-bottom:4px;">🕒 ' + hhmm + ' <span style="color:#1565c0; font-weight:bold;">Heard ' + st.callSign + '</span> on Port ' + st.port + '</div>'
+        });
+      }
+    });
 
-if (timelineEvents.length === 0) {
-  feedEl.innerHTML =
-    "<p style='color:#666;'>No packet activity within the last 12 hours.</p>";
-} else {
-  feedEl.innerHTML = timelineEvents.map(e => e.html).join("");
-}
-
-// =====================================================
-// LIVE LINKS
-// =====================================================
-
-linksEl.innerHTML = "";
-
-if (activeLinksList.length === 0) {
-  linksEl.innerHTML =
-    "<p>No active connections reported.</p>";
-} else {
-  let outLinks = [];
-
-  outLinks.push('<table class="table table-hover" style="width:100%;border-collapse:collapse;margin-top:10px;">');
-  outLinks.push('<thead><tr style="border-bottom:2px solid #ccc;text-align:left;">');
-  outLinks.push('<th style="padding:8px;">Remote Node</th>');
-  outLinks.push('<th style="padding:8px;">Local Port</th>');
-  outLinks.push('<th style="padding:8px;">Type</th>');
-  outLinks.push('<th style="padding:8px;">Status / Mode</th>');
-  outLinks.push('</tr></thead><tbody>');
-
-  activeLinksList.forEach(link => {
-
-    const state =
-      (link.state || "ACTIVE").toUpperCase();
-
-    const isUp =
-      state === "ACTIVE" ||
-      state === "ESTABLISHED" ||
-      state === "CONNECTED";
-
-    const bg = isUp ? "#d4edda" : "#f8d7da";
-    const tc = isUp ? "#155724" : "#721c24";
-
-    outLinks.push('<tr style="border-bottom:1px solid #eee;">');
-    outLinks.push('<td style="padding:8px;font-weight:bold;color:#2c3e50;">' + link.farCall + '</td>');
-    outLinks.push('<td style="padding:8px;">Port ' + link.port + '</td>');
-    outLinks.push('<td style="padding:8px;font-size:0.9em;color:#666;">' + (link.linkType || "AXUDP") + '</td>');
-    outLinks.push(
-      '<td style="padding:8px;"><span style="background-color:' +
-      bg +
-      ";color:" +
-      tc +
-      ';padding:4px 8px;border-radius:4px;font-size:0.9em;font-weight:bold;">' +
-      (link.state || "ACTIVE") +
-      "</span></td>"
-    );
-    outLinks.push("</tr>");
-  });
-
-  outLinks.push("</tbody></table>");
-
-  linksEl.innerHTML = outLinks.join("");
-}
-
-// =====================================================
-// LIVE MHEARD
-// =====================================================
-
-mheardEl.innerHTML = "";
-
-if (recentMheard.length === 0) {
-  mheardEl.innerHTML =
-    "<p>No stations heard within the last 12 hours.</p>";
-} else {
-
-  let outHeard = [];
-
-  outHeard.push('<table class="table table-hover" style="width:100%;border-collapse:collapse;margin-top:10px;">');
-  outHeard.push('<thead><tr style="border-bottom:2px solid #ccc;text-align:left;">');
-  outHeard.push('<th style="padding:8px;">Callsign</th>');
-  outHeard.push('<th style="padding:8px;">Port Connection</th>');
-  outHeard.push('<th style="padding:8px;">Packets Exchanged</th>');
-  outHeard.push('<th style="padding:8px;">Last Heard (UTC)</th>');
-  outHeard.push('</tr></thead><tbody>');
-
-  recentMheard.forEach(st => {
-
-    const pNum = Number(st.port);
-
-    const portFriendly =
-      pNum === 1
-        ? "Port 1 (RF)"
-        : pNum === 3
-        ? "Port 3 (AXIP)"
-        : "Port " + pNum;
-
-    const callColor =
-      pNum === 1
-        ? "#2e7d32"
-        : "#1565c0";
-
-    let rawTime = st.lastHeard;
-
-    if (
-      rawTime &&
-      !rawTime.endsWith("Z") &&
-      !rawTime.includes("+")
-    ) {
-      rawTime += "Z";
+    timelineEvents.sort((a, b) => b.timeSort - a.timeSort);
+    if (timelineEvents.length === 0) {
+      feedEl.innerHTML = "<p style='color:#666;'>No recent system events logged.</p>";
+    } else {
+      feedEl.innerHTML = timelineEvents.map(e => e.html).join("");
     }
 
-    const displayTime =
-      !isNaN(Date.parse(rawTime))
-        ? new Date(rawTime)
-            .toISOString()
-            .substring(0, 16)
-            .replace("T", " ") + " UTC"
-        : st.lastHeard;
-
-    outHeard.push('<tr style="border-bottom:1px solid #eee;">');
-    outHeard.push('<td style="padding:8px;font-weight:bold;color:' + callColor + ';">' + st.callSign + '</td>');
-    outHeard.push('<td style="padding:8px;font-weight:500;">' + portFriendly + '</td>');
-    outHeard.push('<td style="padding:8px;">' + Number(st.packets).toLocaleString() + '</td>');
-    outHeard.push('<td style="padding:8px;color:#555;">' + displayTime + '</td>');
-    outHeard.push("</tr>");
-  });
-
-  outHeard.push("</tbody></table>");
-
-  mheardEl.innerHTML = outHeard.join("");
-}
-
-// =====================================================
-// METRICS
-// =====================================================
-
-wLinks.innerText = activeLinksList.length;
-
-let rfCount = 0;
-let axipCount = 0;
-let latestTimestamp = 0;
-let latestCallsign = "None";
-
-recentMheard.forEach(st => {
-
-  let rawTime = st.lastHeard;
-
-  if (
-    rawTime &&
-    !rawTime.endsWith("Z") &&
-    !rawTime.includes("+")
-  ) {
-    rawTime += "Z";
-  }
-
-  const parsedTime = Date.parse(rawTime);
-
-  if (!isNaN(parsedTime)) {
-
-    if (parsedTime > latestTimestamp) {
-      latestTimestamp = parsedTime;
-      latestCallsign = st.callSign;
+    // 2. LIVE LINKS
+    linksEl.innerHTML = "";
+    if (activeLinksList.length === 0) {
+      linksEl.innerHTML = "<p>No active connections reported.</p>";
+    } else {
+      let outLinks = [];
+      outLinks.push('<table class="table table-hover" style="width:100%; border-collapse:collapse; margin-top:10px;">');
+      outLinks.push('<thead><tr style="border-bottom:2px solid #ccc; text-align:left;">');
+      outLinks.push('<th style="padding:8px;">Remote Node</th><th style="padding:8px;">Local Port</th>');
+      outLinks.push('<th style="padding:8px;">Type</th><th style="padding:8px;">Status / Mode</th></tr></thead><tbody>');
+      activeLinksList.forEach(link => {
+        const isUp = link.state && link.state.toUpperCase() === "ESTABLISHED";
+        const bg = isUp ? "#d4edda" : "#f8d7da";
+        const tc = isUp ? "#155724" : "#721c24";
+        outLinks.push('<tr style="border-bottom:1px solid #eee;">');
+        outLinks.push('<td style="padding:8px; font-weight:bold; color:#2c3e50;">' + link.farCall + '</td>');
+        outLinks.push('<td style="padding:8px;">Port ' + link.port + '</td>');
+        outLinks.push('<td style="padding:8px; font-size:0.9em; color:#666;">' + (link.linkType || "AXUDP") + '</td>');
+        outLinks.push('<td style="padding:8px;"><span style="background-color:' + bg + '; color:' + tc + '; padding:4px 8px; border-radius:4px; font-size:0.9em; font-weight:bold;">' + (link.state || "ACTIVE") + '</span></td></tr>');
+      });
+      outLinks.push('</tbody></table>');
+      linksEl.innerHTML = outLinks.join('');
     }
 
-    if (Number(st.port) === 1) rfCount++;
-    else if (Number(st.port) === 3) axipCount++;
+    // 3. LIVE MHEARD
+    mheardEl.innerHTML = "";
+    if (mheardList.length === 0) {
+      mheardEl.innerHTML = "<p>No stations logged in buffer.</p>";
+    } else {
+      let outHeard = [];
+      outHeard.push('<table class="table table-hover" style="width:100%; border-collapse:collapse; margin-top:10px;">');
+      outHeard.push('<thead><tr style="border-bottom:2px solid #ccc; text-align:left;">');
+      outHeard.push('<th style="padding:8px;">Callsign</th><th style="padding:8px;">Port Connection</th>');
+      outHeard.push('<th style="padding:8px;">Packets Exchanged</th><th style="padding:8px;">Last Heard (UTC)</th></tr></thead><tbody>');
+      mheardList.forEach(st => {
+        const pNum = Number(st.port);
+        const portFriendly = pNum === 1 ? "Port 1 (RF)" : pNum === 3 ? "Port 3 (AXIP)" : "Port " + pNum;
+        const callColor = pNum === 1 ? "#2e7d32" : "#1565c0";
+        let rawTime = st.lastHeard;
+        if (rawTime && !rawTime.endsWith('Z') && !rawTime.includes('+')) rawTime += 'Z';
+        const displayTime = !isNaN(Date.parse(rawTime)) ? new Date(rawTime).toISOString().substring(11, 16) + " UTC" : st.lastHeard;
+        outHeard.push('<tr style="border-bottom:1px solid #eee;">');
+        outHeard.push('<td style="padding:8px; font-weight:bold; color:' + callColor + ';">' + st.callSign + '</td>');
+        outHeard.push('<td style="padding:8px; font-weight:500;">' + portFriendly + '</td>');
+        outHeard.push('<td style="padding:8px;">' + Number(st.packets).toLocaleString() + '</td>');
+        outHeard.push('<td style="padding:8px; color:#555;">' + displayTime + '</td></tr>');
+      });
+      outHeard.push('</tbody></table>');
+      mheardEl.innerHTML = outHeard.join('');
+    }
+
+    // 4. METRICS
+    wLinks.innerText = activeLinksList.length;
+    let rfCount = 0, axipCount = 0, latestTimestamp = 0, latestCallsign = "None";
+    const fourHoursAgo = Date.now() - (4 * 60 * 60 * 1000);
+
+    mheardList.forEach(st => {
+      let rawTime = st.lastHeard;
+      if (rawTime && !rawTime.endsWith('Z') && !rawTime.includes('+')) rawTime += 'Z';
+      const parsedTime = Date.parse(rawTime);
+      if (!isNaN(parsedTime)) {
+        if (parsedTime > latestTimestamp) {
+          latestTimestamp = parsedTime;
+          latestCallsign = st.callSign || "Unknown";
+        }
+        if (parsedTime >= fourHoursAgo) {
+          if (Number(st.port) === 1) rfCount++;
+          else if (Number(st.port) === 3) axipCount++;
+        }
+      }
+    });
+
+    wRf.innerText = rfCount;
+    wAxip.innerText = axipCount;
+
+    if (latestTimestamp > 0) {
+      const diffMins = Math.max(0, Math.floor((Date.now() - latestTimestamp) / 60000));
+      if (diffMins < 1) wLast.innerText = latestCallsign + " - Just now";
+      else if (diffMins < 60) wLast.innerText = latestCallsign + " - " + diffMins + " mins ago";
+      else wLast.innerText = latestCallsign + " - " + Math.floor(diffMins / 60) + " hours ago";
+    } else {
+      wLast.innerText = "No recent data";
+    }
+
+    wStatus.innerText = "Operational";
+    wStatus.style.color = "#28a745";
+    wBox.style.borderLeftColor = "#28a745";
+    renderNodes(allNodes);
+
+  } catch (error) {
+    console.error("Dashboard loop error:", error);
+    wStatus.innerText = "Under Maintenance";
+    wStatus.style.color = "#dc3545";
+    wBox.style.borderLeftColor = "#dc3545";
+    wLinks.innerText = "—"; wRf.innerText = "—"; wAxip.innerText = "—"; wLast.innerText = "Offline";
+    const errHtml = "<p style='color:#721c24; background-color:#f8d7da; padding:10px; border-radius:4px;'>Server telemetry stream unreachable.</p>";
+    feedEl.innerHTML = errHtml; linksEl.innerHTML = errHtml; mheardEl.innerHTML = errHtml; nodesEl.innerHTML = errHtml;
   }
-});
-
-wRf.innerText = rfCount;
-wAxip.innerText = axipCount;
-
-if (latestTimestamp > 0) {
-  const diffMins =
-    Math.floor(
-      (Date.now() - latestTimestamp) / 60000
-    );
-
-  if (diffMins < 1)
-    wLast.innerText =
-      latestCallsign + " - Just now";
-  else if (diffMins < 60)
-    wLast.innerText =
-      latestCallsign + " - " + diffMins + " mins ago";
-  else
-    wLast.innerText =
-      latestCallsign + " - " +
-      Math.floor(diffMins / 60) +
-      " hrs ago";
-} else {
-  wLast.innerText = "No recent data";
-}
-
-wStatus.innerText = "Operational";
-wStatus.style.color = "#28a745";
-wBox.style.borderLeftColor = "#28a745";
-
-renderNodes(allNodes);
-```
-
-} catch (error) {
-console.error("Dashboard loop error:", error);
-
-```
-wStatus.innerText = "Under Maintenance";
-wStatus.style.color = "#dc3545";
-wBox.style.borderLeftColor = "#dc3545";
-
-wLinks.innerText = "—";
-wRf.innerText = "—";
-wAxip.innerText = "—";
-wLast.innerText = "Offline";
-
-const errHtml =
-  "<p style='color:#721c24;background-color:#f8d7da;padding:10px;border-radius:4px;'>Server telemetry stream unreachable.</p>";
-
-feedEl.innerHTML = errHtml;
-linksEl.innerHTML = errHtml;
-mheardEl.innerHTML = errHtml;
-nodesEl.innerHTML = errHtml;
-```
-
-}
-}
-
-} catch (error) {
-console.error("Dashboard loop error:", error);
-
-wStatus.innerText = "Under Maintenance";
-wStatus.style.color = "#dc3545";
-wBox.style.borderLeftColor = "#dc3545";
-
-wLinks.innerText = "—";
-wRf.innerText = "—";
-wAxip.innerText = "—";
-wLast.innerText = "Offline";
-
-const errHtml =
-  "<p style='color:#721c24;background-color:#f8d7da;padding:10px;border-radius:4px;'>Server telemetry stream unreachable.</p>";
-
-feedEl.innerHTML = errHtml;
-linksEl.innerHTML = errHtml;
-mheardEl.innerHTML = errHtml;
-nodesEl.innerHTML = errHtml;
-
 }
 
 function renderNodes(nodesList) {
