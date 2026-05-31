@@ -150,9 +150,9 @@ ul.task-list li input[type="checkbox"] {
 <p><img src="images/main_logo.png" class="centered-image"></p>
 <section id="current-status" class="level2">
 <h2 class="anchored" data-anchor-id="current-status">Current Status</h2>
-<div id="api-status-widget" style="background:#f8f9fa;border:1px solid #dee2e6;border-left:4px solid #28a745;padding:15px;border-radius:4px;font-family:monospace;max-width:450px;margin:20px 0;">
+<div id="api-status-widget" class="status-card">
 <div>
-<strong>Status:</strong> <span id="w-status" style="color:#28a745;font-weight:bold;">Operational</span>
+<strong>Status:</strong> <span id="w-status">Operational</span>
 </div>
 <div>
 <strong>Active Links:</strong> <span id="w-links">…</span>
@@ -171,8 +171,8 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="activity-feed" class="level2">
 <h2 class="anchored" data-anchor-id="activity-feed">Activity Feed</h2>
-<div id="activity-feed-container" style="background:#fff;border:1px solid #dee2e6;padding:15px;border-radius:4px;font-family:monospace;max-height:200px;overflow-y:auto;line-height:1.4;color:#333;">
-<p style="color:#666;font-style:italic;">
+<div id="activity-feed-container" class="panel">
+<p>
 Loading…
 </p>
 </div>
@@ -180,7 +180,7 @@ Loading…
 </section>
 <section id="live-links" class="level2">
 <h2 class="anchored" data-anchor-id="live-links">Live Links</h2>
-<div id="links-container">
+<div id="links-container" class="panel">
 <p>
 Loading…
 </p>
@@ -189,7 +189,7 @@ Loading…
 </section>
 <section id="live-mheard" class="level2">
 <h2 class="anchored" data-anchor-id="live-mheard">Live MHeard</h2>
-<div id="mheard-container">
+<div id="mheard-container" class="panel">
 <p>
 Loading…
 </p>
@@ -198,8 +198,8 @@ Loading…
 </section>
 <section id="network-routing-nodes" class="level2">
 <h2 class="anchored" data-anchor-id="network-routing-nodes">Network Routing Nodes</h2>
-<p><input id="node-search" placeholder="Search nodes..." style="width:100%;padding:10px;border:1px solid #ccc;border-radius:4px;margin-bottom:10px;"></p>
-<div id="nodes-container" style="max-height:400px;overflow-y:auto;border:1px solid #eee;padding:10px;border-radius:4px;background:#fafafa;">
+<p><input id="node-search" class="search-box" placeholder="Search nodes..."></p>
+<div id="nodes-container" class="panel nodes">
 <p>
 Loading routing node index…
 </p>
