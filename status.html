@@ -242,24 +242,51 @@ async function fetchDashboardData() {
     const nodesData = await nodesRes.json();
 
     const activeLinksList = linksData.links || [];
-    const mheardList = mheardData.mheard || [];
+    const twelveHoursAgo = Date.now() - (12 * 60 * 60 * 1000);
+
+const mheardList = (mheardData.mheard || [])
+  .map(st => {
+    let rawTime = st.lastHeard;
+
+    if (rawTime && !rawTime.endsWith('Z') && !rawTime.includes('+')) {
+      rawTime += 'Z';
+    }
+
+    const parsedTime = Date.parse(rawTime);
+
+    return {
+      ...st,
+      parsedTime
+    };
+  })
+  .filter(st =>
+    !isNaN(st.parsedTime) &&
+    st.parsedTime >= twelveHoursAgo
+  )
+  .sort((a, b) => b.parsedTime - a.parsedTime);
     allNodes = nodesData.nodes || [];
 
     // 1. ACTIVITY FEED
     let timelineEvents = [];
 
-    mheardList.forEach(st => {
-      let rawTime = st.lastHeard;
-      if (rawTime && !rawTime.endsWith('Z') && !rawTime.includes('+')) rawTime += 'Z';
-      const parsedTime = Date.parse(rawTime);
-      if (!isNaN(parsedTime)) {
-        const hhmm = new Date(rawTime).toISOString().substring(0,16).replace("T"," ") + " UTC"
-        timelineEvents.push({
-          timeSort: parsedTime,
-          html: '<div style="margin-bottom:4px;">🕒 ' + hhmm + ' <span style="color:#1565c0; font-weight:bold;">Heard ' + st.callSign + '</span> on Port ' + st.port + '</div>'
-        });
-      }
-    });
+mheardList.forEach(st => {
+  const displayTime = new Date(st.parsedTime)
+    .toISOString()
+    .substring(0, 19)
+    .replace("T", " ") + " UTC";
+
+  timelineEvents.push({
+    timeSort: st.parsedTime,
+    html:
+      '<div style="margin-bottom:4px;">🕒 ' +
+      displayTime +
+      ' <span style="color:#1565c0; font-weight:bold;">Heard ' +
+      st.callSign +
+      '</span> on Port ' +
+      st.port +
+      '</div>'
+  });
+});
 
     timelineEvents.sort((a, b) => b.timeSort - a.timeSort);
     if (timelineEvents.length === 0) {
@@ -312,7 +339,13 @@ async function fetchDashboardData() {
         const callColor = pNum === 1 ? "#2e7d32" : "#1565c0";
         let rawTime = st.lastHeard;
         if (rawTime && !rawTime.endsWith('Z') && !rawTime.includes('+')) rawTime += 'Z';
-        const displayTime = !isNaN(Date.parse(rawTime)) ? new Date(rawTime).toISOString().substring(11, 16) + " UTC" : st.lastHeard;
+        const displayTime =
+  !isNaN(st.parsedTime)
+    ? new Date(st.parsedTime)
+        .toISOString()
+        .substring(0, 19)
+        .replace("T", " ") + " UTC"
+    : st.lastHeard;
         outHeard.push('<tr style="border-bottom:1px solid #eee;">');
         outHeard.push('<td style="padding:8px; font-weight:bold; color:' + callColor + ';">' + st.callSign + '</td>');
         outHeard.push('<td style="padding:8px; font-weight:500;">' + portFriendly + '</td>');
