@@ -203,18 +203,14 @@ Loading…
 <section id="network-routing-nodes" class="level2">
 <h2 class="anchored" data-anchor-id="network-routing-nodes">Network Routing Nodes</h2>
 <p><input id="node-search" placeholder="Search nodes..." style="width:100%;padding:10px;border:1px solid #ccc;border-radius:4px;margin-bottom:10px;"></p>
-<hr>
-</section>
-<section id="network-topology-map" class="level2">
-<h2 class="anchored" data-anchor-id="network-topology-map">Network Topology Map</h2>
-<div id="network-graph" style="height:500px;border:1px solid #e5e7eb;border-radius:6px;background:#fafafa;">
-
+<div id="nodes-container" style="max-height:400px;overflow-y:auto;border:1px solid #eee;padding:10px;border-radius:4px;background:#fafafa;">
+<p>
+Loading routing node index…
+</p>
 </div>
-<script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
 <script>
 let allNodes = [];
 let mheardMode = "ALL";
-let networkInstance = null;
 
 function parseTime(st) {
   let t = st.lastHeard;
@@ -351,17 +347,9 @@ async function fetchDashboardData() {
   document.getElementById("w-status").innerText = "Operational";
 
   renderNodes(allNodes);
-
-  // ✅ FIX: ensure vis container is ready before rendering
-  setTimeout(() => {
-    const el = document.getElementById("network-graph");
-    if (!el) return;
-
-    renderGraph(allNodes, mheard);
-  }, 50);
 }
 
-// ---------------- NODES ----------------
+// ---------------- NODES (RESTORED GRID STYLE) ----------------
 function renderNodes(list) {
   const el = document.getElementById("nodes-container");
 
@@ -388,6 +376,7 @@ function renderNodes(list) {
             ${n.Call}
             ${n.Alias ? `<span style="color:#e67e22;"> :${n.Alias}</span>` : ""}
           </div>
+
           <div style="font-size:0.85em;color:#7f8c8d;">
             🗺️ Routes: <strong>${n.Routes?.length || 0}</strong>
           </div>
@@ -395,86 +384,6 @@ function renderNodes(list) {
       `).join("")}
     </div>
   `;
-}
-
-// ---------------- GRAPH ----------------
-function buildTopology(nodes, mheard) {
-  const edges = new Map();
-  const windowMs = 30 * 60 * 1000;
-
-  const events = mheard.map(m => ({
-    call: m.callSign,
-    port: Number(m.port),
-    ts: m.ts
-  }));
-
-  for (let i = 0; i < events.length; i++) {
-    for (let j = i + 1; j < events.length; j++) {
-      const a = events[i], b = events[j];
-
-      if (Math.abs(a.ts - b.ts) > windowMs) continue;
-      if (a.call === b.call) continue;
-
-      const key = [a.call, b.call].sort().join("|");
-
-      if (!edges.has(key)) {
-        edges.set(key, { from: a.call, to: b.call, weight: 0, rf: 0, axip: 0 });
-      }
-
-      const e = edges.get(key);
-      e.weight++;
-
-      if (a.port === 1 || b.port === 1) e.rf++;
-      if (a.port === 3 || b.port === 3) e.axip++;
-    }
-  }
-
-  return Array.from(edges.values());
-}
-
-function renderGraph(nodes, mheard) {
-  const container = document.getElementById("network-graph");
-  if (!container) return;
-
-  container.innerHTML = ""; // ✅ critical fix
-
-  const nodeSet = new vis.DataSet();
-  const edgeSet = new vis.DataSet();
-
-  const topology = buildTopology(nodes, mheard);
-
-  nodes.forEach(n => {
-    nodeSet.add({
-      id: n.Call,
-      label: n.Call,
-      shape: "box",
-      color: { background: "#fff", border: "#2c3e50" }
-    });
-  });
-
-  topology.forEach(e => {
-    const isRF = e.rf > e.axip;
-
-    edgeSet.add({
-      from: e.from,
-      to: e.to,
-      value: Math.min(5, e.weight),
-      color: isRF ? "#2e7d32" : "#1565c0"
-    });
-  });
-
-  if (networkInstance) networkInstance.destroy();
-
-  networkInstance = new vis.Network(container, {
-    nodes: nodeSet,
-    edges: edgeSet
-  }, {
-    physics: {
-      stabilization: true,
-      barnesHut: { gravitationalConstant: -4000, springLength: 140 }
-    },
-    interaction: { hover: true }
-  });
 }
 
 // ---------------- EVENTS ----------------
