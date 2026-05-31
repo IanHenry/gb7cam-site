@@ -149,7 +149,7 @@ async function fetchNodeData() {
 
   } catch (error) {
     console.error("Telemetry fetch failed:", error);
-    statusEl.innerHTML = "⚠️ <strong>MAINTENANCE / OFFLINE</strong> (Unable to connect to home server)";
+    statusEl.innerHTML = "⚠️ <strong>MAINTENANCE / OFFLINE</strong> (Unable to connect to server)";
     
     const errorBanner = "<p style='color: #721c24; background-color: #f8d7da; padding: 10px; border-radius: 4px;'>Telemetry server is currently unreachable. The node may be undergoing maintenance.</p>";
     linksEl.innerHTML = errorBanner;

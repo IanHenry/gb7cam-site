@@ -12,12 +12,8 @@ website:
     left:
       - text: Home
         href: index.qmd
-      - text: Node
-        href: node.qmd
-      - text: BBS
-        href: bbs.qmd
-      - text: Mail
-        href: mail.qmd
+      - text: Services
+        href: services.qmd
       - text: Status
         href: status.qmd
       - text: Tech

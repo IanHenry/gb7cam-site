@@ -133,7 +133,7 @@ async function fetchNodeSummary() {
 
   } catch (error) {
     console.error("Telemetry summary fetch failed:", error);
-    statusEl.innerHTML = "🔴 <strong>NOT OPERATIONAL</strong> (Server unreachable)";
+	statusEl.innerHTML = "⚠️ <strong>MAINTENANCE / OFFLINE</strong> (Unable to connect to server)";
   }
 }
 
