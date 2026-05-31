@@ -17,7 +17,7 @@ title: "System Status"
 ---
 
 ## Activity Feed
-<div id="activity-feed-container" class="panel">
+<div id="activity-feed-container" class="panel panel-scroll">
   <p>Loading...</p>
 </div>
 
@@ -41,7 +41,7 @@ title: "System Status"
 
 <input id="node-search" class="search-box" placeholder="Search nodes...">
 
-<div id="nodes-container" class="panel nodes">
+<div id="nodes-container" class="panel panel-scroll">
   <p>Loading routing node index...</p>
 </div>
 
