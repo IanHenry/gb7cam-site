@@ -271,7 +271,7 @@ async function fetchDashboardData() {
   ---------------------------- */
   document.getElementById("activity-feed-container").innerHTML =
     mheardAll.length === 0
-      ? "<p class='text-muted'>No recent activity</p>"
+     ? `<p class="text-muted">No recent activity</p>`
       : mheardAll.map(st => {
           const port = Number(st.port);
           return `
@@ -284,13 +284,13 @@ async function fetchDashboardData() {
             </div>`;
         }).join("");
 
-  /* ----------------------------
-     LINKS
-  ---------------------------- */
-  document.getElementById("links-container").innerHTML =
-    links.length === 0
-      ? "<p>No active links</p>"
-      : `
+/* ----------------------------
+   LINKS
+---------------------------- */
+document.getElementById("links-container").innerHTML =
+  links.length === 0
+    ? "<p>No active links</p>"
+    : `
 <table class="table-dashboard">
   <thead>
     <tr>
@@ -301,28 +301,30 @@ async function fetchDashboardData() {
     </tr>
   </thead>
   <tbody>
-        ${links.map(l => {
-          const up = ["ACTIVE","ESTABLISHED","CONNECTED"]
-            .includes((l.state||"").toUpperCase());
+    ${links.map(l => {
+      const up = ["ACTIVE","ESTABLISHED","CONNECTED"]
+        .includes((l.state||"").toUpperCase());
 
-          return `
-            <tr>
-              <td>${l.farCall}</td>
-              <td>${l.port}</td>
-              <td>${l.linkType || "AXUDP"}</td>
-              <td>
-                <span class="status-pill ${up ? "status-pill--good" : "status-pill--bad"}">
-                  ${l.state || "ACTIVE"}
-                </span>
-              </td>
-            </tr>`;
-        }).join("")}
-      </tbody>
-      </table>`;
+      const portClass = Number(l.port) === RF_PORT ? "port--rf" : "port--axip";
 
-  /* ----------------------------
-     MHEARD (UNIFIED)
-  ---------------------------- */
+      return `
+        <tr>
+          <td>${l.farCall}</td>
+          <td class="${portClass}">${l.port}</td>
+          <td>${l.linkType || "AXUDP"}</td>
+          <td>
+            <span class="status-pill ${up ? "status-pill--good" : "status-pill--bad"}">
+              ${l.state || "ACTIVE"}
+            </span>
+          </td>
+        </tr>`;
+    }).join("")}
+  </tbody>
+</table>`;
+
+/* ----------------------------
+   MHEARD (UNIFIED)
+---------------------------- */
 document.getElementById("mheard-container").innerHTML =
   mheardAll.length === 0
     ? "<p>No stations</p>"
@@ -338,10 +340,12 @@ document.getElementById("mheard-container").innerHTML =
   </thead>
   <tbody>
     ${mheardAll.map(st => {
+      const portClass = Number(st.port) === RF_PORT ? "port--rf" : "port--axip";
+
       return `
         <tr>
           <td>${st.callSign}</td>
-          <td>${st.port}</td>
+          <td class="${portClass}">${st.port}</td>
           <td>${Number(st.packets||0).toLocaleString()}</td>
           <td>${formatUTC(st.ts)}</td>
         </tr>`;
