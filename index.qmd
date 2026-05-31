@@ -6,9 +6,15 @@ title: "GB7CAM Packet System"
 
 ## AX.25 Packet Node GB7CAM
 
-Keeper: Ian Henry [(G0LFT)](https://g0lft.org)
+GB7CAM is a 2m AX.25 packet radio node serving the Cambridge area.  The station procides node, mailbox and chat services using LINBPQ and is connected to the wider packet radio network via RF and IP links.
 
-**Status: Operational**
+
+## Current Status
+
+::: {.callout-note}
+## Real-Time Node Telemetry
+<div id="api-status">🔄 Connecting to GB7CAM API...</div>
+:::
 
 ---
 
@@ -18,16 +24,81 @@ Keeper: Ian Henry [(G0LFT)](https://g0lft.org)
 - Frequency: 144.950 MHz (TX/RX)  
 - Mode: AX.25 Packet / Mailbox  
 - Locator: JO02AD (Harston)
+- Keeper: Ian Henry [(G0LFT)](https://g0lft.org)
 
 ---
 
-## Services
+## Quick Links
 
 - 📡 [Node Information](node.qmd)
 - 💬 [BBS Access](bbs.qmd)
 - 📬 [Mail System](mail.qmd)
 - 📊 [System Status](status.qmd)
 
----
+```{=html}
+<script>
+async function fetchNodeSummary() {
+  const statusEl = document.getElementById("api-status");
 
-This site provides access information for the GB7CAM packet radio node and associated services.
+  const protocol = "https:";
+  const subdomain = "api";
+  const domain = "gb7cam.org.uk";
+
+  try {
+    let latestTimestamp = 0;
+
+    // 1. Fetch Links Data
+    const linksResponse = await fetch(`${protocol}//${subdomain}.${domain}/links`);
+    if (!linksResponse.ok) throw new Error("Links API error");
+    const linksData = await linksResponse.json();
+    const activeLinksCount = linksData.links ? linksData.links.length : 0;
+
+    // 2. Fetch MHeard Data
+    const mheardResponse = await fetch(`${protocol}//${subdomain}.${domain}/mheard`);
+    if (!mheardResponse.ok) throw new Error("MHeard API error");
+    const mheardData = await mheardResponse.json();
+
+    // 3. Filter stations and extract latest timestamp
+    let recentStationsCount = 0;
+    if (mheardData.mheard) {
+      const fourHoursAgo = Date.now() - (4 * 60 * 60 * 1000);
+      
+      mheardData.mheard.forEach(station => {
+        const lastHeardTime = Date.parse(station.lastHeard);
+        
+        if (!isNaN(lastHeardTime)) {
+          if (lastHeardTime > latestTimestamp) {
+            latestTimestamp = lastHeardTime;
+          }
+          if (lastHeardTime >= fourHoursAgo) {
+            recentStationsCount++;
+          }
+        }
+      });
+    }
+
+    // Format the time text
+    let activityText = "No recent activity";
+    if (latestTimestamp > 0) {
+      const latestDate = new Date(latestTimestamp);
+      activityText = `Last activity at ${latestDate.toISOString().substr(11, 5)} UTC`;
+    }
+
+    // Direct injection into your layout
+    statusEl.innerHTML = `
+      🟢 <strong>OPERATIONAL</strong> — 
+      ${activeLinksCount} active links, 
+      ${recentStationsCount} stations heard in the last 4 hours 
+      (<small>${activityText}</small>)
+    `;
+
+  } catch (error) {
+    console.error("Telemetry summary fetch failed:", error);
+    statusEl.innerHTML = "⚠️ <strong>MAINTENANCE / OFFLINE</strong> (Unable to connect to home server)";
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  fetchNodeSummary();
+});
+</script>
