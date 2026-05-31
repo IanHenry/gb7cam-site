@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>status</title>
+<title>System Status</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -139,11 +139,71 @@ ul.task-list li input[type="checkbox"] {
 <!-- margin-sidebar -->
     
 <!-- main -->
-<main class="content column-page" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"></header>
+<main class="content column-page" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><h1 class="title display-7">System Status</h1></header>
+
+<header id="title-block-header">
 
 
+</header>
 
 
+<p><img src="images/main_logo.png" class="centered-image"></p>
+<section id="current-status" class="level2">
+<h2 class="anchored" data-anchor-id="current-status">Current Status</h2>
+<div id="api-status-widget" class="status-card metric-grid">
+<div class="metric">
+<strong>Status:</strong> <span id="w-status">Operational</span>
+</div>
+<div class="metric">
+<strong>Active Links:</strong> <span id="w-links">…</span>
+</div>
+<div class="metric">
+<strong>RF Stations Heard (&lt; 24 hrs):</strong> <span id="w-rf">…</span>
+</div>
+<div class="metric">
+<strong>AXIP Stations Heard (&lt; 24 hrs):</strong> <span id="w-axip">…</span>
+</div>
+<div class="metric">
+<strong>Last Packet:</strong> <span id="w-last">…</span>
+</div>
+</div>
+<hr>
+</section>
+<section id="activity-feed" class="level2">
+<h2 class="anchored" data-anchor-id="activity-feed">Activity Feed</h2>
+<div id="activity-feed-container" class="panel">
+<p>
+Loading…
+</p>
+</div>
+<hr>
+</section>
+<section id="live-links" class="level2">
+<h2 class="anchored" data-anchor-id="live-links">Live Links</h2>
+<div id="links-container" class="panel">
+<p>
+Loading…
+</p>
+</div>
+<hr>
+</section>
+<section id="live-mheard" class="level2">
+<h2 class="anchored" data-anchor-id="live-mheard">Live MHeard</h2>
+<div id="mheard-container" class="panel">
+<p>
+Loading…
+</p>
+</div>
+<hr>
+</section>
+<section id="network-routing-nodes" class="level2">
+<h2 class="anchored" data-anchor-id="network-routing-nodes">Network Routing Nodes</h2>
+<p><input id="node-search" class="search-box" placeholder="Search nodes..."></p>
+<div id="nodes-container" class="panel nodes">
+<p>
+Loading routing node index…
+</p>
+</div>
 <script>
 let allNodes = [];
 
@@ -395,6 +455,7 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 
 
+</section>
 
 </main> <!-- /main -->
 <!-- Cookie / Privacy Banner -->
