@@ -46,7 +46,7 @@ Typing HELP will also then give you a full command list.
 - Only licensed amateur radio operators are allowed to setup and account.
 - If you have an account you can access your mail via the web using https://node.gb7cam.org.uk/Webmail
 - If you would like mail or bulletins forwarded to your node just let me know.
-- The HA of GB7CAM is GB7CAM.#22.GBR.EURO and you can set this to be your home BBS if you wish.
+- The HA of GB7CAM is ```GB7CAM.#22.GBR.EURO``` and you can set this to be your home BBS if you wish.
 
 ---
 
