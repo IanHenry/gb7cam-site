@@ -171,6 +171,26 @@ ul.task-list li input[type="checkbox"] {
 </div>
 <p>More detailed status information can be found on the <a href="./status.html">status page</a></p>
 </section>
+<section id="new-test-widget" class="level2">
+<h2 class="anchored" data-anchor-id="new-test-widget">New Test Widget</h2>
+<div id="api-status-widget" style="background: #f8f9fa; border: 1px solid #dee2e6; border-left: 4px solid #28a745; padding: 15px; border-radius: 4px; font-family: monospace; line-height: 1.5; max-width: 450px; margin: 20px 0;">
+<div>
+<strong>Status:</strong> <span id="w-status" style="color: #28a745; font-weight: bold;">Operational</span>
+</div>
+<div>
+<strong>Active Links:</strong> <span id="w-links">…</span>
+</div>
+<div>
+<strong>Stations Heard via RF (last 4 hours):</strong> <span id="w-rf">…</span>
+</div>
+<div>
+<strong>Stations Heard via AXIP (last 4 hours):</strong> <span id="w-axip">…</span>
+</div>
+<div>
+<strong>Last Packet:</strong> <span id="w-last">…</span>
+</div>
+</div>
+</section>
 <section id="station-overview" class="level2">
 <h2 class="anchored" data-anchor-id="station-overview">Station Overview</h2>
 <section id="radio-parameters" class="level3">
@@ -231,93 +251,112 @@ ul.task-list li input[type="checkbox"] {
 <li>Keeper: <a href="https://g0lft.org">G0LFT</a> (Ian Henry)</li>
 </ul>
 <script>
-async function fetchNodeSummary() {
-  const statusEl = document.getElementById("api-status");
+async function fetchWidgetTelemetry() {
+  // DOM targets
+  const sEl = document.getElementById("w-status");
+  const lEl = document.getElementById("w-links");
+  const rEl = document.getElementById("w-rf");
+  const aEl = document.getElementById("w-axip");
+  const tEl = document.getElementById("w-last");
+  const box = document.getElementById("api-status-widget");
 
-  const protocol = "https:";
-  const subdomain = "api";
-  const domain = "gb7cam.org.uk";
+  const base = "https://gb7cam.org.uk";
 
   try {
+    // Concurrent data download
+    const [linksRes, mheardRes] = await Promise.all([
+      fetch(`${base}/links`),
+      fetch(`${base}/mheard`)
+    ]);
+
+    // If either endpoint fails, explicitly throw an error to trip the catch block
+    if (!linksRes.ok || !mheardRes.ok) throw new Error("API Connection Error");
+
+    const linksData = await linksRes.json();
+    const mheardData = await mheardRes.json();
+
+    // Set Active Links
+    lEl.innerText = linksData.links ? linksData.links.length : 0;
+
+    // Trackers
+    let rfCount = 0;
+    let axipCount = 0;
     let latestTimestamp = 0;
-
-    // 1. Fetch Links Data
-    const linksResponse = await fetch(`${protocol}//${subdomain}.${domain}/links`);
-    if (!linksResponse.ok) throw new Error("Links API error");
-    const linksData = await linksResponse.json();
-    const activeLinksCount = linksData.links ? linksData.links.length : 0;
-
-    // 2. Fetch MHeard Data
-    const mheardResponse = await fetch(`${protocol}//${subdomain}.${domain}/mheard`);
-    if (!mheardResponse.ok) throw new Error("MHeard API error");
-    const mheardData = await mheardResponse.json();
-
-    // 3. Filter stations by 4-hour window and separate by Port type
-    let rfCount = 0;   // Port 1
-    let axipCount = 0; // Port 3
-    let otherCount = 0; 
+    let latestCallsign = "None";
+    const fourHoursAgo = Date.now() - (4 * 60 * 60 * 1000);
 
     if (mheardData.mheard) {
-      const fourHoursAgo = Date.now() - (4 * 60 * 60 * 1000);
-      
       mheardData.mheard.forEach(station => {
-        // Fix unlabeled timezone strings by appending 'Z'
-        let timeStringRaw = station.lastHeard;
-        if (timeStringRaw && !timeStringRaw.endsWith('Z') && !timeStringRaw.includes('+')) {
-          timeStringRaw += 'Z';
+        // Enforce safe UTC syntax mapping
+        let rawTime = station.lastHeard;
+        if (rawTime && !rawTime.endsWith('Z') && !rawTime.includes('+')) {
+          rawTime += 'Z';
         }
+        const parsedTime = Date.parse(rawTime);
 
-        const lastHeardTime = Date.parse(timeStringRaw);
-        
-        if (!isNaN(lastHeardTime)) {
-          if (lastHeardTime > latestTimestamp) {
-            latestTimestamp = lastHeardTime;
+        if (!isNaN(parsedTime)) {
+          // Track the absolute newest transmission globally
+          if (parsedTime > latestTimestamp) {
+            latestTimestamp = parsedTime;
+            latestCallsign = station.callSign || "Unknown";
           }
-          
-          // Check 4-hour validity window
-          if (lastHeardTime >= fourHoursAgo) {
-            const portNum = Number(station.port);
-            if (portNum === 1) {
-              rfCount++;
-            } else if (portNum === 3) {
-              axipCount++;
-            } else {
-              otherCount++;
-            }
+
+          // 4-Hour active user window buckets
+          if (parsedTime >= fourHoursAgo) {
+            const port = Number(station.port);
+            if (port === 1) rfCount++;
+            else if (port === 3) axipCount++;
           }
         }
       });
     }
 
-    // Format the time text securely
-    let activityText = "No recent activity";
+    // Output Heard Statistics
+    rEl.innerText = rfCount;
+    aEl.innerText = axipCount;
+
+    // Compute relative dynamic string for the last packet window
     if (latestTimestamp > 0) {
-      const latestDate = new Date(latestTimestamp);
-      activityText = `Last activity at ${latestDate.toISOString().substring(11, 16)} UTC`;
+      const diffMs = Date.now() - latestTimestamp;
+      const diffMins = Math.max(0, Math.floor(diffMs / (1000 * 60)));
+      
+      if (diffMins < 1) {
+        tEl.innerText = `${latestCallsign} - Just now`;
+      } else if (diffMins < 60) {
+        tEl.innerText = `${latestCallsign} - ${diffMins} min${diffMins > 1 ? 's' : ''} ago`;
+      } else {
+        const diffHours = Math.floor(diffMins / 60);
+        tEl.innerText = `${latestCallsign} - ${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+      }
+    } else {
+      tEl.innerText = "No recent data";
     }
 
-    // Compile separated ports summary text
-    let stationsSummary = `${rfCount} via RF, ${axipCount} via AXIP`;
-    if (otherCount > 0) {
-      stationsSummary += `, ${otherCount} other`;
-    }
-
-    // Direct injection into your layout
-    statusEl.innerHTML = `
-      🟢 <strong>OPERATIONAL</strong> — 
-      ${activeLinksCount} active links | 
-      Stations heard in last 4 hours: ${stationsSummary} 
-      (<small>${activityText}</small>)
-    `;
+    // Enforce live success color layout styles
+    sEl.innerText = "Operational";
+    sEl.style.color = "#28a745";
+    box.style.borderLeftColor = "#28a745";
 
   } catch (error) {
-    console.error("Telemetry summary fetch failed:", error);
-    statusEl.innerHTML = "⚠️ <strong>MAINTENANCE / OFFLINE</strong> (Unable to connect to server)";
+    console.error("Widget engine failure:", error);
+    
+    // Graceful error state adjustments - Switches layout to "Under Maintenance"
+    sEl.innerText = "Under Maintenance";
+    sEl.style.color = "#dc3545";
+    box.style.borderLeftColor = "#dc3545";
+    
+    // Clear the numbers out so old or invalid data is not shown when offline
+    lEl.innerText = "—";
+    rEl.innerText = "—";
+    aEl.innerText = "—";
+    tEl.innerText = "Offline";
   }
 }
 
+// Initialize on page assembly completed and set up the 60-second loop
 document.addEventListener("DOMContentLoaded", () => {
-  fetchNodeSummary();
+  fetchWidgetTelemetry(); // Run immediately on load
+  setInterval(fetchWidgetTelemetry, 60000); // Run every 60,000 milliseconds (60 seconds)
 });
 </script>
 
