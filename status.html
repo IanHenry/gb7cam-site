@@ -208,6 +208,14 @@ Loading…
 Loading…
 </p>
 </div>
+<hr>
+</section>
+<section id="node-connection-graph" class="level2">
+<h2 class="anchored" data-anchor-id="node-connection-graph">Node Connection Graph</h2>
+<div id="network-graph" style="height:450px;border:1px solid #e5e7eb;border-radius:6px;background:#fafafa;">
+
+</div>
+<script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
 <script>
 let allNodes = [];
 let mheardMode = "ALL";
@@ -345,6 +353,7 @@ async function fetchDashboardData() {
   document.getElementById("w-status").innerText = "Operational";
 
   renderNodes(allNodes);
+  renderGraph(allNodes);
 }
 
 // ---------------- NODES ----------------
@@ -386,6 +395,60 @@ function renderNodes(list) {
       `).join("")}
     </div>
   `;
+}
+
+function renderGraph(nodes) {
+  const container = document.getElementById("network-graph");
+
+  const nodeSet = new vis.DataSet();
+  const edgeSet = new vis.DataSet();
+
+  // Build nodes
+  nodes.forEach(n => {
+    nodeSet.add({
+      id: n.Call,
+      label: n.Call,
+      shape: "box",
+      color: {
+        background: "#ffffff",
+        border: "#2c3e50",
+        highlight: { background: "#e8f4ff", border: "#1565c0" }
+      },
+      font: {
+        color: "#2c3e50",
+        size: 13
+      }
+    });
+  });
+
+  // Build edges from Routes[]
+  nodes.forEach(n => {
+    (n.Routes || []).forEach(r => {
+      edgeSet.add({
+        from: n.Call,
+        to: r,
+        color: "#b0b0b0",
+        arrows: "to"
+      });
+    });
+  });
+
+  const data = { nodes: nodeSet, edges: edgeSet };
+
+  const options = {
+    physics: {
+      stabilization: true,
+      barnesHut: {
+        gravitationalConstant: -4000,
+        springLength: 120
+      }
+    },
+    interaction: {
+      hover: true
+    }
+  };
+
+  new vis.Network(container, data, options);
 }
 
 // ---------------- EVENTS ----------------
