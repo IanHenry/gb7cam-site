@@ -39,14 +39,7 @@
     "href": "index.html#current-status",
     "title": "GB7CAM Packet System",
     "section": "Current Status",
-    "text": "Current Status\n\n\n\n\n\n\nNoteReal-Time Node Telemetry\n\n\n\n\n🔄 Connecting to GB7CAM API…\n\n\n\nMore detailed status information can be found on the status page"
-  },
-  {
-    "objectID": "index.html#new-test-widget",
-    "href": "index.html#new-test-widget",
-    "title": "GB7CAM Packet System",
-    "section": "New Test Widget",
-    "text": "New Test Widget\n\n\nStatus: Operational\n\n\nActive Links: …\n\n\nStations Heard via RF (last 4 hours): …\n\n\nStations Heard via AXIP (last 4 hours): …\n\n\nLast Packet: …"
+    "text": "Current Status\n\n\nStatus: Operational\n\n\nActive Links: …\n\n\nStations Heard via RF (last 4 hours): …\n\n\nStations Heard via AXIP (last 4 hours): …\n\n\nLast Packet: …\n\n\nMore detailed status information can be found on the status page"
   },
   {
     "objectID": "index.html#station-overview",
