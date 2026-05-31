@@ -32,18 +32,6 @@ title: "System Status"
 
 ## Live MHeard
 
-<div style="margin:10px 0;">
-  <button id="btn-rf"
-    style="padding:6px 10px;background:#2e7d32;color:white;border:1px solid #ccc;border-radius:4px;cursor:pointer;">
-    RF (Port 1)
-  </button>
-
-  <button id="btn-axip"
-    style="padding:6px 10px;background:#1565c0;color:white;border:1px solid #ccc;border-radius:4px;cursor:pointer;">
-    AXIP (Port 3)
-  </button>
-</div>
-
 <div id="mheard-container"><p>Loading...</p></div>
 
 <hr>
@@ -61,17 +49,24 @@ title: "System Status"
 
 <script>
 let allNodes = [];
-let mheardMode = "ALL";
 
+/* ----------------------------
+   CONSTANTS
+---------------------------- */
+const RF_PORT = 1;
+const AXIP_PORT = 3;
+
+/* ----------------------------
+   TIME PARSER
+---------------------------- */
 function parseTime(st) {
   if (!st?.lastHeard) return NaN;
 
   const [datePart, timePart] = st.lastHeard.split(" ");
-
   if (!datePart || !timePart) return NaN;
 
   const [y, m, d] = datePart.split("-").map(Number);
-  const [hh, mm, ss] = timePart.split(":").map(Number);
+  const [hh, mm, ss = 0] = timePart.split(":").map(Number);
 
   return new Date(Date.UTC(y, m - 1, d, hh, mm, ss)).getTime();
 }
@@ -83,6 +78,9 @@ function formatUTC(ts) {
     .replace("T", " ") + " UTC";
 }
 
+/* ----------------------------
+   FETCH DATA
+---------------------------- */
 async function fetchDashboardData() {
   const base = "https://api.gb7cam.org.uk";
 
@@ -101,32 +99,34 @@ async function fetchDashboardData() {
 
   const mheardAll = rawMheard
     .map(st => ({ ...st, ts: parseTime(st) }))
-    .filter(st => st.ts && !isNaN(st.ts))
+    .filter(st => !isNaN(st.ts))
     .sort((a, b) => b.ts - a.ts);
 
   /* =========================
-     TIME WINDOWS (FIXED LOGIC)
-     ========================= */
+     TIME WINDOWS
+  ========================= */
 
-  const rfWindow = Date.now() - (7 * 24 * 60 * 60 * 1000);     // 7 days
-  const axipWindow = Date.now() - (12 * 60 * 60 * 1000);       // 12 hours
-
-  const mheardRF = mheardAll.filter(st =>
-    st.ts >= rfWindow && Number(st.port) === 1
-  );
-
-  const mheardAXIP = mheardAll.filter(st =>
-    st.ts >= axipWindow && Number(st.port) === 3
-  );
-
-  // ---------------- FEED ----------------
+  const rfWindow = Date.now() - (7 * 24 * 60 * 60 * 1000);
+  const axipWindow = Date.now() - (12 * 60 * 60 * 1000);
   const activityWindow = Date.now() - (24 * 60 * 60 * 1000);
 
+  const mheardRF = mheardAll.filter(
+    st => st.ts >= rfWindow && parseInt(st.port, 10) === RF_PORT
+  );
+
+  const mheardAXIP = mheardAll.filter(
+    st => st.ts >= axipWindow && parseInt(st.port, 10) === AXIP_PORT
+  );
+
+  /* ----------------------------
+     ACTIVITY FEED
+  ---------------------------- */
   document.getElementById("activity-feed-container").innerHTML =
     mheardAll
       .filter(st => st.ts >= activityWindow)
       .map(st => {
-        const color = Number(st.port) === 1 ? "#2e7d32" : "#1565c0";
+        const port = parseInt(st.port, 10);
+        const color = port === RF_PORT ? "#2e7d32" : "#1565c0";
 
         return `
           <div style="margin-bottom:4px;">
@@ -138,7 +138,9 @@ async function fetchDashboardData() {
           </div>`;
       }).join("") || "<p style='color:#666;'>No recent activity</p>";
 
-  // ---------------- LINKS ----------------
+  /* ----------------------------
+     LINKS
+  ---------------------------- */
   document.getElementById("links-container").innerHTML =
     links.length === 0
       ? "<p>No active links</p>"
@@ -171,23 +173,21 @@ async function fetchDashboardData() {
         }).join("")}
       </table>`;
 
-  // ---------------- MHEARD ----------------
-  const filtered = mheardMode === "RF"
-    ? mheardRF
-    : mheardMode === "AXIP"
-      ? mheardAXIP
-      : mheardAll;
-
+  /* ----------------------------
+     MHEARD (UNIFIED VIEW)
+  ---------------------------- */
   document.getElementById("mheard-container").innerHTML =
-    filtered.length === 0
+    mheardAll.length === 0
       ? "<p>No stations</p>"
       : `
       <table style="width:100%;border-collapse:collapse;font-family:monospace;">
         <tr style="background:#f1f1f1;">
           <th>Call</th><th>Port</th><th>Packets</th><th>Last Heard</th>
         </tr>
-        ${filtered.map(st => {
-          const color = Number(st.port) === 1 ? "#2e7d32" : "#1565c0";
+        ${mheardAll.map(st => {
+          const port = parseInt(st.port, 10);
+          const color = port === RF_PORT ? "#2e7d32" : "#1565c0";
+
           return `
             <tr>
               <td style="color:${color};font-weight:bold;">${st.callSign}</td>
@@ -198,7 +198,9 @@ async function fetchDashboardData() {
         }).join("")}
       </table>`;
 
-  // ---------------- METRICS ----------------
+  /* ----------------------------
+     METRICS
+  ---------------------------- */
   let rf = 0, axip = 0, latest = 0, latestCall = "";
 
   mheardAll.forEach(st => {
@@ -207,8 +209,10 @@ async function fetchDashboardData() {
       latestCall = st.callSign;
     }
 
-    if (st.ts >= rfWindow && Number(st.port) === 1) rf++;
-    if (st.ts >= axipWindow && Number(st.port) === 3) axip++;
+    const port = parseInt(st.port, 10);
+
+    if (st.ts >= rfWindow && port === RF_PORT) rf++;
+    if (st.ts >= axipWindow && port === AXIP_PORT) axip++;
   });
 
   document.getElementById("w-links").innerText = links.length;
@@ -216,14 +220,18 @@ async function fetchDashboardData() {
   document.getElementById("w-axip").innerText = axip;
 
   document.getElementById("w-last").innerText =
-    latest ? `${latestCall} - ${Math.floor((Date.now()-latest)/60000)} mins ago` : "No data";
+    latest
+      ? `${latestCall} - ${Math.floor((Date.now()-latest)/60000)} mins ago`
+      : "No data";
 
   document.getElementById("w-status").innerText = "Operational";
 
   renderNodes(allNodes);
 }
 
-// ---------------- NODES ----------------
+/* ----------------------------
+   NODES
+---------------------------- */
 function renderNodes(list) {
   const el = document.getElementById("nodes-container");
 
@@ -260,20 +268,12 @@ function renderNodes(list) {
   `;
 }
 
-// ---------------- EVENTS ----------------
+/* ----------------------------
+   EVENTS
+---------------------------- */
 document.addEventListener("DOMContentLoaded", () => {
   fetchDashboardData();
   setInterval(fetchDashboardData, 60000);
-
-  document.getElementById("btn-rf").onclick = () => {
-    mheardMode = "RF";
-    fetchDashboardData();
-  };
-
-  document.getElementById("btn-axip").onclick = () => {
-    mheardMode = "AXIP";
-    fetchDashboardData();
-  };
 
   document.getElementById("node-search").addEventListener("input", e => {
     const t = e.target.value.toUpperCase();
