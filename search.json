@@ -4,21 +4,28 @@
     "href": "status.html#current-status",
     "title": "System Status",
     "section": "Current Status",
-    "text": "Current Status\n\n\n\n\n\n\nNoteReal-Time Node Telemetry\n\n\n\n\n🔄 Connecting to GB7CAM API…"
+    "text": "Current Status\n\n\n\nStatus: Operational\n\n\nActive Links: …\n\n\nStations Heard via RF (last 4 hours): …\n\n\nStations Heard via AXIP (last 4 hours): …\n\n\nLast Packet: …"
   },
   {
-    "objectID": "status.html#active-network-links",
-    "href": "status.html#active-network-links",
+    "objectID": "status.html#activity-feed",
+    "href": "status.html#activity-feed",
     "title": "System Status",
-    "section": "Active Network Links",
-    "text": "Active Network Links\n\n\nLoading active AXUDP links…"
+    "section": "Activity Feed",
+    "text": "Activity Feed\n\n\nParsing real-time event logs…"
   },
   {
-    "objectID": "status.html#recently-heard-stations-mheard",
-    "href": "status.html#recently-heard-stations-mheard",
+    "objectID": "status.html#live-links",
+    "href": "status.html#live-links",
     "title": "System Status",
-    "section": "Recently Heard Stations (MHeard)",
-    "text": "Recently Heard Stations (MHeard)\n\n\nLoading recently heard stations on Port 3…"
+    "section": "Live Links",
+    "text": "Live Links\n\n\nLoading active network link matrix…"
+  },
+  {
+    "objectID": "status.html#live-mheard",
+    "href": "status.html#live-mheard",
+    "title": "System Status",
+    "section": "Live MHeard",
+    "text": "Live MHeard\n\n\nLoading recently heard packet history…"
   },
   {
     "objectID": "status.html#network-routing-nodes",
