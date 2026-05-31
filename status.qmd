@@ -88,21 +88,12 @@ async function fetchDashboardData() {
     // 1. ACTIVITY FEED
     let timelineEvents = [];
 
-    activeLinksList.forEach(link => {
-      const stateLabel = (link.state && link.state.toUpperCase() === "ESTABLISHED") ? "Link up" : "Link down";
-      const color = stateLabel === "Link up" ? "#2e7d32" : "#c62828";
-      timelineEvents.push({
-        timeSort: Date.now(),
-        html: '<div style="margin-bottom:4px;">⏱️ [Live State] <span style="color:' + color + '; font-weight:bold;">' + stateLabel + ': ' + link.farCall + '</span> (Port ' + link.port + ')</div>'
-      });
-    });
-
     mheardList.forEach(st => {
       let rawTime = st.lastHeard;
       if (rawTime && !rawTime.endsWith('Z') && !rawTime.includes('+')) rawTime += 'Z';
       const parsedTime = Date.parse(rawTime);
       if (!isNaN(parsedTime)) {
-        const hhmm = new Date(parsedTime).toISOString().substring(11, 16);
+        const hhmm = new Date(rawTime).toISOString().substring(0,16).replace("T"," ") + " UTC"
         timelineEvents.push({
           timeSort: parsedTime,
           html: '<div style="margin-bottom:4px;">🕒 ' + hhmm + ' <span style="color:#1565c0; font-weight:bold;">Heard ' + st.callSign + '</span> on Port ' + st.port + '</div>'
@@ -128,7 +119,11 @@ async function fetchDashboardData() {
       outLinks.push('<th style="padding:8px;">Remote Node</th><th style="padding:8px;">Local Port</th>');
       outLinks.push('<th style="padding:8px;">Type</th><th style="padding:8px;">Status / Mode</th></tr></thead><tbody>');
       activeLinksList.forEach(link => {
-        const isUp = link.state && link.state.toUpperCase() === "ESTABLISHED";
+        const state = (link.state || "ACTIVE").toUpperCase();
+        const isUp =
+          state === "ACTIVE" ||
+          state === "ESTABLISHED" ||
+          state === "CONNECTED";
         const bg = isUp ? "#d4edda" : "#f8d7da";
         const tc = isUp ? "#155724" : "#721c24";
         outLinks.push('<tr style="border-bottom:1px solid #eee;">');
