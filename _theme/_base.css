@@ -246,7 +246,7 @@ div.author {
 .panel {
   border: 1px solid rgba(0, 0, 0, 0.06);
   border-radius: 8px;
-  background: white;
+  background: #fff;
   padding: 1rem;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
   transition: box-shadow 0.15s ease, transform 0.15s ease;
@@ -314,6 +314,14 @@ table tr:hover {
 .search-box {
   background: white;
   border: 1px solid #e3e8ef;
+}
+
+.status-card--good::before {
+  background: #28a745;
+}
+
+.status-card--bad::before {
+  background: #dc3545;
 }
 
 .search-box:focus {
@@ -391,6 +399,74 @@ table tr:hover {
 .status-pill--neutral {
   background: #e9ecef;
   color: #495057;
+}
+
+.dashboard-section-title {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(0, 0, 0, 0.55);
+  margin: 1.2rem 0 0.5rem;
+}
+
+.panel + .panel {
+  margin-top: 1rem;
+}
+
+.activity-item {
+  margin-bottom: 4px;
+  padding: 2px 0;
+}
+
+.nodes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.node-card {
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  padding: 10px 12px;
+  border-radius: 6px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.node-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.06);
+}
+
+.port--rf {
+  color: #2e7d32;
+  font-weight: 600;
+}
+
+.port--axip {
+  color: #1565c0;
+  font-weight: 600;
+}
+
+.metric {
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 8px;
+  padding: 10px 12px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.metric strong {
+  display: block;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(0, 0, 0, 0.55);
+  margin-bottom: 4px;
+}
+
+.text-muted {
+  color: rgba(0, 0, 0, 0.55);
 }
 
 /*# sourceMappingURL=_base.css.map */
