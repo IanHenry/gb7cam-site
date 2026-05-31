@@ -10,9 +10,10 @@ This node runs a LINBPQ and combines Node, BBS, Mail and Chat Services.
 
 ### NODE
 
-You can connect to the GB7CAM using QTersmTCP pointing to Direwolf and connected to your rig using a DigiRig or similar.  Simply select ```Connect`` and enter ``` GBRCAM```
+You can connect to the GB7CAM using QTersmTCP pointing to Direwolf and connected to your rig using a DigiRig or similar.  Simply select ```Connect``` and enter ``` GBRCAM```
 
-The following commands are available:
+Once connected, the following commands are available:
+
 ```
 BBS CHAT CONNECT BYE INFO NODES PORTS ROUTES USERS MHEARD
 ```
