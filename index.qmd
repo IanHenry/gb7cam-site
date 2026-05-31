@@ -16,14 +16,10 @@ GB7CAM is a 2m AX.25 packet radio node serving the Cambridge area.  The station 
 <div id="api-status">🔄 Connecting to GB7CAM API...</div>
 :::
 
-<hr>
-
 ## Station Overview
 
 ### Radio Parameters
 
-| Parameter | Value |
-|-----------|------|
 | Band | 2m |
 | TX Frequency | 144.9500 MHz |
 | RX Frequency | 144.9500 MHz |
@@ -118,7 +114,7 @@ async function fetchNodeSummary() {
     }
 
     // Compile separated ports summary text
-    let stationsSummary = `${rfCount} RF, ${axipCount} AXIP`;
+    let stationsSummary = `${rfCount} via RF, ${axipCount} via AXIP`;
     if (otherCount > 0) {
       stationsSummary += `, ${otherCount} other`;
     }
@@ -127,7 +123,7 @@ async function fetchNodeSummary() {
     statusEl.innerHTML = `
       🟢 <strong>OPERATIONAL</strong> — 
       ${activeLinksCount} active links | 
-      Stations heard (4h): ${stationsSummary} 
+      Stations heard in last 4 hours: ${stationsSummary} 
       (<small>${activityText}</small>)
     `;
 
