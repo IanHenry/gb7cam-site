@@ -6,7 +6,8 @@ title: "System Status"
 
 ## Current Status
 
-<div id="api-status-widget" style="background:#f8f9fa;border:1px solid #dee2e6;border-left:4px solid #28a745;padding:15px;border-radius:4px;font-family:monospace;max-width:450px;margin:20px 0;">
+<div id="api-status-widget"
+     style="background:#f8f9fa;border:1px solid #dee2e6;border-left:4px solid #28a745;padding:15px;border-radius:4px;font-family:monospace;max-width:450px;margin:20px 0;">
   <div><strong>Status:</strong> <span id="w-status" style="color:#28a745;font-weight:bold;">Operational</span></div>
   <div><strong>Active Links:</strong> <span id="w-links">...</span></div>
   <div><strong>Stations Heard via RF (last 4 hours):</strong> <span id="w-rf">...</span></div>
@@ -91,27 +92,29 @@ async function fetchDashboardData() {
   const rawMheard = (await mheardRes.json()).mheard || [];
   allNodes = (await nodesRes.json()).nodes || [];
 
-  const twelveHoursAgo = Date.now() - (12 * 60 * 60 * 1000);
-
-  const mheard = rawMheard
+  const mheardAll = rawMheard
     .map(st => ({ ...st, ts: parseTime(st) }))
-    .filter(st => !isNaN(st.ts) && st.ts >= twelveHoursAgo)
-    .sort((a,b) => b.ts - a.ts);
+    .filter(st => !isNaN(st.ts))
+    .sort((a, b) => b.ts - a.ts);
 
-  // ---------------- FEED ----------------
+  // ---------------- FEED (UPDATED ONLY) ----------------
+  const activityWindow = Date.now() - (24 * 60 * 60 * 1000);
+
   document.getElementById("activity-feed-container").innerHTML =
-    mheard.map(st => {
-      const color = Number(st.port) === 1 ? "#2e7d32" : "#1565c0";
+    mheardAll
+      .filter(st => st.ts >= activityWindow)
+      .map(st => {
+        const color = Number(st.port) === 1 ? "#2e7d32" : "#1565c0";
 
-      return `
-        <div style="margin-bottom:4px;">
-          🕒 ${formatUTC(st.ts)}
-          <span style="color:${color};font-weight:bold;">
-            Heard ${st.callSign}
-          </span>
-          on Port ${st.port}
-        </div>`;
-    }).join("") || "<p style='color:#666;'>No recent activity</p>";
+        return `
+          <div style="margin-bottom:4px;">
+            🕒 ${formatUTC(st.ts)}
+            <span style="color:${color};font-weight:bold;">
+              Heard ${st.callSign}
+            </span>
+            on Port ${st.port}
+          </div>`;
+      }).join("") || "<p style='color:#666;'>No recent activity</p>";
 
   // ---------------- LINKS ----------------
   document.getElementById("links-container").innerHTML =
@@ -176,7 +179,7 @@ async function fetchDashboardData() {
   // ---------------- METRICS ----------------
   let rf = 0, axip = 0, latest = 0, latestCall = "";
 
-  mheard.forEach(st => {
+  mheardAll.forEach(st => {
     if (st.ts > latest) {
       latest = st.ts;
       latestCall = st.callSign;
@@ -199,7 +202,7 @@ async function fetchDashboardData() {
   renderNodes(allNodes);
 }
 
-// ---------------- NODES (RESTORED GRID STYLE) ----------------
+// ---------------- NODES ----------------
 function renderNodes(list) {
   const el = document.getElementById("nodes-container");
 
