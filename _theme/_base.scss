@@ -297,9 +297,12 @@ div.author {
   transform: translateY(-2px);
   box-shadow: 0 6px 14px rgba(0,0,0,0.06);
 }
-
 .status-card {
-  position: relative;
+  --pulse-color: rgba(40, 167, 69, 0.35);
+}
+
+.status-card--bad {
+  --pulse-color: rgba(220, 53, 69, 0.35);
 }
 
 .status-card::before {
@@ -310,23 +313,19 @@ div.author {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: #28a745;
+  background: currentColor;
   animation: pulse-dot 2s infinite;
-}
-
-.status-card--bad::before {
-  background: #dc3545;
 }
 
 @keyframes pulse-dot {
   0% {
-    box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.35);
+    box-shadow: 0 0 0 0 var(--pulse-color);
   }
   70% {
-    box-shadow: 0 0 0 6px rgba(40, 167, 69, 0);
+    box-shadow: 0 0 0 6px transparent;
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+    box-shadow: 0 0 0 0 transparent;
   }
 }
 
