@@ -71,7 +71,7 @@ async function fetchWidgetTelemetry() {
   const tEl = document.getElementById("w-last");
   const box = document.getElementById("api-status-widget");
 
-  const base = "https://gb7cam.org.uk";
+  const base = "https://api.gb7cam.org.uk";
 
   try {
     // Concurrent data download
