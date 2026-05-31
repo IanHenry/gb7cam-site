@@ -6,8 +6,18 @@ title: "System Status"
 
 ## Current Status
 
-<div id="api-status-widget" class="status-card">
-  <div><strong>Status:</strong> <span id="w-status">Operational</span></div>
+<div id="api-status-widget" style="
+  background:#f8f9fa;
+  border:1px solid #dee2e6;
+  border-left:4px solid #28a745;
+  padding:15px;
+  border-radius:6px;
+  font-family:monospace;
+  max-width:450px;
+  margin:20px 0;
+  box-shadow:0 1px 2px rgba(0,0,0,0.05);
+">
+  <div><strong>Status:</strong> <span id="w-status" style="color:#28a745;font-weight:bold;">Operational</span></div>
   <div><strong>Active Links:</strong> <span id="w-links">...</span></div>
   <div><strong>Stations Heard via RF (last 24 hours):</strong> <span id="w-rf">...</span></div>
   <div><strong>Stations Heard via AXIP (last 24 hours):</strong> <span id="w-axip">...</span></div>
@@ -17,21 +27,46 @@ title: "System Status"
 ---
 
 ## Activity Feed
-<div id="activity-feed-container" class="panel panel-scroll">
-  <p>Loading...</p>
+<div id="activity-feed-container" style="
+  background:#fff;
+  border:1px solid #dee2e6;
+  padding:15px;
+  border-radius:6px;
+  font-family:monospace;
+  max-height:220px;
+  overflow-y:auto;
+  line-height:1.4;
+  color:#333;
+  box-shadow:0 1px 2px rgba(0,0,0,0.04);
+">
+  <p style="color:#666;font-style:italic;">Loading...</p>
 </div>
 
 ---
 
 ## Live Links
-<div id="links-container" class="panel">
+<div id="links-container" style="
+  background:#fff;
+  border:1px solid #dee2e6;
+  padding:15px;
+  border-radius:6px;
+  font-family:monospace;
+  box-shadow:0 1px 2px rgba(0,0,0,0.04);
+">
   <p>Loading...</p>
 </div>
 
 ---
 
 ## Live MHeard
-<div id="mheard-container" class="panel">
+<div id="mheard-container" style="
+  background:#fff;
+  border:1px solid #dee2e6;
+  padding:15px;
+  border-radius:6px;
+  font-family:monospace;
+  box-shadow:0 1px 2px rgba(0,0,0,0.04);
+">
   <p>Loading...</p>
 </div>
 
@@ -39,11 +74,246 @@ title: "System Status"
 
 ## Network Routing Nodes
 
-<input id="node-search" class="search-box" placeholder="Search nodes...">
+<input id="node-search" placeholder="Search nodes..." style="
+  width:100%;
+  padding:10px;
+  border:1px solid #ccc;
+  border-radius:6px;
+  margin-bottom:10px;
+  font-family:inherit;
+">
 
-<div id="nodes-container" class="panel panel-scroll">
+<div id="nodes-container" style="
+  max-height:400px;
+  overflow-y:auto;
+  border:1px solid #eee;
+  padding:10px;
+  border-radius:6px;
+  background:#fafafa;
+">
   <p>Loading routing node index...</p>
 </div>
+
+<script>
+let allNodes = [];
+
+const RF_PORT = 1;
+const AXIP_PORT = 3;
+const WINDOW_MS = 24 * 60 * 60 * 1000;
+
+function parseTime(st) {
+  if (!st?.lastHeard) return NaN;
+
+  const [datePart, timePart] = st.lastHeard.split(" ");
+  if (!datePart || !timePart) return NaN;
+
+  const [y, m, d] = datePart.split("-").map(Number);
+  const [hh, mm, ss = 0] = timePart.split(":").map(Number);
+
+  return Date.UTC(y, m - 1, d, hh, mm, ss);
+}
+
+function formatUTC(ts) {
+  return new Date(ts)
+    .toISOString()
+    .substring(0, 19)
+    .replace("T", " ") + " UTC";
+}
+
+function portColor(port) {
+  return port === RF_PORT ? "#2e7d32" : "#1565c0";
+}
+
+async function fetchDashboardData() {
+  const base = "https://api.gb7cam.org.uk";
+
+  const [linksRes, mheardRes, nodesRes] = await Promise.all([
+    fetch(base + "/links"),
+    fetch(base + "/mheard/all"),
+    fetch(base + "/nodes")
+  ]);
+
+  if (!linksRes.ok || !mheardRes.ok || !nodesRes.ok)
+    throw new Error("API failure");
+
+  const links = (await linksRes.json()).links || [];
+  const rawMheard = (await mheardRes.json()).mheard || [];
+  allNodes = (await nodesRes.json()).nodes || [];
+
+  const cutoff = Date.now() - WINDOW_MS;
+
+  const mheardAll = rawMheard
+    .map(st => ({ ...st, ts: parseTime(st) }))
+    .filter(st => !isNaN(st.ts) && st.ts >= cutoff)
+    .sort((a, b) => b.ts - a.ts);
+
+  /* ---------------- ACTIVITY FEED ---------------- */
+  document.getElementById("activity-feed-container").innerHTML =
+    mheardAll.length === 0
+      ? "<p style='color:#666;'>No recent activity</p>"
+      : mheardAll.map(st => {
+          const port = Number(st.port);
+
+          return `
+            <div style="margin-bottom:4px;">
+              🕒 ${formatUTC(st.ts)}
+              <span style="color:${portColor(port)};font-weight:bold;">
+                Heard ${st.callSign}
+              </span>
+              on Port ${st.port}
+            </div>`;
+        }).join("");
+
+  /* ---------------- LINKS ---------------- */
+  document.getElementById("links-container").innerHTML =
+    links.length === 0
+      ? "<p>No active links</p>"
+      : `
+      <table style="
+        width:100%;
+        border-collapse:collapse;
+        font-family:monospace;
+      ">
+        <tr style="background:#f1f1f1;">
+          <th style="padding:8px;text-align:left;">Node</th>
+          <th style="padding:8px;text-align:left;">Port</th>
+          <th style="padding:8px;text-align:left;">Type</th>
+          <th style="padding:8px;text-align:left;">Status</th>
+        </tr>
+        ${links.map(l => {
+          const up = ["ACTIVE","ESTABLISHED","CONNECTED"]
+            .includes((l.state||"").toUpperCase());
+
+          return `
+            <tr style="border-top:1px solid #eee;"
+                onmouseover="this.style.background='#f9f9f9'"
+                onmouseout="this.style.background='white'">
+
+              <td style="padding:6px;">${l.farCall}</td>
+              <td style="padding:6px;">${l.port}</td>
+              <td style="padding:6px;">${l.linkType || "AXUDP"}</td>
+              <td style="padding:6px;">
+                <span style="
+                  padding:3px 8px;
+                  border-radius:4px;
+                  font-size:12px;
+                  color:${up ? "#155724" : "#721c24"};
+                  background:${up ? "#d4edda" : "#f8d7da"};
+                  font-weight:bold;">
+                  ${l.state || "ACTIVE"}
+                </span>
+              </td>
+            </tr>`;
+        }).join("")}
+      </table>`;
+
+  /* ---------------- MHEARD ---------------- */
+  document.getElementById("mheard-container").innerHTML =
+    mheardAll.length === 0
+      ? "<p>No stations</p>"
+      : `
+      <table style="
+        width:100%;
+        border-collapse:collapse;
+        font-family:monospace;
+      ">
+        <tr style="background:#f1f1f1;">
+          <th style="padding:8px;text-align:left;">Call</th>
+          <th style="padding:8px;text-align:left;">Port</th>
+          <th style="padding:8px;text-align:left;">Packets</th>
+          <th style="padding:8px;text-align:left;">Last Heard</th>
+        </tr>
+        ${mheardAll.map(st => {
+          const port = Number(st.port);
+
+          return `
+            <tr style="border-top:1px solid #eee;">
+              <td style="padding:6px;color:${portColor(port)};font-weight:bold;">
+                ${st.callSign}
+              </td>
+              <td style="padding:6px;">${st.port}</td>
+              <td style="padding:6px;">${Number(st.packets||0).toLocaleString()}</td>
+              <td style="padding:6px;">${formatUTC(st.ts)}</td>
+            </tr>`;
+        }).join("")}
+      </table>`;
+
+  /* ---------------- METRICS ---------------- */
+  let rf = 0, axip = 0, latest = 0, latestCall = "";
+
+  for (const st of mheardAll) {
+    const port = Number(st.port);
+
+    if (st.ts > latest) {
+      latest = st.ts;
+      latestCall = st.callSign;
+    }
+
+    if (port === RF_PORT) rf++;
+    if (port === AXIP_PORT) axip++;
+  }
+
+  document.getElementById("w-links").innerText = links.length;
+  document.getElementById("w-rf").innerText = rf;
+  document.getElementById("w-axip").innerText = axip;
+
+  document.getElementById("w-last").innerText =
+    latest
+      ? `${latestCall} - ${Math.floor((Date.now()-latest)/60000)} mins ago`
+      : "No data";
+
+  document.getElementById("w-status").innerText = "Operational";
+
+  renderNodes(allNodes);
+}
+
+function renderNodes(list) {
+  const el = document.getElementById("nodes-container");
+
+  if (!list.length) {
+    el.innerHTML = "<p style='color:#666;'>No matching nodes</p>";
+    return;
+  }
+
+  el.innerHTML = `
+    <div style="
+      display:grid;
+      grid-template-columns:repeat(auto-fill, minmax(220px, 1fr));
+      gap:10px;
+    ">
+      ${list.map(n => `
+        <div style="
+          background:white;
+          border:1px solid #e2e8f0;
+          padding:10px 12px;
+          border-radius:6px;
+        ">
+          <div style="font-weight:bold;color:#2c3e50;">
+            ${n.Call}
+            ${n.Alias ? `<span style="color:#e67e22;"> :${n.Alias}</span>` : ""}
+          </div>
+          <div style="font-size:0.85em;color:#7f8c8d;">
+            🗺️ Routes: <strong>${n.Routes?.length || 0}</strong>
+          </div>
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  fetchDashboardData();
+  setInterval(fetchDashboardData, 60000);
+
+  document.getElementById("node-search").addEventListener("input", e => {
+    const t = e.target.value.toUpperCase();
+    renderNodes(allNodes.filter(n =>
+      n.Call.toUpperCase().includes(t) ||
+      (n.Alias || "").toUpperCase().includes(t)
+    ));
+  });
+});
+</script>
 
 <script>
 let allNodes = [];
