@@ -64,9 +64,16 @@ let allNodes = [];
 let mheardMode = "ALL";
 
 function parseTime(st) {
-  let t = st.lastHeard;
-  if (t && !t.endsWith("Z") && !t.includes("+")) t += "Z";
-  return Date.parse(t.replace(" ", "T"));
+  if (!st?.lastHeard) return NaN;
+
+  const [datePart, timePart] = st.lastHeard.split(" ");
+
+  if (!datePart || !timePart) return NaN;
+
+  const [y, m, d] = datePart.split("-").map(Number);
+  const [hh, mm, ss] = timePart.split(":").map(Number);
+
+  return new Date(Date.UTC(y, m - 1, d, hh, mm, ss)).getTime();
 }
 
 function formatUTC(ts) {
