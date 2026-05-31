@@ -53,9 +53,12 @@ title: "System Status"
   placeholder="Search nodes..."
   style="width:100%;padding:10px;border:1px solid #ccc;border-radius:4px;margin-bottom:10px;">
 
-<div id="nodes-container"
-     style="max-height:400px;overflow-y:auto;border:1px solid #eee;padding:10px;background:#fafafa;">
-  <p>Loading...</p>
+<hr>
+
+## Network Topology Map
+
+<div style="background:#fafafa;border:1px solid #ddd;border-radius:6px;padding:10px;">
+  <svg id="topology-svg" width="100%" height="420"></svg>
 </div>
 
 <hr>
@@ -205,6 +208,7 @@ async function fetchDashboardData() {
   document.getElementById("w-status").innerText = "Operational";
 
   renderNodes(allNodes);
+  renderTopology(allNodes);
   renderGraph(allNodes, mheard);
 }
 
@@ -247,6 +251,82 @@ function renderNodes(list) {
       `).join("")}
     </div>
   `;
+}
+
+function renderTopology(nodes) {
+  const svg = document.getElementById("topology-svg");
+  if (!svg) return;
+
+  const width = svg.clientWidth;
+  const height = 420;
+
+  svg.innerHTML = "";
+
+  const MY_NODE = "GB7CAM"; // 👈 CHANGE THIS to your node callsign
+
+  const center = { x: width / 2, y: height / 2 };
+
+  const nodeMap = {};
+  nodes.forEach(n => nodeMap[n.Call] = n);
+
+  const centerNode = nodeMap[MY_NODE];
+  const others = nodes.filter(n => n.Call !== MY_NODE);
+
+  const radius = 160;
+
+  const positioned = others.map((n, i) => {
+    const angle = (i / others.length) * Math.PI * 2;
+    return {
+      ...n,
+      x: center.x + Math.cos(angle) * radius,
+      y: center.y + Math.sin(angle) * radius
+    };
+  });
+
+  function line(x1,y1,x2,y2,color="#999") {
+    const l = document.createElementNS("http://www.w3.org/2000/svg","line");
+    l.setAttribute("x1",x1);
+    l.setAttribute("y1",y1);
+    l.setAttribute("x2",x2);
+    l.setAttribute("y2",y2);
+    l.setAttribute("stroke",color);
+    l.setAttribute("stroke-width","1.5");
+    svg.appendChild(l);
+  }
+
+  function node(x,y,label,isCenter=false,color="#1565c0") {
+    const c = document.createElementNS("http://www.w3.org/2000/svg","circle");
+    c.setAttribute("cx",x);
+    c.setAttribute("cy",y);
+    c.setAttribute("r", isCenter ? 10 : 6);
+    c.setAttribute("fill", isCenter ? "#28a745" : color);
+    svg.appendChild(c);
+
+    const t = document.createElementNS("http://www.w3.org/2000/svg","text");
+    t.setAttribute("x", x + 8);
+    t.setAttribute("y", y + 4);
+    t.style.fontSize = "11px";
+    t.textContent = label;
+    svg.appendChild(t);
+  }
+
+  // draw center
+  if (centerNode) {
+    node(center.x, center.y, centerNode.Call, true);
+  }
+
+  // draw links from center → routed nodes
+  positioned.forEach(n => {
+    if (centerNode?.Routes?.includes(n.Call)) {
+      line(center.x, center.y, n.x, n.y, "#28a745");
+    }
+  });
+
+  // draw nodes
+  positioned.forEach(n => {
+    const color = (n.Routes?.length || 0) > 1 ? "#1565c0" : "#e67e22";
+    node(n.x, n.y, n.Call, false, color);
+  });
 }
 
 function buildTopology(nodes, mheard) {
