@@ -12,10 +12,10 @@ website:
     left:
       - text: Home
         href: index.qmd
-      - text: Services
-        href: services.qmd
       - text: Status
         href: status.qmd
+      - text: Services
+        href: services.qmd
       - text: Tech
         href: tech.qmd
       - text: Contact

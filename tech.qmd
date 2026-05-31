@@ -6,7 +6,7 @@ title: "Technical Information"
 
 ## System Overview
 
-GB7CAM is a LINBPQ-based [licesned]((https://ukrepeater.net/my_repeater.php?id=6877)) packet radio node run by Ian Henry [(G0LFT)](https://g0lft.org).
+GB7CAM is a LINBPQ-based [licensed](https://ukrepeater.net/my_repeater.php?id=6877) packet radio node run by Ian Henry [(G0LFT)](https://g0lft.org).
 
 ---
 
