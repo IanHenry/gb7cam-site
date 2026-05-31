@@ -6,43 +6,42 @@ title: "System Status"
 
 ## Current Status
 
-<div id="api-status-widget"
-     style="background:#f8f9fa;border:1px solid #dee2e6;border-left:4px solid #28a745;padding:15px;border-radius:4px;font-family:monospace;max-width:450px;margin:20px 0;">
-  <div><strong>Status:</strong> <span id="w-status" style="color:#28a745;font-weight:bold;">Operational</span></div>
+<div id="api-status-widget" class="status-card">
+  <div><strong>Status:</strong> <span id="w-status">Operational</span></div>
   <div><strong>Active Links:</strong> <span id="w-links">...</span></div>
   <div><strong>Stations Heard via RF (last 24 hours):</strong> <span id="w-rf">...</span></div>
   <div><strong>Stations Heard via AXIP (last 24 hours):</strong> <span id="w-axip">...</span></div>
   <div><strong>Last Packet:</strong> <span id="w-last">...</span></div>
 </div>
 
-<hr>
+---
 
 ## Activity Feed
-<div id="activity-feed-container"
-     style="background:#fff;border:1px solid #dee2e6;padding:15px;border-radius:4px;font-family:monospace;max-height:200px;overflow-y:auto;line-height:1.4;color:#333;">
-  <p style="color:#666;font-style:italic;">Loading...</p>
+<div id="activity-feed-container" class="panel">
+  <p>Loading...</p>
 </div>
 
-<hr>
+---
 
 ## Live Links
-<div id="links-container"><p>Loading...</p></div>
+<div id="links-container" class="panel">
+  <p>Loading...</p>
+</div>
 
-<hr>
+---
 
 ## Live MHeard
-<div id="mheard-container"><p>Loading...</p></div>
+<div id="mheard-container" class="panel">
+  <p>Loading...</p>
+</div>
 
-<hr>
+---
 
 ## Network Routing Nodes
 
-<input id="node-search"
-  placeholder="Search nodes..."
-  style="width:100%;padding:10px;border:1px solid #ccc;border-radius:4px;margin-bottom:10px;">
+<input id="node-search" class="search-box" placeholder="Search nodes...">
 
-<div id="nodes-container"
-     style="max-height:400px;overflow-y:auto;border:1px solid #eee;padding:10px;border-radius:4px;background:#fafafa;">
+<div id="nodes-container" class="panel nodes">
   <p>Loading routing node index...</p>
 </div>
 
