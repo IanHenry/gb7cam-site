@@ -9,8 +9,8 @@ title: "System Status"
 <div id="api-status-widget" class="status-card metric-grid">
   <div class="metric"><strong>Status:</strong> <span id="w-status">Operational</span></div>
   <div class="metric"><strong>Active Links:</strong> <span id="w-links">...</span></div>
-  <div class="metric"><strong>Stations Heard via RF (last 24 hours):</strong> <span id="w-rf">...</span></div>
-  <div class="metric"><strong>Stations Heard via AXIP (last 24 hours):</strong> <span id="w-axip">...</span></div>
+  <div class="metric"><strong>RF Stations Heard (last 24 hrs):</strong> <span id="w-rf">...</span></div>
+  <div class="metric"><strong>AXIP Stations Heard (last 24 hrs):</strong> <span id="w-axip">...</span></div>
   <div class="metric"><strong>Last Packet:</strong> <span id="w-last">...</span></div>
 </div>
 
