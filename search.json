@@ -39,14 +39,14 @@
     "href": "index.html#current-status",
     "title": "GB7CAM Packet System",
     "section": "Current Status",
-    "text": "Current Status\n\n\n\n\n\n\nNoteReal-Time Node Telemetry\n\n\n\n\n🔄 Connecting to GB7CAM API…"
+    "text": "Current Status\n\n\n\n\n\n\nNoteReal-Time Node Telemetry\n\n\n\n\n🔄 Connecting to GB7CAM API…\n\n\n\nMore detailed status information can be found on the (status page)[status.qmd]"
   },
   {
     "objectID": "index.html#station-overview",
     "href": "index.html#station-overview",
     "title": "GB7CAM Packet System",
     "section": "Station Overview",
-    "text": "Station Overview\n\nRadio Parameters\nBand | 2m |\nTX Frequency | 144.9500 MHz |\nRX Frequency | 144.9500 MHz |\nMode | AX.25 Packet / LINBPQ |\n\n\n\nLocation\n\nLocator: JO02AD\n\nNear: Harston\n\nLatitude: 52.14\n\nLongitude: 0.08\n\nAntenna height: 5 m AGL\n\nERP: 7 dBW\n\n\n\n\nAdministration\n\nRSGB held station details\nETCC Region: East Anglia (EA)\n\nRSGB Region: 12\n\nKeeper: G0LFT (Ian Henry)"
+    "text": "Station Overview\n\nRadio Parameters\n\n\n\nParameter\nValue\n\n\n\n\nBand\n2m\n\n\nTX Frequency\n144.9500 MHz\n\n\nRX Frequency\n144.9500 MHz\n\n\nMode\nAX.25 Packet / LINBPQ\n\n\n\n\n\n\nLocation\n\nLocator: JO02AD\n\nNear: Harston\n\nLatitude: 52.14\n\nLongitude: 0.08\n\nAntenna height: 5 m AGL\n\nERP: 7 dBW\n\n\n\n\nAdministration\n\nRSGB held station details\nETCC Region: East Anglia (EA)\n\nRSGB Region: 12\n\nKeeper: G0LFT (Ian Henry)"
   },
   {
     "objectID": "node.html#gb7cam-ax.25-node",
