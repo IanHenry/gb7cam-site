@@ -203,7 +203,14 @@ async function fetchDashboardData() {
   document.getElementById("w-status").innerText = "Operational";
 
   renderNodes(allNodes);
-  renderGraph(allNodes, mheard);
+
+  // ✅ FIX: ensure vis container is ready before rendering
+  setTimeout(() => {
+    const el = document.getElementById("network-graph");
+    if (!el) return;
+
+    renderGraph(allNodes, mheard);
+  }, 50);
 }
 
 // ---------------- NODES ----------------
@@ -242,7 +249,7 @@ function renderNodes(list) {
   `;
 }
 
-// ---------------- GRAPH (FIXED) ----------------
+// ---------------- GRAPH ----------------
 function buildTopology(nodes, mheard) {
   const edges = new Map();
   const windowMs = 30 * 60 * 1000;
@@ -255,8 +262,8 @@ function buildTopology(nodes, mheard) {
 
   for (let i = 0; i < events.length; i++) {
     for (let j = i + 1; j < events.length; j++) {
-
       const a = events[i], b = events[j];
+
       if (Math.abs(a.ts - b.ts) > windowMs) continue;
       if (a.call === b.call) continue;
 
@@ -280,6 +287,8 @@ function buildTopology(nodes, mheard) {
 function renderGraph(nodes, mheard) {
   const container = document.getElementById("network-graph");
   if (!container) return;
+
+  container.innerHTML = ""; // ✅ critical fix
 
   const nodeSet = new vis.DataSet();
   const edgeSet = new vis.DataSet();
