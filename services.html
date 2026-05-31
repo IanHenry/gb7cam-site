@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Technical Information</title>
+<title>Services Available</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -111,7 +111,7 @@ ul.task-list li input[type="checkbox"] {
 <span class="menu-text">Home</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./services.html"> 
+    <a class="nav-link active" href="./services.html" aria-current="page"> 
 <span class="menu-text">Services</span></a>
   </li>  
   <li class="nav-item">
@@ -119,7 +119,7 @@ ul.task-list li input[type="checkbox"] {
 <span class="menu-text">Status</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link active" href="./tech.html" aria-current="page"> 
+    <a class="nav-link" href="./tech.html"> 
 <span class="menu-text">Tech</span></a>
   </li>  
   <li class="nav-item">
@@ -139,7 +139,7 @@ ul.task-list li input[type="checkbox"] {
 <!-- margin-sidebar -->
     
 <!-- main -->
-<main class="content column-page" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><h1 class="title display-7">Technical Information</h1></header>
+<main class="content column-page" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><h1 class="title display-7">Services Available</h1></header>
 
 <header id="title-block-header">
 
@@ -148,51 +148,49 @@ ul.task-list li input[type="checkbox"] {
 
 
 <p><img src="images/main_logo.png" class="centered-image"></p>
-<section id="system-overview" class="level2">
-<h2 class="anchored" data-anchor-id="system-overview">System Overview</h2>
-<p>GB7CAM is a LINBPQ-based <a href="(https://ukrepeater.net/my_repeater.php?id=6877)">licesned</a> packet radio node run by Ian Henry <a href="https://g0lft.org">(G0LFT)</a>.</p>
-<hr>
-<section id="rf-configuration-notes" class="level3">
-<h3 class="anchored" data-anchor-id="rf-configuration-notes">RF configuration Notes</h3>
+<section id="services-available" class="level2">
+<h2 class="anchored" data-anchor-id="services-available">Services Available</h2>
+<p>This node runs a LINBPQ and combines Node, BBS, Mail and Chat Services.</p>
+<section id="node" class="level3">
+<h3 class="anchored" data-anchor-id="node">Node</h3>
+<p>You can connect to the GB7CAM using:</p>
+<pre><code>CONNECT &lt;PORT&gt; GB7CAM</code></pre>
+<p>The following commands are available:</p>
+<pre><code>BBS CHAT CONNECT BYE INFO NODES PORTS ROUTES USERS MHEARD</code></pre>
 <ul>
-<li>Frequency: 144.950 MHz<br>
-</li>
-<li>Mode: AX.25 Packet<br>
-</li>
-<li>Antenna: 5m AGL</li>
-<li>ERP 7 dBW (5W)<br>
-</li>
-<li>Location: Harston Cambridge (Grid Squre: JO02AD)</li>
+<li><strong>BBS</strong> enters the Buletin Board / Mail System</li>
+<li><strong>CHAT</strong> enters the Chat System</li>
+<li><strong>CONNECT <port num=""> <name of="" node=""></name></port></strong> allows you to connect to another linked node</li>
+<li><strong>BYE</strong> Exits the node or current connection</li>
+<li><strong>INFO</strong> Displays the node info message</li>
+<li><strong>NODES</strong> shows list of nodes you can connect to</li>
+<li><strong>PORTS</strong> show ports available for communication (PORT 1 - RF 2m, PORT 2 - AXIP)</li>
+<li><strong>ROUTES</strong> shows routes to other nodes</li>
+<li><strong>MHEARD <port num=""></port></strong></li>
+<li><strong>USERS</strong> shows users currently logged in to the node</li>
+</ul>
+<p>Further node information can be found via the <a href="https://node.gb7cam.org.uk">linBPQ node page</a> or advanced information on the <a href="./status.html">status page</a></p>
+<hr>
+</section>
+<section id="bbs" class="level3">
+<h3 class="anchored" data-anchor-id="bbs">BBS</h3>
+<p>To connect to the BBS, first login as above and then type</p>
+<pre><code>BBS</code></pre>
+<p>Typing HELP will also then give you a full command list.</p>
+<ul>
+<li>Only licensed amateur radio operators are allowed to setup and account.</li>
+<li>If you have an account you can access your mail via the web using https://node.gb7cam.org.uk/Webmail</li>
+<li>If you would like mail or bulletins forwarded to your node just let me know.</li>
+<li>The HA of GB7CAM is GB7CAM.#22.GBR.EURO and you can set this to be your home BBS if you wish.</li>
 </ul>
 <hr>
 </section>
-<section id="hardware" class="level3">
-<h3 class="anchored" data-anchor-id="hardware">Hardware</h3>
-<ul>
-<li><strong>Tait 2000 Mk2:</strong> a modified commercial radio bought from Simon (G4WQG)</li>
-<li><strong>NinoTNC:</strong> an amazing little TNA bought from Chris (G1FEF)</li>
-<li><strong>Diamond X50:</strong> vertical 2m/70cm antenna</li>
-<li><strong>Raspbery Pi 4:</strong> picked up from the CDARC Bring and Buy for £20</li>
-</ul>
+<section id="chat" class="level3">
+<h3 class="anchored" data-anchor-id="chat">CHAT</h3>
+<p>To connect to the BBS, first login as above and then type</p>
+<pre><code>CHAT</code></pre>
+<p>Typing /h will also then give you a full command list.</p>
 <hr>
-</section>
-<section id="software" class="level3">
-<h3 class="anchored" data-anchor-id="software">Software</h3>
-<ul>
-<li><strong>LinBPQ</strong>: The core software running Node, BBS, Mail Forwarding and Chat Services</li>
-<li><strong>FastAPI</strong>: Provides access to node information for the <a href="./status.html">status page</a></li>
-<li><strong>nginx</strong>: Reverse proxy for https://node.gb7cam.org.uk and the API</li>
-<li><strong>Quarto</strong>: Used to create this site</li>
-</ul>
-</section>
-<section id="network" class="level3">
-<h3 class="anchored" data-anchor-id="network">Network</h3>
-<ul>
-<li><strong><a href="https://wiki.ampr.org/wiki/Main_Page">ARDC 44Net</a>:</strong> 44Net makes publicly reachable networking available for experimentation and learning. Amateur radio operators and groups use it to run systems that are directly accessible from the Internet using stable public IP addresses.</li>
-<li><strong>Wireguard Tunnel</strong> Setup through <a href="https://connect.44net.cloud/">44Net Connect</a></li>
-<li><strong>Public Routed Subnet</strong> Assigned by <a href="https://connect.44net.cloud/">44Net Connect</a></li>
-<li><strong>AXUDP links to other packet nodes</strong> visit my <a href="./contact.html">conact page</a> and drop me a message with your MAP line if you run a node and want to peer</li>
-</ul>
 
 
 </section>

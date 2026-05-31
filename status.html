@@ -111,16 +111,8 @@ ul.task-list li input[type="checkbox"] {
 <span class="menu-text">Home</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./node.html"> 
-<span class="menu-text">Node</span></a>
-  </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="./bbs.html"> 
-<span class="menu-text">BBS</span></a>
-  </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="./mail.html"> 
-<span class="menu-text">Mail</span></a>
+    <a class="nav-link" href="./services.html"> 
+<span class="menu-text">Services</span></a>
   </li>  
   <li class="nav-item">
     <a class="nav-link active" href="./status.html" aria-current="page"> 
@@ -311,7 +303,7 @@ async function fetchNodeData() {
 
   } catch (error) {
     console.error("Telemetry fetch failed:", error);
-    statusEl.innerHTML = "⚠️ <strong>MAINTENANCE / OFFLINE</strong> (Unable to connect to home server)";
+    statusEl.innerHTML = "⚠️ <strong>MAINTENANCE / OFFLINE</strong> (Unable to connect to server)";
     
     const errorBanner = "<p style='color: #721c24; background-color: #f8d7da; padding: 10px; border-radius: 4px;'>Telemetry server is currently unreachable. The node may be undergoing maintenance.</p>";
     linksEl.innerHTML = errorBanner;

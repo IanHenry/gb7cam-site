@@ -28,60 +28,46 @@
     "text": "Network Routing Nodes\n\n\n\n\n\nLoading routing node index…"
   },
   {
-    "objectID": "index.html#ax.25-packet-node-gb7cam",
-    "href": "index.html#ax.25-packet-node-gb7cam",
-    "title": "GB7CAM Packet System",
-    "section": "AX.25 Packet Node GB7CAM",
-    "text": "AX.25 Packet Node GB7CAM\nGB7CAM is a 2m AX.25 packet radio node serving the Cambridge area. The station provides node, mailbox and chat services using LINBPQ and is connected to the wider packet radio network via RF and IP links."
+    "objectID": "services.html#services-available",
+    "href": "services.html#services-available",
+    "title": "Services Available",
+    "section": "Services Available",
+    "text": "Services Available\nThis node runs a LINBPQ and combines Node, BBS, Mail and Chat Services.\n\nNode\nYou can connect to the GB7CAM using:\nCONNECT &lt;PORT&gt; GB7CAM\nThe following commands are available:\nBBS CHAT CONNECT BYE INFO NODES PORTS ROUTES USERS MHEARD\n\nBBS enters the Buletin Board / Mail System\nCHAT enters the Chat System\nCONNECT   allows you to connect to another linked node\nBYE Exits the node or current connection\nINFO Displays the node info message\nNODES shows list of nodes you can connect to\nPORTS show ports available for communication (PORT 1 - RF 2m, PORT 2 - AXIP)\nROUTES shows routes to other nodes\nMHEARD \nUSERS shows users currently logged in to the node\n\nFurther node information can be found via the linBPQ node page or advanced information on the status page\n\n\n\nBBS\nTo connect to the BBS, first login as above and then type\nBBS\nTyping HELP will also then give you a full command list.\n\nOnly licensed amateur radio operators are allowed to setup and account.\nIf you have an account you can access your mail via the web using https://node.gb7cam.org.uk/Webmail\nIf you would like mail or bulletins forwarded to your node just let me know.\nThe HA of GB7CAM is GB7CAM.#22.GBR.EURO and you can set this to be your home BBS if you wish.\n\n\n\n\nCHAT\nTo connect to the BBS, first login as above and then type\nCHAT\nTyping /h will also then give you a full command list."
   },
   {
-    "objectID": "index.html#current-status",
-    "href": "index.html#current-status",
-    "title": "GB7CAM Packet System",
-    "section": "Current Status",
-    "text": "Current Status\n\n\n\n\n\n\nNoteReal-Time Node Telemetry\n\n\n\n\n🔄 Connecting to GB7CAM API…\n\n\n\nMore detailed status information can be found on the status page"
+    "objectID": "privacy.html#privacy-cookies",
+    "href": "privacy.html#privacy-cookies",
+    "title": "Privacy & Disclaimer",
+    "section": "Privacy & Cookies",
+    "text": "Privacy & Cookies\nWe use Google Analytics 4 (GA4) to collect anonymous site usage data.\nThis may involve cookies to track sessions, page views, and returning visitors.\n\nCookies used: _ga, _gid\nPurpose: Analyze site traffic and improve user experience\n\nIP anonymization: Enabled\n\nThird-party access: Data is processed by Google under their privacy policy: https://policies.google.com/privacy\n\nYou may withdraw consent at any time by clearing your cookies."
   },
   {
-    "objectID": "index.html#station-overview",
-    "href": "index.html#station-overview",
-    "title": "GB7CAM Packet System",
-    "section": "Station Overview",
-    "text": "Station Overview\n\nRadio Parameters\n\n\n\nParameter\nValue\n\n\n\n\nBand\n2m\n\n\nTX Frequency\n144.9500 MHz\n\n\nRX Frequency\n144.9500 MHz\n\n\nMode\nAX.25 Packet / LINBPQ\n\n\n\n\n\n\nLocation\n\nLocator: JO02AD\n\nNear: Harston\n\nLatitude: 52.14\n\nLongitude: 0.08\n\nAntenna height: 5 m AGL\n\nERP: 7 dBW\n\n\n\n\nAdministration\n\nRSGB held station details\nETCC Region: East Anglia (EA)\n\nRSGB Region: 12\n\nKeeper: G0LFT (Ian Henry)"
+    "objectID": "privacy.html#disclaimer",
+    "href": "privacy.html#disclaimer",
+    "title": "Privacy & Disclaimer",
+    "section": "Disclaimer",
+    "text": "Disclaimer\n\nThe information provided here is for informational purposes only.\n\nWhile care is taken to ensure accuracy, no guarantees are made regarding completeness or suitability.\n\nAny external links do not imply endorsement of those sites.\n\nIf you have concerns regarding your privacy or site content, please contact me."
   },
   {
-    "objectID": "node.html#gb7cam-ax.25-node",
-    "href": "node.html#gb7cam-ax.25-node",
-    "title": "Node Overview",
-    "section": "GB7CAM AX.25 Node",
-    "text": "GB7CAM AX.25 Node\n\nRadio Parameters\n\n\n\nParameter\nValue\n\n\n\n\nBand\n2m\n\n\nTX Frequency\n144.9500 MHz\n\n\nRX Frequency\n144.9500 MHz\n\n\nMode\nAX.25 Packet / LINBPQ"
+    "objectID": "contact.html#sysop",
+    "href": "contact.html#sysop",
+    "title": "Contact",
+    "section": "Sysop",
+    "text": "Sysop\nIan Henry\nCallsign: G0LFT\n\nEmail: ian@g0lft.org\nQRZ Page: G0LFT"
   },
   {
-    "objectID": "node.html#location",
-    "href": "node.html#location",
-    "title": "Node Overview",
-    "section": "Location",
-    "text": "Location\n\nLocator: JO02AD\n\nNear: Harston\n\nLatitude: 52.14\n\nLongitude: 0.08\n\nAntenna height: 5 m AGL\n\nERP: 7 dBW"
+    "objectID": "contact.html#reporting-issues",
+    "href": "contact.html#reporting-issues",
+    "title": "Contact",
+    "section": "Reporting Issues",
+    "text": "Reporting Issues\nContact the sysop for:\n\nconnectivity problems\nforwarding issues\nnode linking requests"
   },
   {
-    "objectID": "node.html#administration",
-    "href": "node.html#administration",
-    "title": "Node Overview",
-    "section": "Administration",
-    "text": "Administration\n\nETCC Region: East Anglia (EA)\n\nRSGB Region: 12\n\nKeeper: G0LFT (Ian Henry)"
-  },
-  {
-    "objectID": "credits.html#hero-images",
-    "href": "credits.html#hero-images",
-    "title": "Credits & Attributions",
-    "section": "Hero Images",
-    "text": "Hero Images\n\n\n\nImage\nSource / Method\nLicense / Notes"
-  },
-  {
-    "objectID": "credits.html#other-images",
-    "href": "credits.html#other-images",
-    "title": "Credits & Attributions",
-    "section": "Other Images",
-    "text": "Other Images\n\nAny additional images are either created by Dr Ian Henry or sourced from free-to-use libraries.\n\nLicense Notes:\n\nAll CC0 / public domain images are free to use without attribution, but attribution is provided where possible.\n\nOther images are used with permission or created in-house.\n\nAI-generated images are used under the respective AI tool’s terms and are intended solely for illustrative purposes.\n\n\nIf you believe any content here infringes copyright, or you would like additional attribution, please contact me and I will correct it immediately."
+    "objectID": "tech.html#system-overview",
+    "href": "tech.html#system-overview",
+    "title": "Technical Information",
+    "section": "System Overview",
+    "text": "System Overview\nGB7CAM is a LINBPQ-based licesned packet radio node run by Ian Henry (G0LFT).\n\n\nRF configuration Notes\n\nFrequency: 144.950 MHz\n\nMode: AX.25 Packet\n\nAntenna: 5m AGL\nERP 7 dBW (5W)\n\nLocation: Harston Cambridge (Grid Squre: JO02AD)\n\n\n\n\nHardware\n\nTait 2000 Mk2: a modified commercial radio bought from Simon (G4WQG)\nNinoTNC: an amazing little TNA bought from Chris (G1FEF)\nDiamond X50: vertical 2m/70cm antenna\nRaspbery Pi 4: picked up from the CDARC Bring and Buy for £20\n\n\n\n\nSoftware\n\nLinBPQ: The core software running Node, BBS, Mail Forwarding and Chat Services\nFastAPI: Provides access to node information for the status page\nnginx: Reverse proxy for https://node.gb7cam.org.uk and the API\nQuarto: Used to create this site\n\n\n\nNetwork\n\nARDC 44Net: 44Net makes publicly reachable networking available for experimentation and learning. Amateur radio operators and groups use it to run systems that are directly accessible from the Internet using stable public IP addresses.\nWireguard Tunnel Setup through 44Net Connect\nPublic Routed Subnet Assigned by 44Net Connect\nAXUDP links to other packet nodes visit my conact page and drop me a message with your MAP line if you run a node and want to peer"
   },
   {
     "objectID": "bbs.html#connecting-to-gb7cam-bbs",
@@ -112,67 +98,60 @@
     "text": "Notes\nAccess method depends on local RF or network configuration."
   },
   {
-    "objectID": "tech.html#system-overview",
-    "href": "tech.html#system-overview",
-    "title": "Technical Information",
-    "section": "System Overview",
-    "text": "System Overview\nGB7CAM runs a LINBPQ-based packet radio node."
+    "objectID": "credits.html#hero-images",
+    "href": "credits.html#hero-images",
+    "title": "Credits & Attributions",
+    "section": "Hero Images",
+    "text": "Hero Images\n\n\n\nImage\nSource / Method\nLicense / Notes"
   },
   {
-    "objectID": "tech.html#components",
-    "href": "tech.html#components",
-    "title": "Technical Information",
-    "section": "Components",
-    "text": "Components\n\nAX.25 packet radio stack\n\nLINBPQ switch/router\n\nVHF 2m RF interface"
+    "objectID": "credits.html#other-images",
+    "href": "credits.html#other-images",
+    "title": "Credits & Attributions",
+    "section": "Other Images",
+    "text": "Other Images\n\nAny additional images are either created by Dr Ian Henry or sourced from free-to-use libraries.\n\nLicense Notes:\n\nAll CC0 / public domain images are free to use without attribution, but attribution is provided where possible.\n\nOther images are used with permission or created in-house.\n\nAI-generated images are used under the respective AI tool’s terms and are intended solely for illustrative purposes.\n\n\nIf you believe any content here infringes copyright, or you would like additional attribution, please contact me and I will correct it immediately."
   },
   {
-    "objectID": "tech.html#configuration-notes",
-    "href": "tech.html#configuration-notes",
-    "title": "Technical Information",
-    "section": "Configuration Notes",
-    "text": "Configuration Notes\n\nFrequency: 144.950 MHz\n\nMode: AX.25 Packet\n\nAntenna: 5m AGL"
+    "objectID": "node.html#gb7cam-ax.25-node",
+    "href": "node.html#gb7cam-ax.25-node",
+    "title": "Node Overview",
+    "section": "GB7CAM AX.25 Node",
+    "text": "GB7CAM AX.25 Node\n\nRadio Parameters\n\n\n\nParameter\nValue\n\n\n\n\nBand\n2m\n\n\nTX Frequency\n144.9500 MHz\n\n\nRX Frequency\n144.9500 MHz\n\n\nMode\nAX.25 Packet / LINBPQ"
   },
   {
-    "objectID": "tech.html#operator-notes",
-    "href": "tech.html#operator-notes",
-    "title": "Technical Information",
-    "section": "Operator Notes",
-    "text": "Operator Notes\nThis page is intended for sysops and technical reference."
+    "objectID": "node.html#location",
+    "href": "node.html#location",
+    "title": "Node Overview",
+    "section": "Location",
+    "text": "Location\n\nLocator: JO02AD\n\nNear: Harston\n\nLatitude: 52.14\n\nLongitude: 0.08\n\nAntenna height: 5 m AGL\n\nERP: 7 dBW"
   },
   {
-    "objectID": "contact.html#sysop",
-    "href": "contact.html#sysop",
-    "title": "Contact",
-    "section": "Sysop",
-    "text": "Sysop\nIan Henry\nCallsign: G0LFT\n\nEmail: ian@g0lft.org\nQRZ Page: G0LFT"
+    "objectID": "node.html#administration",
+    "href": "node.html#administration",
+    "title": "Node Overview",
+    "section": "Administration",
+    "text": "Administration\n\nETCC Region: East Anglia (EA)\n\nRSGB Region: 12\n\nKeeper: G0LFT (Ian Henry)"
   },
   {
-    "objectID": "contact.html#system",
-    "href": "contact.html#system",
-    "title": "Contact",
-    "section": "System",
-    "text": "System\nGB7CAM Packet Node"
+    "objectID": "index.html#ax.25-packet-node-gb7cam",
+    "href": "index.html#ax.25-packet-node-gb7cam",
+    "title": "GB7CAM Packet System",
+    "section": "AX.25 Packet Node GB7CAM",
+    "text": "AX.25 Packet Node GB7CAM\nGB7CAM is a 2m AX.25 packet radio node serving the Cambridge area. The station provides node, mailbox and chat services using LINBPQ and is connected to the wider packet radio network via RF and IP links."
   },
   {
-    "objectID": "contact.html#reporting-issues",
-    "href": "contact.html#reporting-issues",
-    "title": "Contact",
-    "section": "Reporting Issues",
-    "text": "Reporting Issues\nContact the sysop for:\n\nconnectivity problems\nforwarding issues\nnode linking requests"
+    "objectID": "index.html#current-status",
+    "href": "index.html#current-status",
+    "title": "GB7CAM Packet System",
+    "section": "Current Status",
+    "text": "Current Status\n\n\n\n\n\n\nNoteReal-Time Node Telemetry\n\n\n\n\n🔄 Connecting to GB7CAM API…\n\n\n\nMore detailed status information can be found on the status page"
   },
   {
-    "objectID": "privacy.html#privacy-cookies",
-    "href": "privacy.html#privacy-cookies",
-    "title": "Privacy & Disclaimer",
-    "section": "Privacy & Cookies",
-    "text": "Privacy & Cookies\nWe use Google Analytics 4 (GA4) to collect anonymous site usage data.\nThis may involve cookies to track sessions, page views, and returning visitors.\n\nCookies used: _ga, _gid\nPurpose: Analyze site traffic and improve user experience\n\nIP anonymization: Enabled\n\nThird-party access: Data is processed by Google under their privacy policy: https://policies.google.com/privacy\n\nYou may withdraw consent at any time by clearing your cookies."
-  },
-  {
-    "objectID": "privacy.html#disclaimer",
-    "href": "privacy.html#disclaimer",
-    "title": "Privacy & Disclaimer",
-    "section": "Disclaimer",
-    "text": "Disclaimer\n\nThe information provided here is for informational purposes only.\n\nWhile care is taken to ensure accuracy, no guarantees are made regarding completeness or suitability.\n\nAny external links do not imply endorsement of those sites.\n\nIf you have concerns regarding your privacy or site content, please contact me."
+    "objectID": "index.html#station-overview",
+    "href": "index.html#station-overview",
+    "title": "GB7CAM Packet System",
+    "section": "Station Overview",
+    "text": "Station Overview\n\nRadio Parameters\n\n\n\nParameter\nValue\n\n\n\n\nBand\n2m\n\n\nTX Frequency\n144.9500 MHz\n\n\nRX Frequency\n144.9500 MHz\n\n\nMode\nAX.25 Packet / LINBPQ\n\n\n\n\n\n\nLocation\n\nLocator: JO02AD\n\nNear: Harston\n\nLatitude: 52.14\n\nLongitude: 0.08\n\nAntenna height: 5 m AGL\n\nERP: 7 dBW\n\n\n\n\nAdministration\n\nRSGB held station details\nETCC Region: East Anglia (EA)\n\nRSGB Region: 12\n\nKeeper: G0LFT (Ian Henry)"
   },
   {
     "objectID": "mail.html#mail-forwarding",
