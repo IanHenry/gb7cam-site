@@ -1,65 +1,52 @@
-@use "sass:color";
-@use "colors" as c;
-
-// Fonts
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Lora&family=Roboto+Mono&display=swap');
-
+@charset "UTF-8";
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Lora&family=Roboto+Mono&display=swap");
 .navbar {
   background-color: #ffffff; /* pure white */
 }
 
-$font-heading: 'Montserrat', sans-serif;
-$font-body: 'Inter', sans-serif;
-$font-mono: 'JetBrains Mono', monospace;
-
-.mono{
-	font-variant-numeric: slashed-zero;
+.mono {
+  font-variant-numeric: slashed-zero;
 }
 
-.body{
-	font-variant-numeric: slashed-zero;
+.body {
+  font-variant-numeric: slashed-zero;
 }
 
-// Global body
 body {
-  font-family: $font-body;
+  font-family: "Inter", sans-serif;
   font-variant-numeric: slashed-zero;
   font-weight: 400;
   line-height: 1.6;
-  color: c.$text-color;
-  background-color: c.$bg-light;
+  color: #1a1a1a;
+  background-color: #ffffff;
   margin: 0;
   padding: 0;
 }
 
-// Headings
 h1, h2, h3, h4 {
-  font-family: $font-heading;
+  font-family: "Montserrat", sans-serif;
   font-weight: 600;
-  color: c.$heading-color;
+  color: #2B2F36;
 }
 
-// Code blocks
 code, pre {
-  font-family: $font-mono;
+  font-family: "JetBrains Mono", monospace;
   font-variant-numeric: slashed-zero;
-  color: c.$text-color;
-  background-color: color.scale(c.$bg-light, $lightness: -5%);
+  color: #1a1a1a;
+  background-color: rgb(242.25, 242.25, 242.25);
   padding: 0.2rem 0.4rem;
   border-radius: 4px;
 }
 
-// Links
 a {
-  color: c.$secondary;
+  color: #1F6AE1;
   text-decoration: none;
-  &:hover {
-    color: color.scale(c.$secondary, $lightness: -10%);
-    text-decoration: underline;
-  }
+}
+a:hover {
+  color: rgb(27.2125984252, 95.2440944882, 203.1874015748);
+  text-decoration: underline;
 }
 
-// Hero Parallax
 .parallax {
   position: relative;
   background-attachment: fixed;
@@ -72,43 +59,39 @@ a {
   justify-content: center;
   text-align: center;
   overflow: hidden;
-
-  &::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: rgba(0,0,0, var(--overlay-opacity, 0.35));
-    z-index: 1;
-  }
-
-  .overlay {
-    position: relative;
-    z-index: 2;
-    padding: 2rem;
-    border-radius: 10px;
-  }
-
-  &.light-overlay::before {
-    background: rgba(255,255,255, var(--overlay-opacity, 0.4));
-  }
-
-  &.dark-overlay::before {
-    background: rgba(0,0,0, var(--overlay-opacity, 0.4));
-  }
+}
+.parallax::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, var(--overlay-opacity, 0.35));
+  z-index: 1;
+}
+.parallax .overlay {
+  position: relative;
+  z-index: 2;
+  padding: 2rem;
+  border-radius: 10px;
+}
+.parallax.light-overlay::before {
+  background: rgba(255, 255, 255, var(--overlay-opacity, 0.4));
+}
+.parallax.dark-overlay::before {
+  background: rgba(0, 0, 0, var(--overlay-opacity, 0.4));
 }
 
 /* Card */
 .card {
   border-radius: 12px;
   padding: 1.5rem;
-  background-color: c.$bg-light; // Ensure cards keep their color
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  background-color: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
 .card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
 /* Card grid */
@@ -126,74 +109,62 @@ a {
     grid-template-columns: 1fr;
   }
 }
-
 /* Desktop: default 2-column layout */
 @media (min-width: 768px) {
   .card-grid {
     grid-template-columns: repeat(2, 1fr);
   }
-
   /* Odd last card full-width if total cards are odd */
   .card-grid > :nth-child(2n+1):last-child {
-    grid-column: 1 / -1;
+    grid-column: 1/-1;
   }
-
   /* Ensure cards keep their background color */
   .card-grid > .card {
-    background-color: c.$bg-light;
+    background-color: #ffffff;
   }
-
   /* Special case: exactly 3 cards, wide screens → 3 columns */
-  @media (min-width: 1024px) {
-    .card-grid:has(> .card:nth-child(3):last-child) {
-      grid-template-columns: repeat(3, 1fr);
-
-      /* Undo the last-child full-width rule */
-      > :nth-child(2n+1):last-child {
-        grid-column: auto;
-      }
-    }
+}
+@media (min-width: 768px) and (min-width: 1024px) {
+  .card-grid:has(> .card:nth-child(3):last-child) {
+    grid-template-columns: repeat(3, 1fr);
+    /* Undo the last-child full-width rule */
   }
-
+  .card-grid:has(> .card:nth-child(3):last-child) > :nth-child(2n+1):last-child {
+    grid-column: auto;
+  }
+}
+@media (min-width: 768px) {
   /* Special case: exactly 4 cards → 2x2 grid, no full-width cards */
   .card-grid:has(> .card:nth-child(4):last-child) {
     grid-template-columns: repeat(2, 1fr);
-
     /* Ensure no full-width last card */
-    > :nth-child(2n+1):last-child {
-      grid-column: auto;
-    }
+  }
+  .card-grid:has(> .card:nth-child(4):last-child) > :nth-child(2n+1):last-child {
+    grid-column: auto;
   }
 }
-
-
-
-// Footer
 .site-footer {
   padding: 2rem 1rem;
-  background-color: c.$bg-light;
-  color: c.$text-color;
+  background-color: #ffffff;
+  color: #1a1a1a;
   text-align: center;
   font-size: 0.9rem;
-  border-top: 1px solid color.scale(c.$text-color, $lightness: 80%);
-
-  a {
-    color: c.$secondary;
-    &:hover {
-      color: color.scale(c.$secondary, $lightness: -10%);
-      text-decoration: underline;
-    }
-  }
-
-  .footer-content {
-    max-width: 960px;
-    margin: 0 auto;
-  }
+  border-top: 1px solid rgb(209.2, 209.2, 209.2);
+}
+.site-footer a {
+  color: #1F6AE1;
+}
+.site-footer a:hover {
+  color: rgb(27.2125984252, 95.2440944882, 203.1874015748);
+  text-decoration: underline;
+}
+.site-footer .footer-content {
+  max-width: 960px;
+  margin: 0 auto;
 }
 
-// Make the main page container wider on desktop
 .container {
-  max-width: 100%; // or whatever width you want
+  max-width: 100%;
   margin: 0 auto;
   padding: 1rem;
 }
@@ -204,7 +175,6 @@ a {
     padding: 0.5rem;
   }
 }
-
 /* Completely hide Quarto-generated author metadata across all templates */
 .quarto-title-block,
 .quarto-title-meta,
@@ -228,7 +198,7 @@ div.author {
 /* Logo in desktop navbar only */
 .navbar-desktop-logo {
   display: inline-block;
-  height: 60px;   // adjust height as needed
+  height: 60px;
   width: auto;
   vertical-align: middle;
   margin-right: 0rem;
@@ -240,8 +210,6 @@ div.author {
     display: none !important;
   }
 }
-
-
 .selected-publications {
   display: flex;
   flex-wrap: wrap;
@@ -260,7 +228,7 @@ div.author {
 .pub-cover {
   width: 120px;
   border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
 .pub-info {
@@ -272,15 +240,15 @@ div.author {
   display: block;
   margin-left: auto;
   margin-right: auto;
-  width: 300px;   /* adjust size */
+  width: 300px; /* adjust size */
 }
 
 .panel {
-  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
 .nodes {
-  font-family: $font-mono;
+  font-family: "JetBrains Mono", monospace;
 }
 
 .status-card {
@@ -310,3 +278,5 @@ table tr:hover {
 .search-box:focus {
   box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.15);
 }
+
+/*# sourceMappingURL=_base.css.map */
