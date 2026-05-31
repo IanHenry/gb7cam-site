@@ -16,7 +16,15 @@ title: "System Status"
 
 ---
 
-## Activity Feed
+## LINBPQ Ports
+
+<div id="ports-container" class="panel">
+  <p>Loading ports...</p>
+</div>
+
+---
+
+## Activity Feed (AXIP=Blue, RF=Green)
 <div id="activity-feed-container" class="panel">
   <p>Loading...</p>
 </div>
@@ -84,24 +92,25 @@ async function fetchDashboardData() {
 
   const statusEl = document.getElementById("api-status-widget");
 
-  function setOffline() {
-    statusEl.classList.remove("status-card--good");
-    statusEl.classList.add("status-card--bad");
+function setOffline() {
+  statusEl.classList.remove("status-card--good", "status-card--bad");
+  statusEl.classList.add("status-card--bad");
 
-    document.getElementById("w-status").innerText = "Offline";
-    document.getElementById("w-links").innerText = "—";
-    document.getElementById("w-rf").innerText = "—";
-    document.getElementById("w-axip").innerText = "—";
-    document.getElementById("w-last").innerText = "No data";
-  }
+  document.getElementById("w-status").innerText = "Offline";
+  document.getElementById("w-links").innerText = "—";
+  document.getElementById("w-rf").innerText = "—";
+  document.getElementById("w-axip").innerText = "—";
+  document.getElementById("w-last").innerText = "No data";
+}
 
   const base = "https://api.gb7cam.org.uk";
 
   try {
-    const [linksRes, mheardRes, nodesRes] = await Promise.all([
+    const [linksRes, mheardRes, nodesRes, portsRes] = await Promise.all([
       fetch(base + "/links"),
       fetch(base + "/mheard/all"),
-      fetch(base + "/nodes")
+      fetch(base + "/nodes"),
+	  fetch(base + "/ports")
     ]);
 
     // HARD FAILURE = offline mode
@@ -113,7 +122,7 @@ async function fetchDashboardData() {
     const links = (await linksRes.json()).links || [];
     const rawMheard = (await mheardRes.json()).mheard || [];
     allNodes = (await nodesRes.json()).nodes || [];
-
+    const ports = (await portsRes.json()).ports || [];
     const cutoff = Date.now() - WINDOW_MS;
 
     const mheardAll = rawMheard
@@ -138,6 +147,36 @@ async function fetchDashboardData() {
                 on Port ${st.port}
               </div>`;
           }).join("");
+
+const portsEl = document.getElementById("ports-container");
+
+portsEl.innerHTML = `
+<table class="table-dashboard">
+  <thead>
+    <tr>
+      <th>Port</th>
+      <th>Description</th>
+      <th>Driver</th>
+      <th>State</th>
+    </tr>
+  </thead>
+  <tbody>
+    ${ports.map(p => `
+      <tr>
+        <td class="${Number(p.Number) === RF_PORT ? "port--rf"
+                      : Number(p.Number) === AXIP_PORT ? "port--axip"
+                      : "port--neutral"}">
+          ${p.Number}
+        </td>
+        <td>${p.ID}</td>
+        <td>${p.Driver}</td>
+        <td>${p.State}</td>
+      </tr>
+    `).join("")}
+  </tbody>
+</table>
+`;
+
 
     /* ----------------------------
        LINKS
@@ -236,8 +275,13 @@ async function fetchDashboardData() {
 
     const ok = links.length > 0;
 
-    statusEl.classList.remove("status-card--good", "status-card--bad");
-    statusEl.classList.add(ok ? "status-card--good" : "status-card--bad");
+statusEl.classList.remove("status-card--good", "status-card--bad");
+
+if (ok) {
+  statusEl.classList.add("status-card--good");
+} else {
+  statusEl.classList.add("status-card--bad");
+}
 
     document.getElementById("w-status").innerText =
       ok ? "Operational" : "Degraded";
