@@ -215,7 +215,7 @@ let mheardMode = "ALL";
 function parseTime(st) {
   let t = st.lastHeard;
   if (t && !t.endsWith("Z") && !t.includes("+")) t += "Z";
-  return Date.parse(t);
+  return Date.parse(t.replace(" ", "T"));
 }
 
 function formatUTC(ts) {
@@ -243,7 +243,7 @@ async function fetchDashboardData() {
 
   const mheardAll = rawMheard
     .map(st => ({ ...st, ts: parseTime(st) }))
-    .filter(st => !isNaN(st.ts))
+    .filter(st => st.ts && !isNaN(st.ts))
     .sort((a, b) => b.ts - a.ts);
 
   /* =========================
