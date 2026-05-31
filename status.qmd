@@ -6,12 +6,12 @@ title: "System Status"
 
 ## Current Status
 
-<div id="api-status-widget" class="status-card">
-  <div><strong>Status:</strong> <span id="w-status">Operational</span></div>
-  <div><strong>Active Links:</strong> <span id="w-links">...</span></div>
-  <div><strong>Stations Heard via RF (last 24 hours):</strong> <span id="w-rf">...</span></div>
-  <div><strong>Stations Heard via AXIP (last 24 hours):</strong> <span id="w-axip">...</span></div>
-  <div><strong>Last Packet:</strong> <span id="w-last">...</span></div>
+<div id="api-status-widget" class="status-card metric-grid">
+  <div class="metric"><strong>Status:</strong> <span id="w-status">Operational</span></div>
+  <div class="metric"><strong>Active Links:</strong> <span id="w-links">...</span></div>
+  <div class="metric"><strong>Stations Heard via RF (last 24 hours):</strong> <span id="w-rf">...</span></div>
+  <div class="metric"><strong>Stations Heard via AXIP (last 24 hours):</strong> <span id="w-axip">...</span></div>
+  <div class="metric"><strong>Last Packet:</strong> <span id="w-last">...</span></div>
 </div>
 
 ---
@@ -112,13 +112,13 @@ async function fetchDashboardData() {
   ---------------------------- */
   document.getElementById("activity-feed-container").innerHTML =
     mheardAll.length === 0
-      ? "<p style='color:#666;'>No recent activity</p>"
+      ? "<p class='text-muted'>No recent activity</p>"
       : mheardAll.map(st => {
           const port = Number(st.port);
           return `
-            <div style="margin-bottom:4px;">
+            <div class="activity-item">
               🕒 ${formatUTC(st.ts)}
-              <span style="color:${portColor(port)};font-weight:bold;">
+              <span class="${port === RF_PORT ? "port--rf" : "port--axip"}">
                 Heard ${st.callSign}
               </span>
               on Port ${st.port}
@@ -132,10 +132,16 @@ async function fetchDashboardData() {
     links.length === 0
       ? "<p>No active links</p>"
       : `
-      <table class="table-dashboard">
-        <tr>
-          <th>Node</th><th>Port</th><th>Type</th><th>Status</th>
-        </tr>
+<table class="table-dashboard">
+  <thead>
+    <tr>
+      <th>Node</th>
+      <th>Port</th>
+      <th>Type</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
         ${links.map(l => {
           const up = ["ACTIVE","ESTABLISHED","CONNECTED"]
             .includes((l.state||"").toUpperCase());
@@ -152,32 +158,37 @@ async function fetchDashboardData() {
               </td>
             </tr>`;
         }).join("")}
-      </table>`;
+      </tbody>
+	  </table>`;
 
   /* ----------------------------
      MHEARD (UNIFIED)
   ---------------------------- */
-  document.getElementById("mheard-container").innerHTML =
-    mheardAll.length === 0
-      ? "<p>No stations</p>"
-      : `
-      <table class="table-dashboard">
+document.getElementById("mheard-container").innerHTML =
+  mheardAll.length === 0
+    ? "<p>No stations</p>"
+    : `
+<table class="table-dashboard">
+  <thead>
+    <tr>
+      <th>Call</th>
+      <th>Port</th>
+      <th>Packets</th>
+      <th>Last Heard</th>
+    </tr>
+  </thead>
+  <tbody>
+    ${mheardAll.map(st => {
+      return `
         <tr>
-          <th>Call</th><th>Port</th><th>Packets</th><th>Last Heard</th>
-        </tr>
-        ${mheardAll.map(st => {
-          const port = Number(st.port);
-          return `
-            <tr>
-              <td>
-                ${st.callSign}
-              </td>
-              <td>${st.port}</td>
-              <td>${Number(st.packets||0).toLocaleString()}</td>
-              <td>${formatUTC(st.ts)}</td>
-            </tr>`;
-        }).join("")}
-      </table>`;
+          <td>${st.callSign}</td>
+          <td>${st.port}</td>
+          <td>${Number(st.packets||0).toLocaleString()}</td>
+          <td>${formatUTC(st.ts)}</td>
+        </tr>`;
+    }).join("")}
+  </tbody>
+</table>`;
 
   /* ----------------------------
      METRICS (SINGLE PASS)
@@ -205,7 +216,15 @@ async function fetchDashboardData() {
       ? `${latestCall} - ${Math.floor((Date.now()-latest)/60000)} mins ago`
       : "No data";
 
-  document.getElementById("w-status").innerText = "Operational";
+  const ok = links.length > 0;
+
+const statusEl = document.getElementById("api-status-widget");
+
+statusEl.classList.remove("status-card--good", "status-card--bad");
+statusEl.classList.add(ok ? "status-card--good" : "status-card--bad");
+
+document.getElementById("w-status").innerText =
+  ok ? "Operational" : "Degraded";
 
   renderNodes(allNodes);
 }
@@ -217,36 +236,26 @@ function renderNodes(list) {
   const el = document.getElementById("nodes-container");
 
   if (!list.length) {
-    el.innerHTML = "<p style='color:#666;'>No matching nodes</p>";
+    el.innerHTML = "<p class='text-muted'>No nodes found</p>";
     return;
   }
 
-  el.innerHTML = `
-    <div style="
-      display:grid;
-      grid-template-columns:repeat(auto-fill, minmax(220px, 1fr));
-      gap:10px;
-    ">
-      ${list.map(n => `
-        <div style="
-          background:white;
-          border:1px solid #e2e8f0;
-          padding:10px 12px;
-          border-radius:6px;
-          box-shadow:0 1px 2px rgba(0,0,0,0.04);
-        ">
-          <div style="font-weight:bold; color:#2c3e50;">
-            ${n.Call}
-            ${n.Alias ? `<span style="color:#e67e22;"> :${n.Alias}</span>` : ""}
-          </div>
-
-          <div style="font-size:0.85em;color:#7f8c8d;">
-            🗺️ Routes: <strong>${n.Routes?.length || 0}</strong>
-          </div>
+ el.innerHTML = `
+  <div class="nodes-grid">
+    ${list.map(n => `
+      <div class="node-card">
+        <div style="font-weight:bold; color:#2c3e50;">
+          ${n.Call}
+          ${n.Alias ? `<span style="color:#e67e22;"> :${n.Alias}</span>` : ""}
         </div>
-      `).join("")}
-    </div>
-  `;
+
+        <div style="font-size:0.85em;color:#7f8c8d;">
+          🗺️ Routes: <strong>${n.Routes?.length || 0}</strong>
+        </div>
+      </div>
+    `).join("")}
+  </div>
+`;
 }
 
 /* ----------------------------
