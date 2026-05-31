@@ -16,7 +16,7 @@ GB7CAM is a 2m AX.25 packet radio node serving the Cambridge area.  The station 
 <div id="api-status">🔄 Connecting to GB7CAM API...</div>
 :::
 
----
+<hr>
 
 ## Station Overview
 
