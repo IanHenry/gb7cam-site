@@ -33,7 +33,7 @@ GB7CAM is a LINBPQ-based [licensed](https://ukrepeater.net/my_repeater.php?id=68
 
 - **LinBPQ:** The core software running Node, BBS, Mail Forwarding and Chat Services
 - **FastAPI:** Provides access to node information for the [status page](status.qmd)
-- **nginx:** Reverse proxy for https://node.gb7cam.org.uk and the API
+- **nginx:** Reverse proxy for [https://node.gb7cam.org.uk](https://node.gb7cam.org.uk) and the API
 - **Quarto:** Used to create this site
 
 ### Network
