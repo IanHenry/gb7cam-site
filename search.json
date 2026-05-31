@@ -32,7 +32,7 @@
     "href": "index.html#ax.25-packet-node-gb7cam",
     "title": "GB7CAM Packet System",
     "section": "AX.25 Packet Node GB7CAM",
-    "text": "AX.25 Packet Node GB7CAM\nGB7CAM is a 2m AX.25 packet radio node serving the Cambridge area. The station procides node, mailbox and chat services using LINBPQ and is connected to the wider packet radio network via RF and IP links."
+    "text": "AX.25 Packet Node GB7CAM\nGB7CAM is a 2m AX.25 packet radio node serving the Cambridge area. The station provides node, mailbox and chat services using LINBPQ and is connected to the wider packet radio network via RF and IP links."
   },
   {
     "objectID": "index.html#current-status",
@@ -42,18 +42,18 @@
     "text": "Current Status\n\n\n\n\n\n\nNoteReal-Time Node Telemetry\n\n\n\n\n🔄 Connecting to GB7CAM API…"
   },
   {
-    "objectID": "index.html#quick-info",
-    "href": "index.html#quick-info",
+    "objectID": "index.html#station-overview",
+    "href": "index.html#station-overview",
     "title": "GB7CAM Packet System",
-    "section": "Quick Info",
-    "text": "Quick Info\n\nBand: 2m\n\nFrequency: 144.950 MHz (TX/RX)\n\nMode: AX.25 Packet / Mailbox\n\nLocator: JO02AD (Harston)\nKeeper: Ian Henry (G0LFT)"
+    "section": "Station Overview",
+    "text": "Station Overview\n\nRegistered call sign GB7CAM\nBand: 2m\n\nFrequency: 144.950 MHz (TX/RX)\n\nMode: AX.25 Packet / Mailbox (LINBPQ)\nPower 5W ERP (7 dBW ERP)\nAntenna height: 5 m AGL\nLocator: JO02AD (Harston)\nLatitude: 52.14\nLongitude: 0.08\nKeeper: Ian Henry (G0LFT)"
   },
   {
     "objectID": "index.html#quick-links",
     "href": "index.html#quick-links",
     "title": "GB7CAM Packet System",
     "section": "Quick Links",
-    "text": "Quick Links\n\n📡 Node Information\n💬 BBS Access\n📬 Mail System\n📊 System Status"
+    "text": "Quick Links\n\nServices Available\nLive Network Status\nTechnical Information\n[Contact][contact.qmd]"
   },
   {
     "objectID": "node.html#gb7cam-ax.25-node",
