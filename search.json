@@ -32,21 +32,28 @@
     "href": "index.html#ax.25-packet-node-gb7cam",
     "title": "GB7CAM Packet System",
     "section": "AX.25 Packet Node GB7CAM",
-    "text": "AX.25 Packet Node GB7CAM\nKeeper: Ian Henry (G0LFT)\nStatus: Operational"
+    "text": "AX.25 Packet Node GB7CAM\nGB7CAM is a 2m AX.25 packet radio node serving the Cambridge area. The station procides node, mailbox and chat services using LINBPQ and is connected to the wider packet radio network via RF and IP links."
+  },
+  {
+    "objectID": "index.html#current-status",
+    "href": "index.html#current-status",
+    "title": "GB7CAM Packet System",
+    "section": "Current Status",
+    "text": "Current Status\n\n\n\n\n\n\nNoteReal-Time Node Telemetry\n\n\n\n\n🔄 Connecting to GB7CAM API…"
   },
   {
     "objectID": "index.html#quick-info",
     "href": "index.html#quick-info",
     "title": "GB7CAM Packet System",
     "section": "Quick Info",
-    "text": "Quick Info\n\nBand: 2m\n\nFrequency: 144.950 MHz (TX/RX)\n\nMode: AX.25 Packet / Mailbox\n\nLocator: JO02AD (Harston)"
+    "text": "Quick Info\n\nBand: 2m\n\nFrequency: 144.950 MHz (TX/RX)\n\nMode: AX.25 Packet / Mailbox\n\nLocator: JO02AD (Harston)\nKeeper: Ian Henry (G0LFT)"
   },
   {
-    "objectID": "index.html#services",
-    "href": "index.html#services",
+    "objectID": "index.html#quick-links",
+    "href": "index.html#quick-links",
     "title": "GB7CAM Packet System",
-    "section": "Services",
-    "text": "Services\n\n📡 Node Information\n💬 BBS Access\n📬 Mail System\n📊 System Status\n\n\nThis site provides access information for the GB7CAM packet radio node and associated services."
+    "section": "Quick Links",
+    "text": "Quick Links\n\n📡 Node Information\n💬 BBS Access\n📬 Mail System\n📊 System Status"
   },
   {
     "objectID": "node.html#gb7cam-ax.25-node",

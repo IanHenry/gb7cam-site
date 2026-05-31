@@ -158,8 +158,25 @@ ul.task-list li input[type="checkbox"] {
 <p><img src="images/main_logo.png" class="centered-image"></p>
 <section id="ax.25-packet-node-gb7cam" class="level2">
 <h2 class="anchored" data-anchor-id="ax.25-packet-node-gb7cam">AX.25 Packet Node GB7CAM</h2>
-<p>Keeper: Ian Henry <a href="https://g0lft.org">(G0LFT)</a></p>
-<p><strong>Status: Operational</strong></p>
+<p>GB7CAM is a 2m AX.25 packet radio node serving the Cambridge area. The station procides node, mailbox and chat services using LINBPQ and is connected to the wider packet radio network via RF and IP links.</p>
+</section>
+<section id="current-status" class="level2">
+<h2 class="anchored" data-anchor-id="current-status">Current Status</h2>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Real-Time Node Telemetry
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<div id="api-status">
+🔄 Connecting to GB7CAM API…
+</div>
+</div>
+</div>
 <hr>
 </section>
 <section id="quick-info" class="level2">
@@ -172,19 +189,84 @@ ul.task-list li input[type="checkbox"] {
 <li>Mode: AX.25 Packet / Mailbox<br>
 </li>
 <li>Locator: JO02AD (Harston)</li>
+<li>Keeper: Ian Henry <a href="https://g0lft.org">(G0LFT)</a></li>
 </ul>
 <hr>
 </section>
-<section id="services" class="level2">
-<h2 class="anchored" data-anchor-id="services">Services</h2>
+<section id="quick-links" class="level2">
+<h2 class="anchored" data-anchor-id="quick-links">Quick Links</h2>
 <ul>
 <li>📡 <a href="./node.html">Node Information</a></li>
 <li>💬 <a href="./bbs.html">BBS Access</a></li>
 <li>📬 <a href="./mail.html">Mail System</a></li>
 <li>📊 <a href="./status.html">System Status</a></li>
 </ul>
-<hr>
-<p>This site provides access information for the GB7CAM packet radio node and associated services.</p>
+<script>
+async function fetchNodeSummary() {
+  const statusEl = document.getElementById("api-status");
+
+  const protocol = "https:";
+  const subdomain = "api";
+  const domain = "gb7cam.org.uk";
+
+  try {
+    let latestTimestamp = 0;
+
+    // 1. Fetch Links Data
+    const linksResponse = await fetch(`${protocol}//${subdomain}.${domain}/links`);
+    if (!linksResponse.ok) throw new Error("Links API error");
+    const linksData = await linksResponse.json();
+    const activeLinksCount = linksData.links ? linksData.links.length : 0;
+
+    // 2. Fetch MHeard Data
+    const mheardResponse = await fetch(`${protocol}//${subdomain}.${domain}/mheard`);
+    if (!mheardResponse.ok) throw new Error("MHeard API error");
+    const mheardData = await mheardResponse.json();
+
+    // 3. Filter stations and extract latest timestamp
+    let recentStationsCount = 0;
+    if (mheardData.mheard) {
+      const fourHoursAgo = Date.now() - (4 * 60 * 60 * 1000);
+      
+      mheardData.mheard.forEach(station => {
+        const lastHeardTime = Date.parse(station.lastHeard);
+        
+        if (!isNaN(lastHeardTime)) {
+          if (lastHeardTime > latestTimestamp) {
+            latestTimestamp = lastHeardTime;
+          }
+          if (lastHeardTime >= fourHoursAgo) {
+            recentStationsCount++;
+          }
+        }
+      });
+    }
+
+    // Format the time text
+    let activityText = "No recent activity";
+    if (latestTimestamp > 0) {
+      const latestDate = new Date(latestTimestamp);
+      activityText = `Last activity at ${latestDate.toISOString().substr(11, 5)} UTC`;
+    }
+
+    // Direct injection into your layout
+    statusEl.innerHTML = `
+      🟢 <strong>OPERATIONAL</strong> — 
+      ${activeLinksCount} active links, 
+      ${recentStationsCount} stations heard in the last 4 hours 
+      (<small>${activityText}</small>)
+    `;
+
+  } catch (error) {
+    console.error("Telemetry summary fetch failed:", error);
+    statusEl.innerHTML = "⚠️ <strong>MAINTENANCE / OFFLINE</strong> (Unable to connect to home server)";
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  fetchNodeSummary();
+});
+</script>
 
 
 </section>
