@@ -223,18 +223,26 @@ async function fetchNodeSummary() {
     if (!mheardResponse.ok) throw new Error("MHeard API error");
     const mheardData = await mheardResponse.json();
 
-    // 3. Filter stations and extract latest timestamp
+    // 3. Process stations and track the newest activity timestamp
     let recentStationsCount = 0;
     if (mheardData.mheard) {
       const fourHoursAgo = Date.now() - (4 * 60 * 60 * 1000);
       
       mheardData.mheard.forEach(station => {
-        const lastHeardTime = Date.parse(station.lastHeard);
+        // FIX: Append "Z" if it doesn't exist to force UTC parsing
+        let timeStringRaw = station.lastHeard;
+        if (timeStringRaw && !timeStringRaw.endsWith('Z') && !timeStringRaw.includes('+')) {
+          timeStringRaw += 'Z';
+        }
+
+        const lastHeardTime = Date.parse(timeStringRaw);
         
         if (!isNaN(lastHeardTime)) {
+          // Track overall latest activity
           if (lastHeardTime > latestTimestamp) {
             latestTimestamp = lastHeardTime;
           }
+          // Filter for the 4-hour window
           if (lastHeardTime >= fourHoursAgo) {
             recentStationsCount++;
           }
