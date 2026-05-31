@@ -243,7 +243,7 @@ async function fetchDashboardData() {
 
   const [linksRes, mheardRes, nodesRes] = await Promise.all([
     fetch(base + "/links"),
-    fetch(base + "/mheard"),
+    fetch(base + "/mheard/all"),
     fetch(base + "/nodes")
   ]);
 
