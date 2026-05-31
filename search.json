@@ -4,7 +4,7 @@
     "href": "status.html#current-status",
     "title": "System Status",
     "section": "Current Status",
-    "text": "Current Status\n\n\nStatus: Operational\n\n\nActive Links: …\n\n\nStations Heard via RF (last 4 hours): …\n\n\nStations Heard via AXIP (last 4 hours): …\n\n\nLast Packet: …"
+    "text": "Current Status\n\n\nStatus: Operational\n\n\nActive Links: …\n\n\nStations Heard via RF (last 12 hours): …\n\n\nStations Heard via AXIP (last 12 hours): …\n\n\nLast Packet: …"
   },
   {
     "objectID": "status.html#activity-feed",
@@ -25,7 +25,7 @@
     "href": "status.html#live-mheard",
     "title": "System Status",
     "section": "Live MHeard",
-    "text": "Live MHeard\n\nRF (Port 1) AXIP (Port 3)\n\n\n\nLoading…"
+    "text": "Live MHeard\n\n RF (Port 1) \n AXIP (Port 3) \n\n\n\nLoading…"
   },
   {
     "objectID": "status.html#network-routing-nodes",

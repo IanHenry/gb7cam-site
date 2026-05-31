@@ -158,10 +158,10 @@ ul.task-list li input[type="checkbox"] {
 <strong>Active Links:</strong> <span id="w-links">…</span>
 </div>
 <div>
-<strong>Stations Heard via RF (last 4 hours):</strong> <span id="w-rf">…</span>
+<strong>Stations Heard via RF (last 12 hours):</strong> <span id="w-rf">…</span>
 </div>
 <div>
-<strong>Stations Heard via AXIP (last 4 hours):</strong> <span id="w-axip">…</span>
+<strong>Stations Heard via AXIP (last 12 hours):</strong> <span id="w-axip">…</span>
 </div>
 <div>
 <strong>Last Packet:</strong> <span id="w-last">…</span>
@@ -190,7 +190,8 @@ Loading…
 <section id="live-mheard" class="level2">
 <h2 class="anchored" data-anchor-id="live-mheard">Live MHeard</h2>
 <div style="margin:10px 0;">
-<p><button id="btn-rf" style="padding:6px 10px;background:#2e7d32;color:white;border:1px solid #ccc;border-radius:4px;cursor:pointer;">RF (Port 1)</button> <button id="btn-axip" style="padding:6px 10px;background:#1565c0;color:white;border:1px solid #ccc;border-radius:4px;cursor:pointer;">AXIP (Port 3)</button></p>
+<p><button id="btn-rf" style="padding:6px 10px;background:#2e7d32;color:white;border:1px solid #ccc;border-radius:4px;cursor:pointer;"> RF (Port 1) </button></p>
+<p><button id="btn-axip" style="padding:6px 10px;background:#1565c0;color:white;border:1px solid #ccc;border-radius:4px;cursor:pointer;"> AXIP (Port 3) </button></p>
 </div>
 <div id="mheard-container">
 <p>
@@ -227,11 +228,7 @@ function formatUTC(ts) {
 async function fetchDashboardData() {
   const base = "https://api.gb7cam.org.uk";
 
-  const [
-    linksRes,
-    mheardRes,
-    nodesRes
-  ] = await Promise.all([
+  const [linksRes, mheardRes, nodesRes] = await Promise.all([
     fetch(base + "/links"),
     fetch(base + "/mheard"),
     fetch(base + "/nodes")
@@ -240,13 +237,9 @@ async function fetchDashboardData() {
   if (!linksRes.ok || !mheardRes.ok || !nodesRes.ok)
     throw new Error("API failure");
 
-  const linksData = await linksRes.json();
-  const mheardData = await mheardRes.json();
-  const nodesData = await nodesRes.json();
-
-  const links = linksData.links || [];
-  const rawMheard = mheardData.mheard || [];
-  allNodes = nodesData.nodes || [];
+  const links = (await linksRes.json()).links || [];
+  const rawMheard = (await mheardRes.json()).mheard || [];
+  allNodes = (await nodesRes.json()).nodes || [];
 
   const twelveHoursAgo = Date.now() - (12 * 60 * 60 * 1000);
 
@@ -255,25 +248,54 @@ async function fetchDashboardData() {
     .filter(st => !isNaN(st.ts) && st.ts >= twelveHoursAgo)
     .sort((a,b) => b.ts - a.ts);
 
-  // ---------------- FEED ----------------
+  // ---------------- ACTIVITY FEED ----------------
   document.getElementById("activity-feed-container").innerHTML =
     mheard.map(st =>
-      `<div>🕒 ${formatUTC(st.ts)} <b>${st.callSign}</b> Port ${st.port}</div>`
+      `<div style="margin-bottom:4px;">
+        🕒 ${formatUTC(st.ts)}
+        <b>${st.callSign}</b>
+        <span style="color:#666;">→ Port ${st.port}</span>
+      </div>`
     ).join("") || "<p>No recent activity</p>";
 
-  // ---------------- LINKS ----------------
+  // ---------------- LINKS (RESTORED STYLING) ----------------
   document.getElementById("links-container").innerHTML =
     links.length === 0
       ? "<p>No active links</p>"
-      : `<table style="width:100%;border-collapse:collapse;">
-          <tr><th>Node</th><th>Port</th><th>Type</th><th>Status</th></tr>
-          ${links.map(l => `
-            <tr>
-              <td>${l.farCall}</td>
-              <td>${l.port}</td>
-              <td>${l.linkType || "AXUDP"}</td>
-              <td>${l.state || "ACTIVE"}</td>
-            </tr>`).join("")}
+      : `<table style="width:100%;border-collapse:collapse;margin-top:10px;">
+          <thead>
+            <tr style="border-bottom:2px solid #ccc;text-align:left;">
+              <th style="padding:8px;">Remote Node</th>
+              <th style="padding:8px;">Port</th>
+              <th style="padding:8px;">Type</th>
+              <th style="padding:8px;">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${links.map(l => {
+              const state = (l.state || "ACTIVE").toUpperCase();
+              const isUp =
+                state === "ACTIVE" ||
+                state === "ESTABLISHED" ||
+                state === "CONNECTED";
+
+              const bg = isUp ? "#d4edda" : "#f8d7da";
+              const tc = isUp ? "#155724" : "#721c24";
+
+              return `
+                <tr style="border-bottom:1px solid #eee;">
+                  <td style="padding:8px;font-weight:bold;color:#2c3e50;">${l.farCall}</td>
+                  <td style="padding:8px;">Port ${l.port}</td>
+                  <td style="padding:8px;color:#666;">${l.linkType || "AXUDP"}</td>
+                  <td style="padding:8px;">
+                    <span style="background:${bg};color:${tc};padding:4px 8px;border-radius:4px;font-size:0.85em;font-weight:bold;">
+                      ${state}
+                    </span>
+                  </td>
+                </tr>
+              `;
+            }).join("")}
+          </tbody>
         </table>`;
 
   // ---------------- MHEARD ----------------
@@ -286,15 +308,27 @@ async function fetchDashboardData() {
   document.getElementById("mheard-container").innerHTML =
     filtered.length === 0
       ? "<p>No stations</p>"
-      : `<table style="width:100%;border-collapse:collapse;">
-          <tr><th>Call</th><th>Port</th><th>Packets</th><th>Last Heard</th></tr>
-          ${filtered.map(st => `
-            <tr>
-              <td>${st.callSign}</td>
-              <td>${st.port}</td>
-              <td>${Number(st.packets || 0).toLocaleString()}</td>
-              <td>${formatUTC(st.ts)}</td>
-            </tr>`).join("")}
+      : `<table style="width:100%;border-collapse:collapse;margin-top:10px;">
+          <thead>
+            <tr style="border-bottom:2px solid #ccc;text-align:left;">
+              <th style="padding:8px;">Call</th>
+              <th style="padding:8px;">Port</th>
+              <th style="padding:8px;">Packets</th>
+              <th style="padding:8px;">Last Heard</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${filtered.map(st => `
+              <tr style="border-bottom:1px solid #eee;">
+                <td style="padding:8px;font-weight:bold;color:${Number(st.port) === 1 ? "#2e7d32" : "#1565c0"};">
+                  ${st.callSign}
+                </td>
+                <td style="padding:8px;">${st.port}</td>
+                <td style="padding:8px;">${Number(st.packets || 0).toLocaleString()}</td>
+                <td style="padding:8px;color:#555;">${formatUTC(st.ts)}</td>
+              </tr>
+            `).join("")}
+          </tbody>
         </table>`;
 
   // ---------------- METRICS ----------------
@@ -306,7 +340,8 @@ async function fetchDashboardData() {
       latest = st.ts;
       latestCall = st.callSign;
     }
-    if (st.ts >= Date.now() - 4*60*60*1000) {
+
+    if (st.ts >= Date.now() - 12*60*60*1000) {
       if (Number(st.port) === 1) rf++;
       if (Number(st.port) === 3) axip++;
     }
@@ -316,8 +351,16 @@ async function fetchDashboardData() {
   document.getElementById("w-rf").innerText = rf;
   document.getElementById("w-axip").innerText = axip;
 
-  document.getElementById("w-last").innerText =
-    latest ? `${latestCall} - ${Math.floor((Date.now()-latest)/60000)} mins ago` : "No data";
+  if (latest) {
+    const diff = Math.floor((Date.now() - latest) / 60000);
+
+    document.getElementById("w-last").innerText =
+      diff < 1 ? `${latestCall} - Just now` :
+      diff < 60 ? `${latestCall} - ${diff} mins ago` :
+      `${latestCall} - ${Math.floor(diff/60)} hrs ago`;
+  } else {
+    document.getElementById("w-last").innerText = "No data";
+  }
 
   document.getElementById("w-status").innerText = "Operational";
 
@@ -329,7 +372,7 @@ function renderNodes(list) {
   const el = document.getElementById("nodes-container");
 
   el.innerHTML = list.map(n => `
-    <div style="background:white;border:1px solid #ddd;padding:8px;margin-bottom:6px;">
+    <div style="background:white;border:1px solid #ddd;padding:8px;margin-bottom:6px;border-radius:4px;">
       <b>${n.Call}</b> ${n.Alias ? ":" + n.Alias : ""}
       <div style="font-size:12px;color:#666;">Routes: ${n.Routes?.length || 0}</div>
     </div>
@@ -352,9 +395,10 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   document.getElementById("node-search").addEventListener("input", e => {
-    const t = e.target.value.toUpperCase();
+    const t = (e.target.value || "").toUpperCase();
+
     renderNodes(allNodes.filter(n =>
-      n.Call.toUpperCase().includes(t) ||
+      (n.Call || "").toUpperCase().includes(t) ||
       (n.Alias || "").toUpperCase().includes(t)
     ));
   });
