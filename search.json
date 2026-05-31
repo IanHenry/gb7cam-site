@@ -1,40 +1,5 @@
 [
   {
-    "objectID": "status.html#current-status",
-    "href": "status.html#current-status",
-    "title": "System Status",
-    "section": "Current Status",
-    "text": "Current Status\n\n\nStatus: Operational\n\n\nActive Links: …\n\n\nRF Stations Heard (last 24 hrs): …\n\n\nAXIP Stations Heard (last 24 hrs): …\n\n\nLast Packet: …"
-  },
-  {
-    "objectID": "status.html#activity-feed",
-    "href": "status.html#activity-feed",
-    "title": "System Status",
-    "section": "Activity Feed",
-    "text": "Activity Feed\n\n\nLoading…"
-  },
-  {
-    "objectID": "status.html#live-links",
-    "href": "status.html#live-links",
-    "title": "System Status",
-    "section": "Live Links",
-    "text": "Live Links\n\n\nLoading…"
-  },
-  {
-    "objectID": "status.html#live-mheard",
-    "href": "status.html#live-mheard",
-    "title": "System Status",
-    "section": "Live MHeard",
-    "text": "Live MHeard\n\n\nLoading…"
-  },
-  {
-    "objectID": "status.html#network-routing-nodes",
-    "href": "status.html#network-routing-nodes",
-    "title": "System Status",
-    "section": "Network Routing Nodes",
-    "text": "Network Routing Nodes\n\n\n\nLoading routing node index…"
-  },
-  {
     "objectID": "index.html#ax.25-packet-node-gb7cam",
     "href": "index.html#ax.25-packet-node-gb7cam",
     "title": "GB7CAM Packet System",
@@ -123,6 +88,6 @@
     "href": "services.html#services-available",
     "title": "Services Available",
     "section": "Services Available",
-    "text": "Services Available\nThis node runs a LINBPQ and combines Node, BBS, Mail and Chat Services.\n\nNODE\nYou can connect to the GB7CAM using:\nCONNECT &lt;PORT&gt; GB7CAM\nThe following commands are available:\nBBS CHAT CONNECT BYE INFO NODES PORTS ROUTES USERS MHEARD\n\nBBS enters the Buletin Board / Mail System\nCHAT enters the Chat System\nCONNECT   allows you to connect to another linked node\nBYE Exits the node or current connection\nINFO Displays the node info message\nNODES shows list of nodes you can connect to\nPORTS show ports available for communication (PORT 1 - RF 2m, PORT 2 - AXIP)\nROUTES shows routes to other nodes\nMHEARD \nUSERS shows users currently logged in to the node\n\nFurther node information can be found via the linBPQ node page or advanced information on the status page\n\n\n\nBBS\nTo connect to the BBS, first login as above and then type\nBBS\nTyping HELP will also then give you a full command list.\n\nOnly licensed amateur radio operators are allowed to setup and account.\nIf you have an account you can access your mail via the web using https://node.gb7cam.org.uk/Webmail\nIf you would like mail or bulletins forwarded to your node just let me know.\nThe HA of GB7CAM is GB7CAM.#22.GBR.EURO and you can set this to be your home BBS if you wish.\n\n\n\n\nCHAT\nTo connect to the BBS, first login as above and then type\nCHAT\nTyping /h will also then give you a full command list."
+    "text": "Services Available\nThis node runs a LINBPQ and combines Node, BBS, Mail and Chat Services.\n\nNODE\nYou can connect to the GB7CAM using QTersmTCP pointing to Direwolf and connected to your rig using a DigiRig or similar. Simply select Connect`` and enter GBRCAM```\nThe following commands are available:\nBBS CHAT CONNECT BYE INFO NODES PORTS ROUTES USERS MHEARD\n\nBBS enters the Buletin Board / Mail System\nCHAT enters the Chat System\nCONNECT   allows you to connect to another linked node using CONNECT &lt;PORT&gt; GB7CAM (Port 3 for AXIP and Port 1 for RF)\nBYE Exits the node or current connection\nINFO Displays the node info message\nNODES shows list of nodes you can connect to\nPORTS show ports available for communication (PORT 1 - RF 2m, PORT 3 - AXIP)\nROUTES shows routes to other nodes\nMHEARD \nUSERS shows users currently logged in to the node\n\nFurther node information can be found via the linBPQ node page or advanced information on the status page\n\n\n\nBBS\nTo connect to the BBS, first login as above and then type\nBBS\nTyping HELP will also then give you a full command list.\n\nOnly licensed amateur radio operators are allowed to setup and account.\nIf you have an account you can access your mail via the web using https://node.gb7cam.org.uk/Webmail\nIf you would like mail or bulletins forwarded to your node just let me know.\nThe HA of GB7CAM is GB7CAM.#22.GBR.EURO and you can set this to be your home BBS if you wish.\n\n\n\n\nCHAT\nTo connect to the BBS, first login as above and then type\nCHAT\nTyping /h will also then give you a full command list."
   }
 ]
