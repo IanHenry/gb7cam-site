@@ -341,7 +341,7 @@ table tr {
 }
 
 table tr:hover {
-  background: #f3f6fa;
+  background: #f9f9f9;
 }
 
 .search-box {
@@ -352,4 +352,79 @@ table tr:hover {
 .search-box:focus {
   border-color: #28a745;
   box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.10);
+}
+
+
+.table-dashboard {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: $font-mono;
+  background: white;
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.table-dashboard th {
+  text-align: left;
+  padding: 10px 12px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(0,0,0,0.55);
+  background: #f5f7fa;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+}
+
+.table-dashboard td {
+  padding: 10px 12px;
+  font-size: 0.9rem;
+  border-top: 1px solid rgba(0,0,0,0.06);
+}
+
+.table-dashboard tr:hover {
+  background: #f3f6fa;
+}
+
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-top: 10px;
+}
+
+@media (max-width: 900px) {
+  .metric-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 500px) {
+  .metric-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.status-pill {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.status-pill--good {
+  background: #d4edda;
+  color: #155724;
+}
+
+.status-pill--bad {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.status-pill--neutral {
+  background: #e9ecef;
+  color: #495057;
 }

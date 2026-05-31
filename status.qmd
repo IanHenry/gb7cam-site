@@ -132,8 +132,8 @@ async function fetchDashboardData() {
     links.length === 0
       ? "<p>No active links</p>"
       : `
-      <table style="width:100%;border-collapse:collapse;font-family:monospace;">
-        <tr style="background:#f1f1f1;">
+      <table class="table-dashboard">
+        <tr>
           <th>Node</th><th>Port</th><th>Type</th><th>Status</th>
         </tr>
         ${links.map(l => {
@@ -146,13 +146,7 @@ async function fetchDashboardData() {
               <td>${l.port}</td>
               <td>${l.linkType || "AXUDP"}</td>
               <td>
-                <span style="
-                  padding:3px 8px;
-                  border-radius:4px;
-                  font-size:12px;
-                  color:${up ? "#155724" : "#721c24"};
-                  background:${up ? "#d4edda" : "#f8d7da"};
-                  font-weight:bold;">
+                <span class="status-pill ${up ? "status-pill--good" : "status-pill--bad"}">
                   ${l.state || "ACTIVE"}
                 </span>
               </td>
@@ -167,15 +161,15 @@ async function fetchDashboardData() {
     mheardAll.length === 0
       ? "<p>No stations</p>"
       : `
-      <table style="width:100%;border-collapse:collapse;font-family:monospace;">
-        <tr style="background:#f1f1f1;">
+      <table class="table-dashboard">
+        <tr>
           <th>Call</th><th>Port</th><th>Packets</th><th>Last Heard</th>
         </tr>
         ${mheardAll.map(st => {
           const port = Number(st.port);
           return `
             <tr>
-              <td style="color:${portColor(port)};font-weight:bold;">
+              <td>
                 ${st.callSign}
               </td>
               <td>${st.port}</td>
