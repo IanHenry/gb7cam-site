@@ -9,15 +9,16 @@ title: "System Status"
 <div id="api-status-widget" style="background:#f8f9fa;border:1px solid #dee2e6;border-left:4px solid #28a745;padding:15px;border-radius:4px;font-family:monospace;max-width:450px;margin:20px 0;">
   <div><strong>Status:</strong> <span id="w-status" style="color:#28a745;font-weight:bold;">Operational</span></div>
   <div><strong>Active Links:</strong> <span id="w-links">...</span></div>
-  <div><strong>Stations Heard via RF (last 12 hours):</strong> <span id="w-rf">...</span></div>
-  <div><strong>Stations Heard via AXIP (last 12 hours):</strong> <span id="w-axip">...</span></div>
+  <div><strong>Stations Heard via RF (last 4 hours):</strong> <span id="w-rf">...</span></div>
+  <div><strong>Stations Heard via AXIP (last 4 hours):</strong> <span id="w-axip">...</span></div>
   <div><strong>Last Packet:</strong> <span id="w-last">...</span></div>
 </div>
 
 <hr>
 
 ## Activity Feed
-<div id="activity-feed-container" style="background:#fff;border:1px solid #dee2e6;padding:15px;border-radius:4px;font-family:monospace;max-height:200px;overflow-y:auto;">
+<div id="activity-feed-container"
+     style="background:#fff;border:1px solid #dee2e6;padding:15px;border-radius:4px;font-family:monospace;max-height:200px;overflow-y:auto;line-height:1.4;color:#333;">
   <p style="color:#666;font-style:italic;">Loading...</p>
 </div>
 
@@ -31,11 +32,13 @@ title: "System Status"
 ## Live MHeard
 
 <div style="margin:10px 0;">
-  <button id="btn-rf" style="padding:6px 10px;background:#2e7d32;color:white;border:1px solid #ccc;border-radius:4px;cursor:pointer;">
+  <button id="btn-rf"
+    style="padding:6px 10px;background:#2e7d32;color:white;border:1px solid #ccc;border-radius:4px;cursor:pointer;">
     RF (Port 1)
   </button>
 
-  <button id="btn-axip" style="padding:6px 10px;background:#1565c0;color:white;border:1px solid #ccc;border-radius:4px;cursor:pointer;">
+  <button id="btn-axip"
+    style="padding:6px 10px;background:#1565c0;color:white;border:1px solid #ccc;border-radius:4px;cursor:pointer;">
     AXIP (Port 3)
   </button>
 </div>
@@ -46,9 +49,12 @@ title: "System Status"
 
 ## Network Routing Nodes
 
-<input id="node-search" placeholder="Search nodes..." style="width:100%;padding:10px;border:1px solid #ccc;border-radius:4px;margin-bottom:10px;">
+<input id="node-search"
+  placeholder="Search nodes..."
+  style="width:100%;padding:10px;border:1px solid #ccc;border-radius:4px;margin-bottom:10px;">
 
-<div id="nodes-container" style="max-height:400px;overflow-y:auto;border:1px solid #eee;padding:10px;background:#fafafa;">
+<div id="nodes-container"
+     style="max-height:400px;overflow-y:auto;border:1px solid #eee;padding:10px;background:#fafafa;">
   <p>Loading...</p>
 </div>
 
@@ -94,53 +100,49 @@ async function fetchDashboardData() {
 
   // ---------------- ACTIVITY FEED ----------------
   document.getElementById("activity-feed-container").innerHTML =
-    mheard.map(st =>
-      `<div style="margin-bottom:4px;">
-        🕒 ${formatUTC(st.ts)}
-        <b>${st.callSign}</b>
-        <span style="color:#666;">→ Port ${st.port}</span>
-      </div>`
-    ).join("") || "<p>No recent activity</p>";
+    mheard.map(st => {
+      const color = Number(st.port) === 1 ? "#2e7d32" : "#1565c0";
 
-  // ---------------- LINKS (RESTORED STYLING) ----------------
+      return `
+        <div style="margin-bottom:4px;">
+          🕒 ${formatUTC(st.ts)}
+          <span style="color:${color};font-weight:bold;">
+            Heard ${st.callSign}
+          </span>
+          on Port ${st.port}
+        </div>`;
+    }).join("") || "<p style='color:#666;'>No recent activity</p>";
+
+  // ---------------- LINKS ----------------
   document.getElementById("links-container").innerHTML =
     links.length === 0
       ? "<p>No active links</p>"
-      : `<table style="width:100%;border-collapse:collapse;margin-top:10px;">
-          <thead>
-            <tr style="border-bottom:2px solid #ccc;text-align:left;">
-              <th style="padding:8px;">Remote Node</th>
-              <th style="padding:8px;">Port</th>
-              <th style="padding:8px;">Type</th>
-              <th style="padding:8px;">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${links.map(l => {
-              const state = (l.state || "ACTIVE").toUpperCase();
-              const isUp =
-                state === "ACTIVE" ||
-                state === "ESTABLISHED" ||
-                state === "CONNECTED";
-
-              const bg = isUp ? "#d4edda" : "#f8d7da";
-              const tc = isUp ? "#155724" : "#721c24";
-
-              return `
-                <tr style="border-bottom:1px solid #eee;">
-                  <td style="padding:8px;font-weight:bold;color:#2c3e50;">${l.farCall}</td>
-                  <td style="padding:8px;">Port ${l.port}</td>
-                  <td style="padding:8px;color:#666;">${l.linkType || "AXUDP"}</td>
-                  <td style="padding:8px;">
-                    <span style="background:${bg};color:${tc};padding:4px 8px;border-radius:4px;font-size:0.85em;font-weight:bold;">
-                      ${state}
-                    </span>
-                  </td>
-                </tr>
-              `;
-            }).join("")}
-          </tbody>
-        </table>`;
+      : `
+      <table style="width:100%;border-collapse:collapse;font-family:monospace;">
+        <tr style="background:#f1f1f1;">
+          <th>Node</th><th>Port</th><th>Type</th><th>Status</th>
+        </tr>
+        ${links.map(l => {
+          const up = ["ACTIVE","ESTABLISHED","CONNECTED"].includes((l.state||"").toUpperCase());
+          return `
+            <tr>
+              <td>${l.farCall}</td>
+              <td>${l.port}</td>
+              <td>${l.linkType || "AXUDP"}</td>
+              <td>
+                <span style="
+                  padding:3px 8px;
+                  border-radius:4px;
+                  font-size:12px;
+                  color:${up ? "#155724" : "#721c24"};
+                  background:${up ? "#d4edda" : "#f8d7da"};
+                  font-weight:bold;">
+                  ${l.state || "ACTIVE"}
+                </span>
+              </td>
+            </tr>`;
+        }).join("")}
+      </table>`;
 
   // ---------------- MHEARD ----------------
   const filtered = mheard.filter(st => {
@@ -152,40 +154,32 @@ async function fetchDashboardData() {
   document.getElementById("mheard-container").innerHTML =
     filtered.length === 0
       ? "<p>No stations</p>"
-      : `<table style="width:100%;border-collapse:collapse;margin-top:10px;">
-          <thead>
-            <tr style="border-bottom:2px solid #ccc;text-align:left;">
-              <th style="padding:8px;">Call</th>
-              <th style="padding:8px;">Port</th>
-              <th style="padding:8px;">Packets</th>
-              <th style="padding:8px;">Last Heard</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${filtered.map(st => `
-              <tr style="border-bottom:1px solid #eee;">
-                <td style="padding:8px;font-weight:bold;color:${Number(st.port) === 1 ? "#2e7d32" : "#1565c0"};">
-                  ${st.callSign}
-                </td>
-                <td style="padding:8px;">${st.port}</td>
-                <td style="padding:8px;">${Number(st.packets || 0).toLocaleString()}</td>
-                <td style="padding:8px;color:#555;">${formatUTC(st.ts)}</td>
-              </tr>
-            `).join("")}
-          </tbody>
-        </table>`;
+      : `
+      <table style="width:100%;border-collapse:collapse;font-family:monospace;">
+        <tr style="background:#f1f1f1;">
+          <th>Call</th><th>Port</th><th>Packets</th><th>Last Heard</th>
+        </tr>
+        ${filtered.map(st => {
+          const color = Number(st.port) === 1 ? "#2e7d32" : "#1565c0";
+          return `
+            <tr>
+              <td style="color:${color};font-weight:bold;">${st.callSign}</td>
+              <td>${st.port}</td>
+              <td>${Number(st.packets||0).toLocaleString()}</td>
+              <td>${formatUTC(st.ts)}</td>
+            </tr>`;
+        }).join("")}
+      </table>`;
 
   // ---------------- METRICS ----------------
-  let rf = 0, axip = 0;
-  let latest = 0, latestCall = "";
+  let rf = 0, axip = 0, latest = 0, latestCall = "";
 
   mheard.forEach(st => {
     if (st.ts > latest) {
       latest = st.ts;
       latestCall = st.callSign;
     }
-
-    if (st.ts >= Date.now() - 12*60*60*1000) {
+    if (st.ts >= Date.now() - 4*60*60*1000) {
       if (Number(st.port) === 1) rf++;
       if (Number(st.port) === 3) axip++;
     }
@@ -195,16 +189,8 @@ async function fetchDashboardData() {
   document.getElementById("w-rf").innerText = rf;
   document.getElementById("w-axip").innerText = axip;
 
-  if (latest) {
-    const diff = Math.floor((Date.now() - latest) / 60000);
-
-    document.getElementById("w-last").innerText =
-      diff < 1 ? `${latestCall} - Just now` :
-      diff < 60 ? `${latestCall} - ${diff} mins ago` :
-      `${latestCall} - ${Math.floor(diff/60)} hrs ago`;
-  } else {
-    document.getElementById("w-last").innerText = "No data";
-  }
+  document.getElementById("w-last").innerText =
+    latest ? `${latestCall} - ${Math.floor((Date.now()-latest)/60000)} mins ago` : "No data";
 
   document.getElementById("w-status").innerText = "Operational";
 
@@ -216,9 +202,14 @@ function renderNodes(list) {
   const el = document.getElementById("nodes-container");
 
   el.innerHTML = list.map(n => `
-    <div style="background:white;border:1px solid #ddd;padding:8px;margin-bottom:6px;border-radius:4px;">
-      <b>${n.Call}</b> ${n.Alias ? ":" + n.Alias : ""}
-      <div style="font-size:12px;color:#666;">Routes: ${n.Routes?.length || 0}</div>
+    <div style="background:white;border:1px solid #ddd;padding:8px;margin-bottom:6px;">
+      <div>
+        <b style="color:#2c3e50;">${n.Call}</b>
+        ${n.Alias ? `<span style="color:#e67e22;"> :${n.Alias}</span>` : ""}
+      </div>
+      <div style="font-size:12px;color:#666;">
+        Routes: ${n.Routes?.length || 0}
+      </div>
     </div>
   `).join("");
 }
@@ -239,10 +230,9 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   document.getElementById("node-search").addEventListener("input", e => {
-    const t = (e.target.value || "").toUpperCase();
-
+    const t = e.target.value.toUpperCase();
     renderNodes(allNodes.filter(n =>
-      (n.Call || "").toUpperCase().includes(t) ||
+      n.Call.toUpperCase().includes(t) ||
       (n.Alias || "").toUpperCase().includes(t)
     ));
   });
