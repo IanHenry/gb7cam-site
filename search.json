@@ -7,11 +7,18 @@
     "text": "Current Status\n\n\nStatus: Operational\n\n\nActive Links: …\n\n\nRF Stations Heard (&lt; 24 hrs): …\n\n\nAXIP Stations Heard (&lt; 24 hrs): …\n\n\nLast Packet: …"
   },
   {
-    "objectID": "status.html#activity-feed",
-    "href": "status.html#activity-feed",
+    "objectID": "status.html#linbpq-ports",
+    "href": "status.html#linbpq-ports",
     "title": "System Status",
-    "section": "Activity Feed",
-    "text": "Activity Feed\n\n\nLoading…"
+    "section": "LINBPQ Ports",
+    "text": "LINBPQ Ports\n\n\nLoading ports…"
+  },
+  {
+    "objectID": "status.html#activity-feed-axipblue-rfgreen",
+    "href": "status.html#activity-feed-axipblue-rfgreen",
+    "title": "System Status",
+    "section": "Activity Feed (AXIP=Blue, RF=Green)",
+    "text": "Activity Feed (AXIP=Blue, RF=Green)\n\n\nLoading…"
   },
   {
     "objectID": "status.html#live-links",
