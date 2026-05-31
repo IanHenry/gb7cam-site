@@ -1,50 +1,3 @@
----
-title: "System Status"
----
-
-<img src="images/main_logo.png" class="centered-image">
-
-## Current Status
-
-<div id="api-status-widget" class="status-card metric-grid">
-  <div class="metric"><strong>Status:</strong> <span id="w-status">Operational</span></div>
-  <div class="metric"><strong>Active Links:</strong> <span id="w-links">...</span></div>
-  <div class="metric"><strong>RF Stations Heard (last 24 hrs):</strong> <span id="w-rf">...</span></div>
-  <div class="metric"><strong>AXIP Stations Heard (last 24 hrs):</strong> <span id="w-axip">...</span></div>
-  <div class="metric"><strong>Last Packet:</strong> <span id="w-last">...</span></div>
-</div>
-
----
-
-## Activity Feed
-<div id="activity-feed-container" class="panel">
-  <p>Loading...</p>
-</div>
-
----
-
-## Live Links
-<div id="links-container" class="panel">
-  <p>Loading...</p>
-</div>
-
----
-
-## Live MHeard
-<div id="mheard-container" class="panel">
-  <p>Loading...</p>
-</div>
-
----
-
-## Network Routing Nodes
-
-<input id="node-search" class="search-box" placeholder="Search nodes...">
-
-<div id="nodes-container" class="panel nodes">
-  <p>Loading routing node index...</p>
-</div>
-
 <script>
 let allNodes = [];
 
@@ -77,61 +30,75 @@ function formatUTC(ts) {
     .replace("T", " ") + " UTC";
 }
 
-function portColor(port) {
-  return port === RF_PORT ? "#2e7d32" : "#1565c0";
-}
-
 /* ----------------------------
    FETCH DATA
 ---------------------------- */
 async function fetchDashboardData() {
+
+  const statusEl = document.getElementById("api-status-widget");
+
+  function setOffline() {
+    statusEl.classList.remove("status-card--good");
+    statusEl.classList.add("status-card--bad");
+
+    document.getElementById("w-status").innerText = "Offline";
+    document.getElementById("w-links").innerText = "—";
+    document.getElementById("w-rf").innerText = "—";
+    document.getElementById("w-axip").innerText = "—";
+    document.getElementById("w-last").innerText = "No data";
+  }
+
   const base = "https://api.gb7cam.org.uk";
 
-  const [linksRes, mheardRes, nodesRes] = await Promise.all([
-    fetch(base + "/links"),
-    fetch(base + "/mheard/all"),
-    fetch(base + "/nodes")
-  ]);
+  try {
+    const [linksRes, mheardRes, nodesRes] = await Promise.all([
+      fetch(base + "/links"),
+      fetch(base + "/mheard/all"),
+      fetch(base + "/nodes")
+    ]);
 
-  if (!linksRes.ok || !mheardRes.ok || !nodesRes.ok)
-    throw new Error("API failure");
+    // HARD FAILURE = offline mode
+    if (!linksRes.ok || !mheardRes.ok || !nodesRes.ok) {
+      setOffline();
+      return;
+    }
 
-  const links = (await linksRes.json()).links || [];
-  const rawMheard = (await mheardRes.json()).mheard || [];
-  allNodes = (await nodesRes.json()).nodes || [];
+    const links = (await linksRes.json()).links || [];
+    const rawMheard = (await mheardRes.json()).mheard || [];
+    allNodes = (await nodesRes.json()).nodes || [];
 
-  const cutoff = Date.now() - WINDOW_MS;
+    const cutoff = Date.now() - WINDOW_MS;
 
-  const mheardAll = rawMheard
-    .map(st => ({ ...st, ts: parseTime(st) }))
-    .filter(st => !isNaN(st.ts) && st.ts >= cutoff)
-    .sort((a, b) => b.ts - a.ts);
+    const mheardAll = rawMheard
+      .map(st => ({ ...st, ts: parseTime(st) }))
+      .filter(st => !isNaN(st.ts) && st.ts >= cutoff)
+      .sort((a, b) => b.ts - a.ts);
 
-  /* ----------------------------
-     ACTIVITY FEED
-  ---------------------------- */
-  document.getElementById("activity-feed-container").innerHTML =
-    mheardAll.length === 0
-     ? `<p class="text-muted">No recent activity</p>`
-      : mheardAll.map(st => {
-          const port = Number(st.port);
-          return `
-            <div class="activity-item">
-              🕒 ${formatUTC(st.ts)}
-              <span class="${port === RF_PORT ? "port--rf" : "port--axip"}">
-                Heard ${st.callSign}
-              </span>
-              on Port ${st.port}
-            </div>`;
-        }).join("");
+    /* ----------------------------
+       ACTIVITY FEED
+    ---------------------------- */
+    document.getElementById("activity-feed-container").innerHTML =
+      mheardAll.length === 0
+        ? `<p class="text-muted">No recent activity</p>`
+        : mheardAll.map(st => {
+            const port = Number(st.port);
+            return `
+              <div class="activity-item">
+                🕒 ${formatUTC(st.ts)}
+                <span class="${port === RF_PORT ? "port--rf" : "port--axip"}">
+                  Heard ${st.callSign}
+                </span>
+                on Port ${st.port}
+              </div>`;
+          }).join("");
 
-/* ----------------------------
-   LINKS
----------------------------- */
-document.getElementById("links-container").innerHTML =
-  links.length === 0
-    ? "<p>No active links</p>"
-    : `
+    /* ----------------------------
+       LINKS
+    ---------------------------- */
+    document.getElementById("links-container").innerHTML =
+      links.length === 0
+        ? "<p>No active links</p>"
+        : `
 <table class="table-dashboard">
   <thead>
     <tr>
@@ -163,13 +130,13 @@ document.getElementById("links-container").innerHTML =
   </tbody>
 </table>`;
 
-/* ----------------------------
-   MHEARD (UNIFIED)
----------------------------- */
-document.getElementById("mheard-container").innerHTML =
-  mheardAll.length === 0
-    ? "<p>No stations</p>"
-    : `
+    /* ----------------------------
+       MHEARD
+    ---------------------------- */
+    document.getElementById("mheard-container").innerHTML =
+      mheardAll.length === 0
+        ? "<p>No stations</p>"
+        : `
 <table class="table-dashboard">
   <thead>
     <tr>
@@ -194,43 +161,46 @@ document.getElementById("mheard-container").innerHTML =
   </tbody>
 </table>`;
 
-  /* ----------------------------
-     METRICS (SINGLE PASS)
-  ---------------------------- */
-  let rf = 0, axip = 0, latest = 0, latestCall = "";
+    /* ----------------------------
+       METRICS
+    ---------------------------- */
+    let rf = 0, axip = 0, latest = 0, latestCall = "";
 
-  for (const st of mheardAll) {
-    const port = Number(st.port);
+    for (const st of mheardAll) {
+      const port = Number(st.port);
 
-    if (st.ts > latest) {
-      latest = st.ts;
-      latestCall = st.callSign;
+      if (st.ts > latest) {
+        latest = st.ts;
+        latestCall = st.callSign;
+      }
+
+      if (port === RF_PORT) rf++;
+      if (port === AXIP_PORT) axip++;
     }
 
-    if (port === RF_PORT) rf++;
-    if (port === AXIP_PORT) axip++;
+    document.getElementById("w-links").innerText = links.length;
+    document.getElementById("w-rf").innerText = rf;
+    document.getElementById("w-axip").innerText = axip;
+
+    document.getElementById("w-last").innerText =
+      latest
+        ? `${latestCall} - ${Math.floor((Date.now()-latest)/60000)} mins ago`
+        : "No data";
+
+    const ok = links.length > 0;
+
+    statusEl.classList.remove("status-card--good", "status-card--bad");
+    statusEl.classList.add(ok ? "status-card--good" : "status-card--bad");
+
+    document.getElementById("w-status").innerText =
+      ok ? "Operational" : "Degraded";
+
+    renderNodes(allNodes);
+
+  } catch (e) {
+    setOffline();
+    console.error("Dashboard offline:", e);
   }
-
-  document.getElementById("w-links").innerText = links.length;
-  document.getElementById("w-rf").innerText = rf;
-  document.getElementById("w-axip").innerText = axip;
-
-  document.getElementById("w-last").innerText =
-    latest
-      ? `${latestCall} - ${Math.floor((Date.now()-latest)/60000)} mins ago`
-      : "No data";
-
-  const ok = links.length > 0;
-
-const statusEl = document.getElementById("api-status-widget");
-
-statusEl.classList.remove("status-card--good", "status-card--bad");
-statusEl.classList.add(ok ? "status-card--good" : "status-card--bad");
-
-document.getElementById("w-status").innerText =
-  ok ? "Operational" : "Degraded";
-
-  renderNodes(allNodes);
 }
 
 /* ----------------------------
@@ -244,7 +214,7 @@ function renderNodes(list) {
     return;
   }
 
- el.innerHTML = `
+  el.innerHTML = `
   <div class="nodes-grid">
     ${list.map(n => `
       <div class="node-card">
@@ -258,8 +228,7 @@ function renderNodes(list) {
         </div>
       </div>
     `).join("")}
-  </div>
-`;
+  </div>`;
 }
 
 /* ----------------------------

@@ -10,10 +10,7 @@ This node runs a LINBPQ and combines Node, BBS, Mail and Chat Services.
 
 ### NODE
 
-You can connect to the GB7CAM using:
-```
-CONNECT <PORT> GB7CAM
-```
+You can connect to the GB7CAM using QTersmTCP pointing to Direwolf and connected to your rig using a DigiRig or similar.  Simply select ```Connect`` and enter ``` GBRCAM```
 
 The following commands are available:
 ```
@@ -22,11 +19,11 @@ BBS CHAT CONNECT BYE INFO NODES PORTS ROUTES USERS MHEARD
 
 - **BBS** enters the Buletin Board / Mail System
 - **CHAT** enters the Chat System
-- **CONNECT <PORT NUM> <NAME OF NODE>** allows you to connect to another linked node 
+- **CONNECT <PORT NUM> <NAME OF NODE>** allows you to connect to another linked node using ```CONNECT <PORT> GB7CAM``` (Port 3 for AXIP and Port 1 for RF)
 - **BYE** Exits the node or current connection
 - **INFO** Displays the node info message
 - **NODES** shows list of nodes you can connect to
-- **PORTS** show ports available for communication (PORT 1 - RF 2m, PORT 2 - AXIP)
+- **PORTS** show ports available for communication (PORT 1 - RF 2m, PORT 3 - AXIP)
 - **ROUTES** shows routes to other nodes
 - **MHEARD <PORT NUM>** 
 - **USERS** shows users currently logged in to the node

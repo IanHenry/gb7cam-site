@@ -500,3 +500,25 @@ table tr:hover {
 .text-muted {
   color: rgba(0,0,0,0.55);
 }
+
+.status-box {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-left: 4px solid #28a745;
+  padding: 15px;
+  border-radius: 4px;
+  font-family: monospace;
+  line-height: 1.5;
+  max-width: 450px;
+  margin: 20px 0;
+  transition: all 0.2s ease;
+}
+
+.status-box.good {
+  border-left-color: #28a745;
+}
+
+.status-box.bad {
+  border-left-color: #dc3545;
+  background: #fff5f5;
+}
