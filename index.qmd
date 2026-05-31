@@ -67,7 +67,7 @@ async function fetchWidgetTelemetry() {
     // Concurrent data download
     const [linksRes, mheardRes] = await Promise.all([
       fetch(`${base}/links`),
-      fetch(`${base}/mheard`)
+      fetch(`${base}/mheard/all`)
     ]);
 
     // If either endpoint fails, explicitly throw an error to trip the catch block
