@@ -8,7 +8,7 @@ title: "Services Available"
 
 This node runs a LINBPQ and combines Node, BBS, Mail and Chat Services.
 
-### Node
+### NODE
 
 You can connect to the GB7CAM using:
 ```
