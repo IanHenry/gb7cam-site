@@ -15,11 +15,14 @@ GB7CAM is a 2m AX.25 packet radio node serving the Cambridge area.  The station 
 ## Real-Time Node Telemetry
 <div id="api-status">🔄 Connecting to GB7CAM API...</div>
 :::
+More detailed status information can be found on the (status page)[status.qmd]
 
 ## Station Overview
 
 ### Radio Parameters
 
+| Parameter | Value |
+|-----------|------|
 | Band | 2m |
 | TX Frequency | 144.9500 MHz |
 | RX Frequency | 144.9500 MHz |
