@@ -4,7 +4,7 @@
     "href": "status.html#current-status",
     "title": "System Status",
     "section": "Current Status",
-    "text": "Current Status\n\n\nStatus: Operational\n\n\nActive Links: …\n\n\nStations Heard via RF (last 4 hours): …\n\n\nStations Heard via AXIP (last 4 hours): …\n\n\nLast Packet: …"
+    "text": "Current Status\n\n\nStatus: Operational\n\n\nActive Links: …\n\n\nStations Heard via RF (last 24 hours): …\n\n\nStations Heard via AXIP (last 24 hours): …\n\n\nLast Packet: …"
   },
   {
     "objectID": "status.html#activity-feed",
