@@ -46,14 +46,7 @@
     "href": "index.html#station-overview",
     "title": "GB7CAM Packet System",
     "section": "Station Overview",
-    "text": "Station Overview\n\nRegistered call sign GB7CAM\nBand: 2m\n\nFrequency: 144.950 MHz (TX/RX)\n\nMode: AX.25 Packet / Mailbox (LINBPQ)\nPower 5W ERP (7 dBW ERP)\nAntenna height: 5 m AGL\nLocator: JO02AD (Harston)\nLatitude: 52.14\nLongitude: 0.08\nKeeper: Ian Henry (G0LFT)"
-  },
-  {
-    "objectID": "index.html#quick-links",
-    "href": "index.html#quick-links",
-    "title": "GB7CAM Packet System",
-    "section": "Quick Links",
-    "text": "Quick Links\n\nServices Available\nLive Network Status\nTechnical Information\n[Contact][contact.qmd]"
+    "text": "Station Overview\n\nRadio Parameters\n\n\n\nParameter\nValue\n\n\n\n\nBand\n2m\n\n\nTX Frequency\n144.9500 MHz\n\n\nRX Frequency\n144.9500 MHz\n\n\nMode\nAX.25 Packet / LINBPQ\n\n\n\n\n\n\nLocation\n\nLocator: JO02AD\n\nNear: Harston\n\nLatitude: 52.14\n\nLongitude: 0.08\n\nAntenna height: 5 m AGL\n\nERP: 7 dBW\n\n\n\n\nAdministration\n\nRSGB held station details\nETCC Region: East Anglia (EA)\n\nRSGB Region: 12\n\nKeeper: G0LFT (Ian Henry)"
   },
   {
     "objectID": "node.html#gb7cam-ax.25-node",

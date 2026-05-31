@@ -181,29 +181,62 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="station-overview" class="level2">
 <h2 class="anchored" data-anchor-id="station-overview">Station Overview</h2>
+<section id="radio-parameters" class="level3">
+<h3 class="anchored" data-anchor-id="radio-parameters">Radio Parameters</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Parameter</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Band</td>
+<td>2m</td>
+</tr>
+<tr class="even">
+<td>TX Frequency</td>
+<td>144.9500 MHz</td>
+</tr>
+<tr class="odd">
+<td>RX Frequency</td>
+<td>144.9500 MHz</td>
+</tr>
+<tr class="even">
+<td>Mode</td>
+<td>AX.25 Packet / LINBPQ</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="location" class="level3">
+<h3 class="anchored" data-anchor-id="location">Location</h3>
 <ul>
-<li><a href="https://ukrepeater.net/my_repeater.php?id=6877">Registered call sign GB7CAM</a></li>
-<li>Band: 2m<br>
+<li>Locator: JO02AD<br>
 </li>
-<li>Frequency: 144.950 MHz (TX/RX)<br>
+<li>Near: Harston<br>
 </li>
-<li>Mode: AX.25 Packet / Mailbox (LINBPQ)</li>
-<li>Power 5W ERP (7 dBW ERP)</li>
-<li>Antenna height: 5 m AGL</li>
-<li>Locator: JO02AD (Harston)</li>
-<li>Latitude: 52.14</li>
-<li>Longitude: 0.08</li>
-<li>Keeper: Ian Henry <a href="https://g0lft.org">(G0LFT)</a></li>
+<li>Latitude: 52.14<br>
+</li>
+<li>Longitude: 0.08<br>
+</li>
+<li>Antenna height: 5 m AGL<br>
+</li>
+<li>ERP: 7 dBW</li>
 </ul>
 <hr>
 </section>
-<section id="quick-links" class="level2">
-<h2 class="anchored" data-anchor-id="quick-links">Quick Links</h2>
+<section id="administration" class="level3">
+<h3 class="anchored" data-anchor-id="administration">Administration</h3>
 <ul>
-<li><a href="services.qmd">Services Available</a></li>
-<li><a href="./status.html">Live Network Status</a></li>
-<li><a href="./tech.html">Technical Information</a></li>
-<li>[Contact][contact.qmd]</li>
+<li>RSGB held <a href="https://ukrepeater.net/my_repeater.php?id=6877">station details</a></li>
+<li>ETCC Region: East Anglia (EA)<br>
+</li>
+<li>RSGB Region: 12<br>
+</li>
+<li>Keeper: <a href="https://g0lft.org">G0LFT</a> (Ian Henry)</li>
 </ul>
 <script>
 async function fetchNodeSummary() {
@@ -227,13 +260,16 @@ async function fetchNodeSummary() {
     if (!mheardResponse.ok) throw new Error("MHeard API error");
     const mheardData = await mheardResponse.json();
 
-    // 3. Process stations and track the newest activity timestamp
-    let recentStationsCount = 0;
+    // 3. Filter stations by 4-hour window and separate by Port type
+    let rfCount = 0;   // Port 1
+    let axipCount = 0; // Port 3
+    let otherCount = 0; 
+
     if (mheardData.mheard) {
       const fourHoursAgo = Date.now() - (4 * 60 * 60 * 1000);
       
       mheardData.mheard.forEach(station => {
-        // FIX: Append "Z" if it doesn't exist to force UTC parsing
+        // Fix unlabeled timezone strings by appending 'Z'
         let timeStringRaw = station.lastHeard;
         if (timeStringRaw && !timeStringRaw.endsWith('Z') && !timeStringRaw.includes('+')) {
           timeStringRaw += 'Z';
@@ -242,36 +278,49 @@ async function fetchNodeSummary() {
         const lastHeardTime = Date.parse(timeStringRaw);
         
         if (!isNaN(lastHeardTime)) {
-          // Track overall latest activity
           if (lastHeardTime > latestTimestamp) {
             latestTimestamp = lastHeardTime;
           }
-          // Filter for the 4-hour window
+          
+          // Check 4-hour validity window
           if (lastHeardTime >= fourHoursAgo) {
-            recentStationsCount++;
+            const portNum = Number(station.port);
+            if (portNum === 1) {
+              rfCount++;
+            } else if (portNum === 3) {
+              axipCount++;
+            } else {
+              otherCount++;
+            }
           }
         }
       });
     }
 
-    // Format the time text
+    // Format the time text securely
     let activityText = "No recent activity";
     if (latestTimestamp > 0) {
       const latestDate = new Date(latestTimestamp);
-      activityText = `Last activity at ${latestDate.toISOString().substr(11, 5)} UTC`;
+      activityText = `Last activity at ${latestDate.toISOString().substring(11, 16)} UTC`;
+    }
+
+    // Compile separated ports summary text
+    let stationsSummary = `${rfCount} RF, ${axipCount} AXIP`;
+    if (otherCount > 0) {
+      stationsSummary += `, ${otherCount} other`;
     }
 
     // Direct injection into your layout
     statusEl.innerHTML = `
       🟢 <strong>OPERATIONAL</strong> — 
-      ${activeLinksCount} active links, 
-      ${recentStationsCount} stations heard in the last 4 hours 
+      ${activeLinksCount} active links | 
+      Stations heard (4h): ${stationsSummary} 
       (<small>${activityText}</small>)
     `;
 
   } catch (error) {
     console.error("Telemetry summary fetch failed:", error);
-    statusEl.innerHTML = "⚠️ <strong>MAINTENANCE / OFFLINE</strong> (Unable to connect to home server)";
+    statusEl.innerHTML = "🔴 <strong>NOT OPERATIONAL</strong> (Server unreachable)";
   }
 }
 
@@ -281,6 +330,7 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->
