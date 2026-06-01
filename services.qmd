@@ -6,20 +6,28 @@ title: "Services Available"
 
 ## Services Available
 
-This node runs a LINBPQ and combines Node, BBS, Mail and Chat Services.
+This node runs a LINBPQ and combines Node, BBS, Mail and Chat Services as well as a few games and a system monitor tool.
 
-### NODE
+### Requirements
 
-You can connect to the GB7CAM using QTersmTCP pointing to Direwolf and connected to your rig using a DigiRig or similar.  Simply select ```CONNECT``` and enter ``` GBRCAM```
+First you require an amateur radio license.  This is essential!
+
+Second you must configure your radio to transmit and receive packets using a software TNC such as Direwolf or a hardware TNC such as NinoTNC.  Using Direwolf is a great starting point and can be used with usb soundcards such as DigiRig.  There are many [guides](https://themodernham.com/ultimate-direwolf-tnc-installation-guide-for-windows-and-linux/) online to set this up.
+
+### Node
+
+Once setup, you can connect to the GB7CAM using QTermTCP.  Simply select ```CONNECT``` and enter ``` GB7CAM```
 
 Once connected, the following commands are available:
 
 ```
-BBS CHAT CONNECT BYE INFO NODES PORTS ROUTES USERS MHEARD
+BBS CHAT GAMES SYSMON CONNECT BYE INFO NODES PORTS ROUTES USERS MHEARD
 ```
 
 - **BBS** enters the Buletin Board / Mail System
 - **CHAT** enters the Chat System
+- **GAMES** enters a game selection menu
+- **SYSMON** launches a system monitor tool
 - **CONNECT <PORT NUM> <NAME OF NODE>** allows you to connect to another linked node using ```CONNECT <PORT> GB7CAM``` (Port 3 for AXIP and Port 1 for RF)
 - **BYE** Exits the node or current connection
 - **INFO** Displays the node info message
