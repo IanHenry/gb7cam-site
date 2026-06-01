@@ -246,7 +246,6 @@ function parseTime(st) {
   const [y, m, d] = datePart.split("-").map(Number);
   const [hh, mm, ss = 0] = timePart.split(":").map(Number);
 
-  // Evaluate directly as a UTC timestamp to match your status page engine
   return Date.UTC(y, m - 1, d, hh, mm, ss);
 }
 
@@ -254,29 +253,25 @@ function parseTime(st) {
    FETCH DATA
 ---------------------------- */
 async function fetchWidgetTelemetry() {
-  const sEl = document.getElementById("w-status");
-  const lEl = document.getElementById("w-links");
-  const rEl = document.getElementById("w-rf");
-  const aEl = document.getElementById("w-axip");
-  const tEl = document.getElementById("w-last");
-  const box = document.getElementById("api-status-widget");
-
-  const base = "https://gb7cam.org.uk";
+  const statusEl = document.getElementById("api-status-widget");
 
   function setOffline() {
-    box.classList.remove("status-card--good", "status-card--bad");
-    box.classList.add("status-card--bad");
-    sEl.innerText = "Offline";
-    lEl.innerText = "—";
-    rEl.innerText = "—";
-    aEl.innerText = "—";
-    tEl.innerText = "Offline";
+    statusEl.classList.remove("status-card--good", "status-card--bad");
+    statusEl.classList.add("status-card--bad");
+
+    document.getElementById("w-status").innerText = "Offline";
+    document.getElementById("w-links").innerText = "—";
+    document.getElementById("w-rf").innerText = "—";
+    document.getElementById("w-axip").innerText = "—";
+    document.getElementById("w-last").innerText = "No data";
   }
+
+  const base = "https://api.gb7cam.org.uk";
 
   try {
     const [linksRes, mheardRes] = await Promise.all([
-      fetch(`${base}/links`),
-      fetch(`${base}/mheard/all`)
+      fetch(base + "/links"),
+      fetch(base + "/mheard/all")
     ]);
 
     if (!linksRes.ok || !mheardRes.ok) {
@@ -284,73 +279,62 @@ async function fetchWidgetTelemetry() {
       return;
     }
 
-    const linksData = await linksRes.json();
-    const mheardData = await mheardRes.json();
-
-    const links = linksData.links || [];
-    const rawMheard = mheardData.mheard || [];
-
-    lEl.innerText = links.length;
-
-    let rfCount = 0;
-    let axipCount = 0;
-    let latestTimestamp = 0;
-    let latestCallsign = "None";
+    const links = (await linksRes.json()).links || [];
+    const rawMheard = (await mheardRes.json()).mheard || [];
     const cutoff = Date.now() - FOUR_HOURS_MS;
 
-    rawMheard.forEach(station => {
-      const ts = parseTime(station);
+    // Filter and clean incoming data based on the 4-hour window
+    const mheardAll = rawMheard
+      .map(st => ({ ...st, ts: parseTime(st) }))
+      .filter(st => !isNaN(st.ts) && st.ts >= cutoff);
 
-      if (!isNaN(ts)) {
-        if (ts > latestTimestamp) {
-          latestTimestamp = ts;
-          latestCallsign = station.callSign || "Unknown";
-        }
+    /* ----------------------------
+       COMPUTE METRICS
+    ---------------------------- */
+    let rf = 0, axip = 0, latest = 0, latestCall = "";
 
-        if (ts >= cutoff) {
-          const port = Number(station.port);
-          if (port === RF_PORT) rfCount++;
-          if (port === AXIP_PORT) axipCount++;
-        }
+    for (const st of mheardAll) {
+      const port = Number(st.port);
+
+      if (st.ts > latest) {
+        latest = st.ts;
+        latestCall = st.callSign;
       }
-    });
 
-    rEl.innerText = rfCount;
-    aEl.innerText = axipCount;
-
-    if (latestTimestamp > 0) {
-      const diffMs = Date.now() - latestTimestamp;
-      const diffMins = Math.max(0, Math.floor(diffMs / (1000 * 60)));
-      
-      if (diffMins < 1) {
-        tEl.innerText = `${latestCallsign} - Just now`;
-      } else if (diffMins < 60) {
-        tEl.innerText = `${latestCallsign} - ${diffMins} mins ago`;
-      } else {
-        const diffHours = Math.floor(diffMins / 60);
-        tEl.innerText = `${latestCallsign} - ${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
-      }
-    } else {
-      tEl.innerText = "No recent data";
+      if (port === RF_PORT) rf++;
+      if (port === AXIP_PORT) axip++;
     }
+
+    // Output Telemetry Metrics to DOM
+    document.getElementById("w-links").innerText = links.length;
+    document.getElementById("w-rf").innerText = rf;
+    document.getElementById("w-axip").innerText = axip;
+
+    document.getElementById("w-last").innerText =
+      latest
+        ? `${latestCall} - ${Math.floor((Date.now() - latest) / 60000)} mins ago`
+        : "No data";
 
     const ok = links.length > 0;
-    box.classList.remove("status-card--good", "status-card--bad");
-    
+
+    statusEl.classList.remove("status-card--good", "status-card--bad");
     if (ok) {
-      box.classList.add("status-card--good");
-      sEl.innerText = "Operational";
+      statusEl.classList.add("status-card--good");
+      document.getElementById("w-status").innerText = "Operational";
     } else {
-      box.classList.add("status-card--bad");
-      sEl.innerText = "Degraded";
+      statusEl.classList.add("status-card--bad");
+      document.getElementById("w-status").innerText = "Degraded";
     }
 
-  } catch (error) {
-    console.error("Widget engine failure:", error);
+  } catch (e) {
     setOffline();
+    console.error("Widget fetch offline:", e);
   }
 }
 
+/* ----------------------------
+   INITIALIZE TIMERS
+---------------------------- */
 document.addEventListener("DOMContentLoaded", () => {
   fetchWidgetTelemetry();
   setInterval(fetchWidgetTelemetry, 60000);
