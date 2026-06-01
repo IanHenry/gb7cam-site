@@ -222,7 +222,7 @@ ul.task-list li input[type="checkbox"] {
 <section id="administration" class="level3">
 <h3 class="anchored" data-anchor-id="administration">Administration</h3>
 <ul>
-<li>RSGB held <a href="https://ukrepeater.net/my_repeater.php?id=6877">station details</a></li>
+<li>RSGB held <a href="https://ukrepeater.net">station details</a></li>
 <li>ETCC Region: East Anglia (EA)<br>
 </li>
 <li>RSGB Region: 12<br>
@@ -231,7 +231,6 @@ ul.task-list li input[type="checkbox"] {
 </ul>
 <script>
 async function fetchWidgetTelemetry() {
-  // DOM targets
   const sEl = document.getElementById("w-status");
   const lEl = document.getElementById("w-links");
   const rEl = document.getElementById("w-rf");
@@ -239,25 +238,35 @@ async function fetchWidgetTelemetry() {
   const tEl = document.getElementById("w-last");
   const box = document.getElementById("api-status-widget");
 
-  const base = "https://api.gb7cam.org.uk";
+  const base = "https://gb7cam.org.uk";
+
+  function setOffline() {
+    box.classList.remove("status-card--good", "status-card--bad");
+    box.classList.add("status-card--bad");
+    sEl.innerText = "Offline";
+    lEl.innerText = "—";
+    rEl.innerText = "—";
+    aEl.innerText = "—";
+    tEl.innerText = "Offline";
+  }
 
   try {
-    // Concurrent data download
     const [linksRes, mheardRes] = await Promise.all([
       fetch(`${base}/links`),
       fetch(`${base}/mheard/all`)
     ]);
 
-    // If either endpoint fails, explicitly throw an error to trip the catch block
-    if (!linksRes.ok || !mheardRes.ok) throw new Error("API Connection Error");
+    if (!linksRes.ok || !mheardRes.ok) {
+      setOffline();
+      return;
+    }
 
     const linksData = await linksRes.json();
     const mheardData = await mheardRes.json();
 
-    // Set Active Links
-    lEl.innerText = linksData.links ? linksData.links.length : 0;
+    const activeLinksCount = linksData.links ? linksData.links.length : 0;
+    lEl.innerText = activeLinksCount;
 
-    // Trackers
     let rfCount = 0;
     let axipCount = 0;
     let latestTimestamp = 0;
@@ -266,7 +275,6 @@ async function fetchWidgetTelemetry() {
 
     if (mheardData.mheard) {
       mheardData.mheard.forEach(station => {
-        // Convert hyphens to slashes and append explicit UTC timezone indicator
         let cleanTimeStr = station.lastHeard.replace(/-/g, '/');
         if (cleanTimeStr) {
           cleanTimeStr += ' UTC';
@@ -274,13 +282,11 @@ async function fetchWidgetTelemetry() {
         const parsedTime = Date.parse(cleanTimeStr);
 
         if (!isNaN(parsedTime)) {
-          // Track the absolute newest transmission globally
           if (parsedTime > latestTimestamp) {
             latestTimestamp = parsedTime;
             latestCallsign = station.callSign || "Unknown";
           }
 
-          // 4-Hour active user window buckets
           if (parsedTime >= fourHoursAgo) {
             const port = Number(station.port);
             if (port === 1) rfCount++;
@@ -290,11 +296,9 @@ async function fetchWidgetTelemetry() {
       });
     }
 
-    // Output Heard Statistics
     rEl.innerText = rfCount;
     aEl.innerText = axipCount;
 
-    // Compute relative dynamic string for the last packet window
     if (latestTimestamp > 0) {
       const diffMs = Date.now() - latestTimestamp;
       const diffMins = Math.max(0, Math.floor(diffMs / (1000 * 60)));
@@ -302,7 +306,7 @@ async function fetchWidgetTelemetry() {
       if (diffMins < 1) {
         tEl.innerText = `${latestCallsign} - Just now`;
       } else if (diffMins < 60) {
-        tEl.innerText = `${latestCallsign} - ${diffMins} min${diffMins > 1 ? 's' : ''} ago`;
+        tEl.innerText = `${latestCallsign} - ${diffMins} mins ago`;
       } else {
         const diffHours = Math.floor(diffMins / 60);
         tEl.innerText = `${latestCallsign} - ${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
@@ -312,26 +316,23 @@ async function fetchWidgetTelemetry() {
     }
 
     box.classList.remove("status-card--good", "status-card--bad");
-    box.classList.add("status-card--good");
-    sEl.innerText = "Operational";
+    if (activeLinksCount > 0) {
+      box.classList.add("status-card--good");
+      sEl.innerText = "Operational";
+    } else {
+      box.classList.add("status-card--bad");
+      sEl.innerText = "Degraded";
+    }
 
   } catch (error) {
     console.error("Widget engine failure:", error);
-    
-    box.classList.remove("status-card--good", "status-card--bad");
-    box.classList.add("status-card--bad");
-    sEl.innerText = "Offline";
-    
-    lEl.innerText = "—";
-    rEl.innerText = "—";
-    aEl.innerText = "—";
-    tEl.innerText = "Offline";
+    setOffline();
   }
+}
 
-// Initialize on page assembly completed and set up the 60-second loop
 document.addEventListener("DOMContentLoaded", () => {
-  fetchWidgetTelemetry(); // Run immediately on load
-  setInterval(fetchWidgetTelemetry, 60000); // Run every 60,000 milliseconds (60 seconds)
+  fetchWidgetTelemetry();
+  setInterval(fetchWidgetTelemetry, 60000);
 });
 </script>
 
