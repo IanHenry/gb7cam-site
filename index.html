@@ -230,6 +230,29 @@ ul.task-list li input[type="checkbox"] {
 <li>Keeper: <a href="https://g0lft.org">G0LFT</a> (Ian Henry)</li>
 </ul>
 <script>
+/* ----------------------------
+   CONSTANTS & HELPERS
+---------------------------- */
+const RF_PORT = 1;
+const AXIP_PORT = 3;
+const FOUR_HOURS_MS = 4 * 60 * 60 * 1000;
+
+function parseTime(st) {
+  if (!st?.lastHeard) return NaN;
+
+  const [datePart, timePart] = st.lastHeard.split(" ");
+  if (!datePart || !timePart) return NaN;
+
+  const [y, m, d] = datePart.split("-").map(Number);
+  const [hh, mm, ss = 0] = timePart.split(":").map(Number);
+
+  // Evaluate directly as a UTC timestamp to match your status page engine
+  return Date.UTC(y, m - 1, d, hh, mm, ss);
+}
+
+/* ----------------------------
+   FETCH DATA
+---------------------------- */
 async function fetchWidgetTelemetry() {
   const sEl = document.getElementById("w-status");
   const lEl = document.getElementById("w-links");
@@ -264,37 +287,33 @@ async function fetchWidgetTelemetry() {
     const linksData = await linksRes.json();
     const mheardData = await mheardRes.json();
 
-    const activeLinksCount = linksData.links ? linksData.links.length : 0;
-    lEl.innerText = activeLinksCount;
+    const links = linksData.links || [];
+    const rawMheard = mheardData.mheard || [];
+
+    lEl.innerText = links.length;
 
     let rfCount = 0;
     let axipCount = 0;
     let latestTimestamp = 0;
     let latestCallsign = "None";
-    const fourHoursAgo = Date.now() - (4 * 60 * 60 * 1000);
+    const cutoff = Date.now() - FOUR_HOURS_MS;
 
-    if (mheardData.mheard) {
-      mheardData.mheard.forEach(station => {
-        let cleanTimeStr = station.lastHeard.replace(/-/g, '/');
-        if (cleanTimeStr) {
-          cleanTimeStr += ' UTC';
+    rawMheard.forEach(station => {
+      const ts = parseTime(station);
+
+      if (!isNaN(ts)) {
+        if (ts > latestTimestamp) {
+          latestTimestamp = ts;
+          latestCallsign = station.callSign || "Unknown";
         }
-        const parsedTime = Date.parse(cleanTimeStr);
 
-        if (!isNaN(parsedTime)) {
-          if (parsedTime > latestTimestamp) {
-            latestTimestamp = parsedTime;
-            latestCallsign = station.callSign || "Unknown";
-          }
-
-          if (parsedTime >= fourHoursAgo) {
-            const port = Number(station.port);
-            if (port === 1) rfCount++;
-            else if (port === 3) axipCount++;
-          }
+        if (ts >= cutoff) {
+          const port = Number(station.port);
+          if (port === RF_PORT) rfCount++;
+          if (port === AXIP_PORT) axipCount++;
         }
-      });
-    }
+      }
+    });
 
     rEl.innerText = rfCount;
     aEl.innerText = axipCount;
@@ -315,8 +334,10 @@ async function fetchWidgetTelemetry() {
       tEl.innerText = "No recent data";
     }
 
+    const ok = links.length > 0;
     box.classList.remove("status-card--good", "status-card--bad");
-    if (activeLinksCount > 0) {
+    
+    if (ok) {
       box.classList.add("status-card--good");
       sEl.innerText = "Operational";
     } else {
