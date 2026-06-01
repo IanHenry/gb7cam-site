@@ -266,17 +266,12 @@ async function fetchWidgetTelemetry() {
 
     if (mheardData.mheard) {
       mheardData.mheard.forEach(station => {
-        // Enforce safe UTC syntax mapping
-        let rawTime = station.lastHeard;
-// if (rawTime && !rawTime.endsWith('Z') && !rawTime.includes('+')) {
-//   rawTime += 'Z';
-// }
-// const parsedTime = Date.parse(rawTime);
-
-// WITH THIS:
-// Replace spaces/slashes to ensure universal mobile browser compatibility
-const cleanTimeStr = station.lastHeard.replace(/-/g, '/');
-const parsedTime = Date.parse(cleanTimeStr);
+        // Convert hyphens to slashes and append explicit UTC timezone indicator
+        let cleanTimeStr = station.lastHeard.replace(/-/g, '/');
+        if (cleanTimeStr) {
+          cleanTimeStr += ' UTC';
+        }
+        const parsedTime = Date.parse(cleanTimeStr);
 
         if (!isNaN(parsedTime)) {
           // Track the absolute newest transmission globally
