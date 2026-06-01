@@ -8,12 +8,12 @@ title: "GB7CAM Packet System"
 
 GB7CAM is a 2m AX.25 packet radio node serving the Cambridge area.  The station provides node, mailbox and chat services using LINBPQ and is connected to the wider packet radio network via RF and IP links.
 
-<div id="api-status-widget" style="background: #f8f9fa; border: 1px solid #dee2e6; border-left: 4px solid #28a745; padding: 15px; border-radius: 4px; font-family: monospace; line-height: 1.5; max-width: 450px; margin: 20px 0;">
-  <div><strong>Status:</strong> <span id="w-status" style="color: #28a745; font-weight: bold;">Operational</span></div>
-  <div><strong>Active Links:</strong> <span id="w-links">...</span></div>
-  <div><strong>Stations Heard via RF (last 4 hours):</strong> <span id="w-rf">...</span></div>
-  <div><strong>Stations Heard via AXIP (last 4 hours):</strong> <span id="w-axip">...</span></div>
-  <div><strong>Last Packet:</strong> <span id="w-last">...</span></div>
+<div id="api-status-widget" class="status-card metric-grid">
+  <div class="metric"><strong>Status:</strong> <span id="w-status">Operational</span></div>
+  <div class="metric"><strong>Active Links:</strong> <span id="w-links">...</span></div>
+  <div class="metric"><strong>Stations Heard via RF (last 4 hours):</strong> <span id="w-rf">...</span></div>
+  <div class="metric"><strong>Stations Heard via AXIP (last 4 hours):</strong> <span id="w-axip">...</span></div>
+  <div class="metric"><strong>Last Packet:</strong> <span id="w-last">...</span></div>
 </div>
 
 More detailed status information can be found on the [status page](status.qmd)
@@ -133,26 +133,22 @@ async function fetchWidgetTelemetry() {
       tEl.innerText = "No recent data";
     }
 
-    // Enforce live success color layout styles
+    box.classList.remove("status-card--good", "status-card--bad");
+    box.classList.add("status-card--good");
     sEl.innerText = "Operational";
-    sEl.style.color = "#28a745";
-    box.style.borderLeftColor = "#28a745";
 
   } catch (error) {
     console.error("Widget engine failure:", error);
     
-    // Graceful error state adjustments - Switches layout to "Under Maintenance"
-    sEl.innerText = "Under Maintenance";
-    sEl.style.color = "#dc3545";
-    box.style.borderLeftColor = "#dc3545";
+    box.classList.remove("status-card--good", "status-card--bad");
+    box.classList.add("status-card--bad");
+    sEl.innerText = "Offline";
     
-    // Clear the numbers out so old or invalid data is not shown when offline
     lEl.innerText = "—";
     rEl.innerText = "—";
     aEl.innerText = "—";
     tEl.innerText = "Offline";
   }
-}
 
 // Initialize on page assembly completed and set up the 60-second loop
 document.addEventListener("DOMContentLoaded", () => {
