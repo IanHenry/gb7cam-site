@@ -150,15 +150,22 @@ ul.task-list li input[type="checkbox"] {
 <p><img src="images/main_logo.png" class="centered-image"></p>
 <section id="services-available" class="level2">
 <h2 class="anchored" data-anchor-id="services-available">Services Available</h2>
-<p>This node runs a LINBPQ and combines Node, BBS, Mail and Chat Services.</p>
+<p>This node runs a LINBPQ and combines Node, BBS, Mail and Chat Services as well as a few games and a system monitor tool.</p>
+<section id="requirements" class="level3">
+<h3 class="anchored" data-anchor-id="requirements">Requirements</h3>
+<p>First you require an amateur radio license. This is essential!</p>
+<p>Second you must configure your radio to transmit and receive packets using a software TNC such as Direwolf or a hardware TNC such as NinoTNC. Using Direwolf is a great starting point and can be used with usb soundcards such as DigiRig. There are many <a href="https://themodernham.com/ultimate-direwolf-tnc-installation-guide-for-windows-and-linux/">guides</a> online to set this up.</p>
+</section>
 <section id="node" class="level3">
-<h3 class="anchored" data-anchor-id="node">NODE</h3>
-<p>You can connect to the GB7CAM using QTersmTCP pointing to Direwolf and connected to your rig using a DigiRig or similar. Simply select <code>CONNECT</code> and enter <code>GBRCAM</code></p>
+<h3 class="anchored" data-anchor-id="node">Node</h3>
+<p>Once setup, you can connect to the GB7CAM using QTermTCP. Simply select <code>CONNECT</code> and enter <code>GB7CAM</code></p>
 <p>Once connected, the following commands are available:</p>
-<pre><code>BBS CHAT CONNECT BYE INFO NODES PORTS ROUTES USERS MHEARD</code></pre>
+<pre><code>BBS CHAT GAMES SYSMON CONNECT BYE INFO NODES PORTS ROUTES USERS MHEARD</code></pre>
 <ul>
 <li><strong>BBS</strong> enters the Buletin Board / Mail System</li>
 <li><strong>CHAT</strong> enters the Chat System</li>
+<li><strong>GAMES</strong> enters a game selection menu</li>
+<li><strong>SYSMON</strong> launches a system monitor tool</li>
 <li><strong>CONNECT <port num=""> <name of="" node=""></name></port></strong> allows you to connect to another linked node using <code>CONNECT &lt;PORT&gt; GB7CAM</code> (Port 3 for AXIP and Port 1 for RF)</li>
 <li><strong>BYE</strong> Exits the node or current connection</li>
 <li><strong>INFO</strong> Displays the node info message</li>
