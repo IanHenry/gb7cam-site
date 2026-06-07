@@ -109,7 +109,7 @@ async function fetchDashboardData() {
     document.getElementById("w-last").innerText = "No data";
   }
 
-  const base = "https://gb7cam.org.uk";
+  const base = "https://api.gb7cam.org.uk";
 
   try {
     const [linksRes, mheardRes, nodesRes, portsRes, routesRes] = await Promise.all([
