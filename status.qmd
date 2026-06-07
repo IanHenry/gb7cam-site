@@ -59,6 +59,7 @@ title: "System Status"
 <div id="nodes-container" class="panel nodes">
   <p>Loading routing node index...</p>
 </div>
+
 <script>
 let allNodes = [];
 
