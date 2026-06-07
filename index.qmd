@@ -39,13 +39,13 @@ More detailed status information can be found on the [status page](status.qmd)
 - Latitude: 52.14  
 - Longitude: 0.08  
 - Antenna height: 5 m AGL  
-- ERP: 7 dBW  
+- ERP: 14 dBW (25W)  
 
 ---
 
 ### Administration
 
-- RSGB held [station details](https://ukrepeater.net)
+- RSGB held [station details](https://ukrepeater.net/my_repeater.php?id=6891)
 - ETCC Region: East Anglia (EA)  
 - RSGB Region: 12  
 - Keeper: [G0LFT](https://g0lft.org) (Ian Henry)

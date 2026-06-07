@@ -6,7 +6,7 @@ title: "Technical Information"
 
 ## System Overview
 
-GB7CAM is a LINBPQ-based [licensed](https://ukrepeater.net/my_repeater.php?id=6877) packet radio node run by Ian Henry [(G0LFT)](https://g0lft.org).
+GB7CAM is a LINBPQ-based [licensed](https://ukrepeater.net/my_repeater.php?id=6891) packet radio node run by Ian Henry [(G0LFT)](https://g0lft.org).
 
 ---
 
@@ -15,7 +15,7 @@ GB7CAM is a LINBPQ-based [licensed](https://ukrepeater.net/my_repeater.php?id=68
 - **Frequency:** 144.950 MHz  
 - **Mode:** AX.25 Packet  
 - **Antenna:** 5m AGL
-- **Power:** ERP 7 dBW (5W)  
+- **Power:** ERP 14 dBW (25W)  
 - **Location:** Harston Cambridge (Grid Squre: JO02AD)
 
 ---
