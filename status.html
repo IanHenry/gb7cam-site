@@ -205,6 +205,15 @@ Loading…
 </div>
 <hr>
 </section>
+<section id="network-routing-tables-telnet-core" class="level2">
+<h2 class="anchored" data-anchor-id="network-routing-tables-telnet-core">Network Routing Tables (Telnet Core)</h2>
+<div id="routes-container" class="panel">
+<p>
+Loading routing metrics…
+</p>
+</div>
+<hr>
+</section>
 <section id="network-routing-nodes" class="level2">
 <h2 class="anchored" data-anchor-id="network-routing-nodes">Network Routing Nodes</h2>
 <p><input id="node-search" class="search-box" placeholder="Search nodes..."></p>
@@ -249,32 +258,31 @@ function formatUTC(ts) {
    FETCH DATA
 ---------------------------- */
 async function fetchDashboardData() {
-
   const statusEl = document.getElementById("api-status-widget");
 
-function setOffline() {
-  statusEl.classList.remove("status-card--good", "status-card--bad");
-  statusEl.classList.add("status-card--bad");
+  function setOffline() {
+    statusEl.classList.remove("status-card--good", "status-card--bad");
+    statusEl.classList.add("status-card--bad");
 
-  document.getElementById("w-status").innerText = "Offline";
-  document.getElementById("w-links").innerText = "—";
-  document.getElementById("w-rf").innerText = "—";
-  document.getElementById("w-axip").innerText = "—";
-  document.getElementById("w-last").innerText = "No data";
-}
+    document.getElementById("w-status").innerText = "Offline";
+    document.getElementById("w-links").innerText = "—";
+    document.getElementById("w-rf").innerText = "—";
+    document.getElementById("w-axip").innerText = "—";
+    document.getElementById("w-last").innerText = "No data";
+  }
 
-  const base = "https://api.gb7cam.org.uk";
+  const base = "https://gb7cam.org.uk";
 
   try {
-    const [linksRes, mheardRes, nodesRes, portsRes] = await Promise.all([
+    const [linksRes, mheardRes, nodesRes, portsRes, routesRes] = await Promise.all([
       fetch(base + "/links"),
       fetch(base + "/mheard/all"),
       fetch(base + "/nodes"),
-      fetch(base + "/ports")
+      fetch(base + "/ports"),
+      fetch(base + "/routes")
     ]);
 
-    // HARD FAILURE = offline mode
-    if (!linksRes.ok || !mheardRes.ok || !nodesRes.ok) {
+    if (!linksRes.ok || !mheardRes.ok || !nodesRes.ok || !portsRes.ok) {
       setOffline();
       return;
     }
@@ -308,35 +316,33 @@ function setOffline() {
               </div>`;
           }).join("");
 
-const portsEl = document.getElementById("ports-container");
-
-portsEl.innerHTML = `
-<table class="table-dashboard">
-  <thead>
-    <tr>
-      <th>Port</th>
-      <th>Description</th>
-      <th>Driver</th>
-      <th>State</th>
-    </tr>
-  </thead>
-  <tbody>
-    ${ports.map(p => `
-      <tr>
-        <td class="${Number(p.Number) === RF_PORT ? "port--rf"
-                      : Number(p.Number) === AXIP_PORT ? "port--axip"
-                      : "port--neutral"}">
-          ${p.Number}
-        </td>
-        <td>${p.ID}</td>
-        <td>${p.Driver}</td>
-        <td>${p.State}</td>
-      </tr>
-    `).join("")}
-  </tbody>
-</table>
-`;
-
+    /* ----------------------------
+       PORTS
+    ---------------------------- */
+    const portsEl = document.getElementById("ports-container");
+    portsEl.innerHTML = `
+    <table class="table-dashboard">
+      <thead>
+        <tr>
+          <th>Port</th>
+          <th>Description</th>
+          <th>Driver</th>
+          <th>State</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${ports.map(p => `
+          <tr>
+            <td class="${Number(p.Number) === RF_PORT ? "port--rf" : Number(p.Number) === AXIP_PORT ? "port--axip" : "port--neutral"}">
+              ${p.Number}
+            </td>
+            <td>${p.ID}</td>
+            <td>${p.Driver}</td>
+            <td>${p.State}</td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>`;
 
     /* ----------------------------
        LINKS
@@ -345,36 +351,33 @@ portsEl.innerHTML = `
       links.length === 0
         ? "<p>No active links</p>"
         : `
-<table class="table-dashboard">
-  <thead>
-    <tr>
-      <th>Node</th>
-      <th>Port</th>
-      <th>Type</th>
-      <th>Status</th>
-    </tr>
-  </thead>
-  <tbody>
-    ${links.map(l => {
-      const up = ["ACTIVE","ESTABLISHED","CONNECTED"]
-        .includes((l.state||"").toUpperCase());
-
-      const portClass = Number(l.port) === RF_PORT ? "port--rf" : "port--axip";
-
-      return `
+    <table class="table-dashboard">
+      <thead>
         <tr>
-          <td>${l.farCall}</td>
-          <td class="${portClass}">${l.port}</td>
-          <td>${l.linkType || "AXUDP"}</td>
-          <td>
-            <span class="status-pill ${up ? "status-pill--good" : "status-pill--bad"}">
-              ${l.state || "ACTIVE"}
-            </span>
-          </td>
-        </tr>`;
-    }).join("")}
-  </tbody>
-</table>`;
+          <th>Node</th>
+          <th>Port</th>
+          <th>Type</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${links.map(l => {
+          const up = ["ACTIVE","ESTABLISHED","CONNECTED"].includes((l.state||"").toUpperCase());
+          const portClass = Number(l.port) === RF_PORT ? "port--rf" : "port--axip";
+          return `
+            <tr>
+              <td>${l.farCall}</td>
+              <td class="${portClass}">${l.port}</td>
+              <td>${l.linkType || "AXUDP"}</td>
+              <td>
+                <span class="status-pill ${up ? "status-pill--good" : "status-pill--bad"}">
+                  ${l.state || "ACTIVE"}
+                </span>
+              </td>
+            </tr>`;
+        }).join("")}
+      </tbody>
+    </table>`;
 
     /* ----------------------------
        MHEARD
@@ -383,29 +386,70 @@ portsEl.innerHTML = `
       mheardAll.length === 0
         ? "<p>No stations</p>"
         : `
-<table class="table-dashboard">
-  <thead>
-    <tr>
-      <th>Call</th>
-      <th>Port</th>
-      <th>Packets</th>
-      <th>Last Heard</th>
-    </tr>
-  </thead>
-  <tbody>
-    ${mheardAll.map(st => {
-      const portClass = Number(st.port) === RF_PORT ? "port--rf" : "port--axip";
-
-      return `
+    <table class="table-dashboard">
+      <thead>
         <tr>
-          <td>${st.callSign}</td>
-          <td class="${portClass}">${st.port}</td>
-          <td>${Number(st.packets||0).toLocaleString()}</td>
-          <td>${formatUTC(st.ts)}</td>
-        </tr>`;
-    }).join("")}
-  </tbody>
-</table>`;
+          <th>Call</th>
+          <th>Port</th>
+          <th>Packets</th>
+          <th>Last Heard</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${mheardAll.map(st => {
+          const portClass = Number(st.port) === RF_PORT ? "port--rf" : "port--axip";
+          return `
+            <tr>
+              <td>${st.callSign}</td>
+              <td class="${portClass}">${st.port}</td>
+              <td>${Number(st.packets||0).toLocaleString()}</td>
+              <td>${formatUTC(st.ts)}</td>
+            </tr>`;
+        }).join("")}
+      </tbody>
+    </table>`;
+
+    /* ----------------------------
+       TELNET ROUTES INTERPRETER
+    ---------------------------- */
+    if (routesRes.ok) {
+      const routesJson = await routesRes.json();
+      const routeLines = routesJson.raw_text_lines || [];
+      
+      const parsedRoutes = routeLines.map(line => {
+        const tokens = line.trim().split(/\s+/);
+        if (tokens.length >= 4) {
+          return { port: tokens[0], call: tokens[1], quality: tokens[2], maxframe: tokens[3] };
+        }
+        return null;
+      }).filter(Boolean);
+
+      document.getElementById("routes-container").innerHTML = parsedRoutes.length === 0
+        ? "<p class='text-muted'>No console routes populated</p>"
+        : `
+      <table class="table-dashboard">
+        <thead>
+          <tr>
+            <th>Destination Node</th>
+            <th>Outgoing Port</th>
+            <th>Link Quality</th>
+            <th>MaxFrame</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${parsedRoutes.map(r => {
+            const pClass = Number(r.port) === RF_PORT ? "port--rf" : Number(r.port) === AXIP_PORT ? "port--axip" : "port--neutral";
+            return `
+              <tr>
+                <td style="font-weight:bold;">${r.call}</td>
+                <td class="${pClass}">${r.port}</td>
+                <td>${r.quality}</td>
+                <td>${r.maxframe}</td>
+              </tr>`;
+          }).join("")}
+        </tbody>
+      </table>`;
+    }
 
     /* ----------------------------
        METRICS
@@ -414,12 +458,10 @@ portsEl.innerHTML = `
 
     for (const st of mheardAll) {
       const port = Number(st.port);
-
       if (st.ts > latest) {
         latest = st.ts;
         latestCall = st.callSign;
       }
-
       if (port === RF_PORT) rf++;
       if (port === AXIP_PORT) axip++;
     }
@@ -428,29 +470,24 @@ portsEl.innerHTML = `
     document.getElementById("w-rf").innerText = rf;
     document.getElementById("w-axip").innerText = axip;
 
-    document.getElementById("w-last").innerText =
-      latest
-        ? `${latestCall} - ${Math.floor((Date.now()-latest)/60000)} mins ago`
-        : "No data";
+    document.getElementById("w-last").innerText = latest
+      ? `${latestCall} - ${Math.floor((Date.now()-latest)/60000)} mins ago`
+      : "No data";
 
     const ok = links.length > 0;
-
-statusEl.classList.remove("status-card--good", "status-card--bad");
-
-if (ok) {
-  statusEl.classList.add("status-card--good");
-} else {
-  statusEl.classList.add("status-card--bad");
-}
-
-    document.getElementById("w-status").innerText =
-      ok ? "Operational" : "Degraded";
+    statusEl.classList.remove("status-card--good", "status-card--bad");
+    if (ok) {
+      statusEl.classList.add("status-card--good");
+    } else {
+      statusEl.classList.add("status-card--bad");
+    }
+    document.getElementById("w-status").innerText = ok ? "Operational" : "Degraded";
 
     renderNodes(allNodes);
 
   } catch (e) {
     setOffline();
-    console.error("Dashboard offline:", e);
+    console.error("Dashboard offline exception triggered:", e);
   }
 }
 
@@ -459,44 +496,34 @@ if (ok) {
 ---------------------------- */
 function renderNodes(list) {
   const el = document.getElementById("nodes-container");
-
   if (!list.length) {
     el.innerHTML = "<p class='text-muted'>No nodes found</p>";
     return;
   }
-
   el.innerHTML = `
   <div class="nodes-grid">
     ${list.map(n => `
       <div class="node-card">
         <div style="font-weight:bold; color:#2c3e50;">
-          ${n.Call}
-          ${n.Alias ? `<span style="color:#e67e22;"> :${n.Alias}</span>` : ""}
-        </div>
-
-        <div style="font-size:0.85em;color:#7f8c8d;">
-          🗺️ Routes: <strong>${n.Routes?.length || 0}</strong>
+          ${n.callsign || n.Call || "Unknown"}
+          ${n.alias || n.Alias ? `<span style="color:#e67e22;"> :${n.alias || n.Alias}</span>` : ""}
         </div>
       </div>
     `).join("")}
   </div>`;
 }
 
-/* ----------------------------
-   EVENTS
----------------------------- */
-document.addEventListener("DOMContentLoaded", () => {
-  fetchDashboardData();
-  setInterval(fetchDashboardData, 60000);
-
-  document.getElementById("node-search").addEventListener("input", e => {
-    const t = e.target.value.toUpperCase();
-    renderNodes(allNodes.filter(n =>
-      n.Call.toUpperCase().includes(t) ||
-      (n.Alias || "").toUpperCase().includes(t)
-    ));
+document.getElementById("node-search").addEventListener("input", (e) => {
+  const query = e.target.value.toUpperCase();
+  const filtered = allNodes.filter(n => {
+    const call = (n.callsign || n.Call || "").toUpperCase();
+    const alias = (n.alias || n.Alias || "").toUpperCase();
+    return call.includes(query) || alias.includes(query);
   });
+  renderNodes(filtered);
 });
+
+fetchDashboardData();
 </script>
 
 
