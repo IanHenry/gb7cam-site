@@ -257,7 +257,7 @@ async function fetchDashboardData() {
       const parsedRoutes = routeLines.map(line => {
         const tokens = line.trim().split(/\s+/);
         if (tokens.length >= 4) {
-          return { port: tokens[0], call: tokens[1], quality: tokens[2], maxframe: tokens[3] };
+          return { port: tokens[0], call: tokens[1], quality: tokens[2], nodes: tokens[3] };
         }
         return null;
       }).filter(Boolean);
@@ -271,7 +271,7 @@ async function fetchDashboardData() {
             <th>Destination Node</th>
             <th>Outgoing Port</th>
             <th>Link Quality</th>
-            <th>MaxFrame</th>
+            <th>Nodese</th>
           </tr>
         </thead>
         <tbody>
@@ -282,7 +282,7 @@ async function fetchDashboardData() {
                 <td style="font-weight:bold;">${r.call}</td>
                 <td class="${pClass}">${r.port}</td>
                 <td>${r.quality}</td>
-                <td>${r.maxframe}</td>
+                <td>${r.nodes}</td>
               </tr>`;
           }).join("")}
         </tbody>
