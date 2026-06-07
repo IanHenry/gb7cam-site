@@ -271,7 +271,7 @@ async function fetchDashboardData() {
             <th>Destination Node</th>
             <th>Outgoing Port</th>
             <th>Link Quality</th>
-            <th>Nodese</th>
+            <th>Nodes</th>
           </tr>
         </thead>
         <tbody>
