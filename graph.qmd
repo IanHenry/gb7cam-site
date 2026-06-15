@@ -7,12 +7,9 @@ execute:
   echo: false
 ---
 
-<div id="controls" style="display:flex;gap:12px;align-items:center;margin-bottom:8px;">
-  <input id="filter" placeholder="Filter node e.g. GB7FCI" style="padding:6px;width:220px;">
-  <label>
-    <input type="checkbox" id="opMode">
-    Operator mode
-  </label>
+<div style="margin-bottom:8px;">
+  <input id="filter" placeholder="Filter node e.g. GB7FCI"
+         style="padding:6px;width:240px;">
 </div>
 
 <div id="network" style="height: 90vh; border: 1px solid #ddd; background: #ffffff;"></div>
@@ -22,20 +19,22 @@ execute:
 <script>
 const API = "https://api.gb7cam.org.uk/graph";
 
-let nodesDS;
-let edgesDS;
-let fullData;
-let network;
+/* ----------------------------
+   CANONICAL NODE NAME FIX
+---------------------------- */
+function canonical(id) {
+  if (!id) return id;
+  if (id.startsWith("GB7CAM")) return "GB7CAM";
+  return id;
+}
 
 /* ----------------------------
    NODE COLOURS
 ---------------------------- */
 function nodeColor(id) {
+  if (id === "GB7CAM") return "#e74c3c";  // core
 
-  // collapse ALL GB7CAM variants
-  if (id.startsWith("GB7CAM")) return "#e74c3c"; // core red
-
-  if (id.startsWith("GB7")) return "#3498db";     // UK infra
+  if (id.startsWith("GB7")) return "#3498db";
   if (id.startsWith("M7") || id.startsWith("2E1")) return "#2ecc71";
   if (id.startsWith("KC2") || id.startsWith("N2") || id.startsWith("ZL")) return "#f1c40f";
 
@@ -62,38 +61,10 @@ function width(q) {
   return Math.max(1, Math.min(8, q / 45));
 }
 
-/* ----------------------------
-   EDGE STYLE (FIXED SEMANTICS)
----------------------------- */
-function edgeStyle(e) {
-
-  const active = e.state === "Active";
-  const unknown = e.quality === 0;
-
-  return {
-    width: width(e.quality),
-
-    color: {
-      color: portColor(e.port),
-      highlight: "#2c3e50"
-    },
-
-    arrows: "to",
-
-    font: {
-      color: "#2c3e50",
-      size: 10
-    },
-
-    // FIXED: dashed is NOT "dead", only unknown metric
-    dashes: unknown,
-
-    shadow: active
-  };
-}
+let nodesDS, edgesDS, fullData, network;
 
 /* ----------------------------
-   LOAD DATA
+   LOAD
 ---------------------------- */
 async function load() {
 
@@ -102,45 +73,52 @@ async function load() {
 
   const nodeMap = new Map();
 
-  // nodes
+  /* ---- NODES (canonicalised) ---- */
   (fullData.nodes || []).forEach(n => {
-    nodeMap.set(n.id, {
-      id: n.id,
-      label: `${n.id}\n${n.alias || ""}`,
-      color: nodeColor(n.id)
+    const id = canonical(n.id);
+
+    nodeMap.set(id, {
+      id,
+      label: `${id}\n${n.alias || ""}`,
+      color: nodeColor(id)
     });
   });
 
-  // ensure endpoints exist (IMPORTANT FIX)
-  (fullData.edges || []).forEach(e => {
+  /* ---- EDGES (canonicalised) ---- */
+  const edges = (fullData.edges || []).map((e, i) => {
 
-    if (!nodeMap.has(e.source)) {
-      nodeMap.set(e.source, {
-        id: e.source,
-        label: e.source,
-        color: nodeColor(e.source)
-      });
-    }
+    const source = canonical(e.source);
+    const target = canonical(e.target);
 
-    if (!nodeMap.has(e.target)) {
-      nodeMap.set(e.target, {
-        id: e.target,
-        label: e.target,
-        color: nodeColor(e.target)
-      });
-    }
+    return {
+      id: i,
+      from: source,
+      to: target,
+
+      arrows: "to",
+      width: width(e.quality),
+
+      label: e.quality ? String(e.quality) : "",
+
+      color: {
+        color: portColor(e.port),
+        highlight: "#2c3e50"
+      },
+
+      dashes: e.quality === 0,
+
+      font: {
+        color: "#2c3e50",
+        size: 10
+      },
+
+      shadow: e.state === "Active"
+    };
   });
 
-  nodesDS = new vis.DataSet([...nodeMap.values()]);
+  edgesDS = new vis.DataSet(edges);
 
-  edgesDS = new vis.DataSet(
-    (fullData.edges || []).map((e, i) => ({
-      id: i,
-      from: e.source,
-      to: e.target,
-      ...edgeStyle(e)
-    }))
-  );
+  nodesDS = new vis.DataSet([...nodeMap.values()]);
 
   network = new vis.Network(
     document.getElementById("network"),
@@ -157,95 +135,48 @@ async function load() {
       nodes: {
         shape: "dot",
         size: 14,
-        font: {
-          color: "#2c3e50"
-        },
+        font: { color: "#2c3e50" },
         borderWidth: 1
       },
 
       edges: {
-        smooth: {
-          type: "dynamic"
-        }
+        smooth: { type: "dynamic" }
       }
     }
   );
-
-  setupUI();
 }
 
 /* ----------------------------
-   FILTER WITH NEIGHBOURS
+   SIMPLE FILTER (no UI modes)
 ---------------------------- */
-function computeVisible(filterText, opMode) {
+function applyFilter() {
 
-  const adj = new Map();
-
-  (fullData.edges || []).forEach(e => {
-    if (!adj.has(e.source)) adj.set(e.source, new Set());
-    if (!adj.has(e.target)) adj.set(e.target, new Set());
-
-    adj.get(e.source).add(e.target);
-    adj.get(e.target).add(e.source);
-  });
-
-  let seed = new Set();
-
-  if (filterText) {
-    const f = filterText.toUpperCase();
-    fullData.nodes.forEach(n => {
-      if (n.id.includes(f) || (n.alias||"").toUpperCase().includes(f)) {
-        seed.add(n.id);
-      }
-    });
-  }
-
-  if (opMode && seed.size === 0) {
-    fullData.nodes.forEach(n => seed.add(n.id));
-  }
-
-  let visible = new Set(seed);
-
-  seed.forEach(n => {
-    (adj.get(n) || []).forEach(x => visible.add(x));
-  });
-
-  if (!filterText && !opMode) {
-    fullData.nodes.forEach(n => visible.add(n.id));
-  }
-
-  return visible;
-}
-
-/* ----------------------------
-   APPLY FILTER
----------------------------- */
-function apply() {
-
-  const filter = document.getElementById("filter").value;
-  const op = document.getElementById("opMode").checked;
-
-  const visible = computeVisible(filter, op);
+  const f = document.getElementById("filter").value.toUpperCase();
 
   nodesDS.forEach(n => {
+    const show =
+      !f ||
+      n.id.includes(f) ||
+      (n.label || "").toUpperCase().includes(f);
+
     nodesDS.update({
       id: n.id,
-      hidden: !visible.has(n.id)
+      hidden: !show
     });
   });
 
   edgesDS.forEach(e => {
+    const fromNode = nodesDS.get(e.from);
+    const toNode = nodesDS.get(e.to);
+
     edgesDS.update({
       id: e.id,
-      hidden: !(visible.has(e.from) && visible.has(e.to))
+      hidden: !(fromNode && !fromNode.hidden && toNode && !toNode.hidden)
     });
   });
 }
 
-function setupUI() {
-  document.getElementById("filter").addEventListener("input", apply);
-  document.getElementById("opMode").addEventListener("change", apply);
-}
-
 load();
+
+document.getElementById("filter").addEventListener("input", applyFilter);
 </script>
