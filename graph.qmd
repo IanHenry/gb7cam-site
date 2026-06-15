@@ -100,7 +100,7 @@ function build(data) {
       id,
       label: label,
       color: nodeColor(id),
-      title: n.alias || ""   // optional hover info
+      //title: n.alias || ""   // optional hover info
     });
   });
 
