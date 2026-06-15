@@ -6,88 +6,65 @@ format:
     page-layout: full
 ---
 
-# Live Network Topology
+<div id="network" style="height: 85vh; border: 1px solid #ddd;"></div>
 
-This graph is built directly from the live API endpoint:
-
-`https://api.gb7cam.org.uk/graph`
-
-It shows:
-- Nodes (callsigns / systems)
-- Edges (routes + active links)
-- Link quality as edge labels
-
----
-
-<div id="cy" style="width: 100%; height: 800px; border: 1px solid #ddd;"></div>
-
-<script src="https://unpkg.com/cytoscape@3.28.1/dist/cytoscape.min.js"></script>
+<script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
 
 <script>
 async function loadGraph() {
-    const res = await fetch("https://api.gb7cam.org.uk/graph");
-    const data = await res.json();
+  const res = await fetch("https://api.gb7cam.org.uk/graph");
+  const data = await res.json();
 
-    const elements = [];
+  // Build node map from API nodes
+  const nodeMap = new Map();
 
-    // Add nodes
-    data.nodes.forEach(n => {
-        elements.push({
-            data: {
-                id: n.id,
-                label: n.alias || n.id
-            }
-        });
+  (data.nodes || []).forEach(n => {
+    nodeMap.set(n.id, {
+      id: n.id,
+      label: n.alias || n.id
     });
+  });
 
-    // Add edges
-    data.edges.forEach(e => {
-        elements.push({
-            data: {
-                source: e.source,
-                target: e.target,
-                label: e.quality ? String(e.quality) : ""
-            }
-        });
-    });
+  // Ensure all edge endpoints exist as nodes (fixes GB7CAM error)
+  (data.edges || []).forEach(e => {
+    if (!nodeMap.has(e.source)) {
+      nodeMap.set(e.source, { id: e.source, label: e.source });
+    }
+    if (!nodeMap.has(e.target)) {
+      nodeMap.set(e.target, { id: e.target, label: e.target });
+    }
+  });
 
-    cytoscape({
-        container: document.getElementById('cy'),
+  const nodes = new vis.DataSet(Array.from(nodeMap.values()));
 
-        elements: elements,
+  const edges = new vis.DataSet(
+    (data.edges || []).map((e, i) => ({
+      id: i,
+      from: e.source,
+      to: e.target,
+      label: e.quality ? String(e.quality) : "",
+      arrows: "to"
+    }))
+  );
 
-        style: [
-            {
-                selector: 'node',
-                style: {
-                    'label': 'data(label)',
-                    'background-color': '#2b6cb0',
-                    'color': '#fff',
-                    'font-size': 8,
-                    'text-valign': 'center',
-                    'text-halign': 'center'
-                }
-            },
-            {
-                selector: 'edge',
-                style: {
-                    'width': 1,
-                    'line-color': '#999',
-                    'label': 'data(label)',
-                    'font-size': 6,
-                    'curve-style': 'bezier',
-                    'text-rotation': 'autorotate'
-                }
-            }
-        ],
+  const container = document.getElementById("network");
 
-        layout: {
-            name: 'cose',
-            animate: true,
-            fit: true,
-            padding: 30
-        }
-    });
+  const options = {
+    nodes: {
+      shape: "dot",
+      size: 10,
+      font: { size: 12 }
+    },
+    edges: {
+      color: "#999",
+      smooth: true
+    },
+    physics: {
+      stabilization: true
+    }
+  };
+
+  new vis.Network(container, { nodes, edges }, options);
 }
 
 loadGraph();
