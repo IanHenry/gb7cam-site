@@ -54,6 +54,8 @@ title: "System Status"
 
 ## Network Routing Nodes
 
+For a full network connectivity graph on the [Network Graph](graph.qmd) page.
+
 <input id="node-search" class="search-box" placeholder="Search nodes...">
 
 <div id="nodes-container" class="panel nodes">
