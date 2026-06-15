@@ -130,7 +130,7 @@
     "href": "index.html#ax.25-packet-node-gb7cam",
     "title": "GB7CAM Packet System",
     "section": "AX.25 Packet Node GB7CAM",
-    "text": "AX.25 Packet Node GB7CAM\nGB7CAM is a 2m AX.25 packet radio node serving the Cambridge area. The station provides node, mailbox and chat services using LINBPQ and is connected to the wider packet radio network via RF and IP links.\n\n\nStatus: Operational\n\n\nActive Links: …\n\n\nStations Heard via RF (last 4 hours): …\n\n\nStations Heard via AXIP (last 4 hours): …\n\n\nLast Packet: …\n\n\nMore detailed status information can be found on the status page"
+    "text": "AX.25 Packet Node GB7CAM\nGB7CAM is a 2m AX.25 packet radio node serving the Cambridge area. The station provides node, mailbox and chat services using LINBPQ and is connected to the wider packet radio network via RF and IP links.\n\n\nStatus: Operational\n\n\nActive Links: …\n\n\nStations Heard via RF (last 4 hours): …\n\n\nStations Heard via AXIP (last 4 hours): …\n\n\nLast Packet: …\n\n\nMore detailed status information can be found on the status page and a full network connectivity graph on the Network Graph page."
   },
   {
     "objectID": "index.html#station-overview",
