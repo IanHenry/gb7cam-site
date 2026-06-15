@@ -128,9 +128,9 @@
   {
     "objectID": "graph.html",
     "href": "graph.html",
-    "title": "GB7CAM Network Graph (Stable Model)",
+    "title": "GB7CAM Network Graph (Stable Vis View)",
     "section": "",
-    "text": "Operator Mode (full registry) \n  Show Core Hub (GB7CAM)"
+    "text": "Operator Mode (show isolates)"
   },
   {
     "objectID": "index.html#ax.25-packet-node-gb7cam",
