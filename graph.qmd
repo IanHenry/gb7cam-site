@@ -1,65 +1,22 @@
 ---
-title: "GB7CAM Network Graph (Operator View)"
+title: "GB7CAM Network Graph"
 format:
   html:
-    theme: flatly
-    page-layout: full
     self-contained: true
-execute: 
+execute:
   echo: false
 ---
 
-<style>
-body {
-  background: #ffffff;
-}
+<div style="display:flex; gap:12px; align-items:center; margin-bottom:10px;">
+  <label>
+    <input type="checkbox" id="opMode">
+    Operator Mode
+  </label>
 
-#controls {
-  display: flex;
-  gap: 12px;
-  padding: 10px;
-  align-items: center;
-  font-family: sans-serif;
-}
-
-#cy {
-  width: 100%;
-  height: 85vh;
-  border: 1px solid #e5e5e5;
-  border-radius: 6px;
-}
-
-/* operator mode styling */
-.operator {
-  background: #f7f9fc;
-  border: 1px solid #d0d7de;
-  padding: 6px 10px;
-  border-radius: 6px;
-}
-
-.label {
-  font-size: 12px;
-  color: #444;
-}
-</style>
-
-<div id="controls">
-
-  <div class="operator">
-    <label>
-      <input type="checkbox" id="opMode">
-      Operator Mode
-    </label>
-  </div>
-
-  <div>
-    <span class="label">Filter node:</span>
-    <input type="text" id="filter" placeholder="e.g. GB7FCI" />
-  </div>
-
+  <input id="filter" placeholder="filter node e.g. GB7FCI" />
 </div>
 
-<div id="cy"></div>
+<div id="cy" style="width:100%; height:90vh; border:1px solid #ddd;"></div>
 
 <script src="https://unpkg.com/cytoscape@3.26.0/dist/cytoscape.min.js"></script>
 
@@ -67,9 +24,10 @@ body {
 const API = "https://api.gb7cam.org.uk/graph";
 
 let cy;
-let fullData = null;
 
-/* Port mapping (your real system) */
+/* ---------------------------
+   PORT COLOURS (your spec)
+----------------------------*/
 function portColor(port) {
   switch(String(port)) {
     case "3": return "#1f77b4"; // AXIP (blue)
@@ -79,72 +37,92 @@ function portColor(port) {
   }
 }
 
-/* Node type detection (ONLY derived from alias, not guesswork) */
-function nodeStyle(node) {
-  const alias = (node.alias || "").toUpperCase();
-
-  let color = "#6c757d";
-
-  if (alias.includes("BBS")) color = "#d62728";   // red = BBS
-  if (alias.includes("CHAT")) color = "#9467bd";  // purple = chat
-  if (alias.includes("NODE")) color = "#17a2b8";  // cyan = node
-
-  return color;
+/* ---------------------------
+   NODE LABEL
+   IMPORTANT: id = callsign
+   alias = display only
+----------------------------*/
+function nodeLabel(n) {
+  return n.alias && n.alias.length > 0
+    ? `${n.id}\n${n.alias}`
+    : n.id;
 }
 
-/* Ensure GB7CAM is always present */
-function normaliseNodes(nodes) {
-  const hasCam = nodes.some(n => n.id === "GB7CAM");
+/* ---------------------------
+   SAFE GRAPH NORMALISATION
+   prevents Cytoscape crashes
+----------------------------*/
+function normaliseGraph(data) {
+  const nodes = new Map();
 
-  if (!hasCam) {
-    nodes.push({
-      id: "GB7CAM",
-      alias: "LOCAL",
-    });
-  }
-
-  return nodes;
-}
-
-function buildElements(data) {
-  const nodes = normaliseNodes(data.nodes);
-
-  const elements = [];
-
-  for (const n of nodes) {
-    elements.push({
+  // add nodes
+  for (const n of data.nodes) {
+    nodes.set(n.id, {
       data: {
         id: n.id,
-        label: n.id + (n.alias ? `\n${n.alias}` : "")
+        label: nodeLabel(n)
       }
     });
   }
 
+  // ensure edge endpoints exist
+  const edges = [];
   for (const e of data.edges) {
 
-    const width = Math.max(1, (e.quality || 0) / 80);
+    if (!nodes.has(e.source)) {
+      nodes.set(e.source, {
+        data: { id: e.source, label: e.source }
+      });
+    }
 
-    elements.push({
+    if (!nodes.has(e.target)) {
+      nodes.set(e.target, {
+        data: { id: e.target, label: e.target }
+      });
+    }
+
+    edges.push({
       data: {
         source: e.source,
         target: e.target,
-        quality: e.quality,
-        port: e.port || e.type || "3"
+        port: e.port || e.type || "3",
+        quality: e.quality || 0
       }
     });
   }
 
-  return elements;
+  return {
+    elements: [
+      ...nodes.values(),
+      ...edges
+    ]
+  };
 }
 
+/* ---------------------------
+   STYLE HELPERS
+----------------------------*/
+function nodeColor(label) {
+  const l = label.toUpperCase();
+
+  if (l.includes("BBS")) return "#d62728";
+  if (l.includes("CHAT")) return "#9467bd";
+  if (l.includes("NODE")) return "#17a2b8";
+
+  return "#444";
+}
+
+/* ---------------------------
+   RENDER GRAPH
+----------------------------*/
 function render(data) {
 
-  const elements = buildElements(data);
+  const graph = normaliseGraph(data);
 
   cy = cytoscape({
     container: document.getElementById('cy'),
 
-    elements,
+    elements: graph.elements,
 
     layout: {
       name: 'cose',
@@ -160,12 +138,13 @@ function render(data) {
         selector: 'node',
         style: {
           'label': 'data(label)',
-          'text-wrap': 'wrap',
           'font-size': 10,
-          'background-color': ele => nodeStyle(ele.data()),
-          'color': '#222',
+          'text-wrap': 'wrap',
           'text-valign': 'center',
           'text-halign': 'center',
+
+          'background-color': ele => nodeColor(ele.data('label')),
+
           'width': 28,
           'height': 28,
           'border-width': 1,
@@ -178,70 +157,76 @@ function render(data) {
         selector: 'edge',
         style: {
           'curve-style': 'bezier',
+
           'line-color': ele => portColor(ele.data('port')),
-          'width': ele => Math.max(1, (ele.data('quality') || 0) / 60),
-          'opacity': 0.75,
+          'target-arrow-color': ele => portColor(ele.data('port')),
           'target-arrow-shape': 'triangle',
-          'target-arrow-color': ele => portColor(ele.data('port'))
+
+          'width': ele => Math.max(1, (ele.data('quality') || 0) / 60),
+
+          'opacity': 0.8
         }
       }
+
     ]
   });
 
   setupUI();
 }
 
+/* ---------------------------
+   UI FILTER + OP MODE
+----------------------------*/
 function setupUI() {
 
-  const filterBox = document.getElementById("filter");
+  const filter = document.getElementById("filter");
   const opMode = document.getElementById("opMode");
 
-  filterBox.addEventListener("input", () => applyFilter());
-  opMode.addEventListener("change", () => applyFilter());
+  function apply() {
 
+    const f = filter.value.toUpperCase();
+    const op = opMode.checked;
+
+    cy.nodes().forEach(n => {
+
+      const id = n.id().toUpperCase();
+      const label = (n.data('label') || "").toUpperCase();
+
+      let show = true;
+
+      if (f && !(id.includes(f) || label.includes(f))) {
+        show = false;
+      }
+
+      if (op && n.degree() === 0) {
+        show = false;
+      }
+
+      n.style("display", show ? "element" : "none");
+    });
+
+    cy.edges().forEach(e => {
+      const s = e.source().style("display");
+      const t = e.target().style("display");
+
+      e.style("display",
+        (s === "element" && t === "element") ? "element" : "none"
+      );
+    });
+  }
+
+  filter.addEventListener("input", apply);
+  opMode.addEventListener("change", apply);
 }
 
-function applyFilter() {
-
-  const filter = document.getElementById("filter").value.toUpperCase();
-  const opMode = document.getElementById("opMode").checked;
-
-  cy.nodes().forEach(n => {
-
-    const id = n.id();
-    const label = (n.data('label') || "").toUpperCase();
-
-    let visible = true;
-
-    if (filter && !(id.includes(filter) || label.includes(filter))) {
-      visible = false;
-    }
-
-    /* operator mode hides low-activity fluff nodes */
-    if (opMode) {
-      const degree = n.degree();
-      if (degree === 0) visible = false;
-    }
-
-    n.style("display", visible ? "element" : "none");
-  });
-
-  cy.edges().forEach(e => {
-    const src = e.source().style("display");
-    const tgt = e.target().style("display");
-    e.style("display", (src === "element" && tgt === "element") ? "element" : "none");
-  });
-
-}
-
+/* ---------------------------
+   LOAD DATA
+----------------------------*/
 fetch(API)
   .then(r => r.json())
-  .then(data => {
-    fullData = data;
-    render(data);
-  })
+  .then(data => render(data))
   .catch(err => {
-    console.error("Graph load failed", err);
+    console.error(err);
     document.getElementById("cy").innerHTML =
       "<p style='color:red'>Graph load failed</p>";
   });
