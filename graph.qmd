@@ -87,10 +87,20 @@ function build(data) {
   (data.nodes || []).forEach(n => {
     const id = normalizeId(n.id);
 
+  let label = id;
+
+  // only your node is simplified
+    if (id === "GB7CAM") {
+      label = "GB7CAM";
+    } else if (n.alias) {
+      label = id + "\n" + n.alias;
+    }
+
     nodeMap.set(id, {
       id,
-      label: id + (n.alias ? `\n${n.alias}` : ""),
-      color: nodeColor(id)
+      label: label,
+      color: nodeColor(id),
+      title: n.alias || ""   // optional hover info
     });
   });
 
