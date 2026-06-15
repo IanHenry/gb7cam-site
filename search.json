@@ -128,9 +128,9 @@
   {
     "objectID": "graph.html",
     "href": "graph.html",
-    "title": "GB7CAM Network Graph (Operator View)",
+    "title": "GB7CAM Network Graph",
     "section": "",
-    "text": "&lt;label&gt;\n  &lt;input type=\"checkbox\" id=\"opMode\"&gt;\n  Operator Mode\n&lt;/label&gt;\n\n\n&lt;span class=\"label\"&gt;Filter node:&lt;/span&gt;\n&lt;input type=\"text\" id=\"filter\" placeholder=\"e.g. GB7FCI\" /&gt;"
+    "text": "Operator Mode"
   },
   {
     "objectID": "index.html#ax.25-packet-node-gb7cam",
