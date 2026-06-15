@@ -1,5 +1,5 @@
 ---
-title: "GB7CAM Network Graph (Stable Vis View)"
+title: "GB7CAM Network Graph"
 format:
   html:
     self-contained: true
@@ -7,227 +7,237 @@ execute:
   echo: false
 ---
 
-<div id="controls" style="display:flex; gap:12px; align-items:center; margin-bottom:10px;">
-  <label>
+<div id="controls" style="display:flex;gap:12px;align-items:center;margin-bottom:8px;">
+  <input id="filter" placeholder="Filter node e.g. GB7FCI" style="padding:6px;width:220px;">
+  <label style="color:#c9d1d9;font-family:sans-serif;">
     <input type="checkbox" id="opMode">
-    Operator Mode (show isolates)
+    Operator mode
   </label>
-
-  <input id="filter" placeholder="filter node e.g. GB7FCI" />
 </div>
 
-<div id="network" style="height: 90vh; border: 1px solid #222;"></div>
+<div id="network" style="height: 90vh; border: 1px solid #222; background: #0b0f14;"></div>
 
 <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
 
 <script>
-
 const API = "https://api.gb7cam.org.uk/graph";
 
+let network;
+let nodesDS;
+let edgesDS;
+let fullData;
+
 /* ----------------------------
-   PORT COLOURS (truth model)
+   PORT COLOURS (your real mapping)
 ---------------------------- */
 function portColor(port) {
   switch(String(port)) {
-    case "1": return "#2ca02c"; // RF
-    case "2": return "#ffbf00"; // TELNET
-    case "3": return "#1f77b4"; // AXIP
-    default:  return "#999";
+    case "1": return "#2ecc71"; // RF green
+    case "2": return "#f1c40f"; // telnet amber
+    case "3": return "#3498db"; // AXIP blue
+    default:  return "#95a5a6";
   }
 }
 
 /* ----------------------------
-   EDGE WIDTH (quality)
+   NODE COLOURS (family-based)
+---------------------------- */
+function nodeColor(id) {
+  if (id.startsWith("GB7CAM")) return "#ff6b6b"; // core
+  if (id.startsWith("GB7")) return "#4dabf7";     // UK infra
+  if (id.startsWith("M7") || id.startsWith("2E1")) return "#51cf66";
+  if (id.startsWith("KC2") || id.startsWith("N2") || id.startsWith("ZL")) return "#ffd43b";
+  return "#adb5bd";
+}
+
+/* ----------------------------
+   EDGE WIDTH
 ---------------------------- */
 function qualityWidth(q) {
   if (!q) return 1;
-  return Math.max(1, Math.min(8, q / 40));
+  return Math.max(1, Math.min(8, q / 45));
 }
 
 /* ----------------------------
-   ACTIVE LINK DETECTION
+   BUILD NEIGHBOUR MAP
 ---------------------------- */
-function isActive(e) {
-  return e.state === "Active" || (e.quality || 0) >= 250;
+function buildAdj(edges) {
+  const adj = new Map();
+
+  function add(a,b){
+    if(!adj.has(a)) adj.set(a,new Set());
+    adj.get(a).add(b);
+  }
+
+  edges.forEach(e => {
+    add(e.source, e.target);
+    add(e.target, e.source);
+  });
+
+  return adj;
 }
 
 /* ----------------------------
-   BUILD NEIGHBOUR SET FILTER
+   FILTER LOGIC (FIXED)
+   - keeps 1-hop neighbours
 ---------------------------- */
-function computeVisible(nodes, edges, filterText, opMode) {
+function computeVisible(data, filterText, opMode) {
 
-  const f = (filterText || "").toUpperCase();
+  const nodes = new Map();
+  const adj = buildAdj(data.edges || []);
 
-  const allIds = new Set(nodes.map(n => n.id));
+  const match = (id, alias) => {
+    const t = filterText.toUpperCase();
+    return id.includes(t) || (alias||"").toUpperCase().includes(t);
+  };
 
-  // operator mode = show everything
-  if (!f && opMode) return allIds;
+  let seed = new Set();
 
-  let match = new Set();
+  if (filterText) {
+    data.nodes.forEach(n => {
+      if (match(n.id, n.alias)) seed.add(n.id);
+    });
+  }
 
-  // direct matches
-  nodes.forEach(n => {
-    const id = (n.id || "").toUpperCase();
-    const alias = (n.alias || "").toUpperCase();
+  // operator mode = remove isolates
+  if (opMode && seed.size === 0) {
+    data.nodes.forEach(n => seed.add(n.id));
+  }
 
-    if (!f || id.includes(f) || alias.includes(f)) {
-      if (f) match.add(n.id);
-    }
+  // expand neighbours (THIS FIXES YOUR ISSUE)
+  let visible = new Set(seed);
+
+  seed.forEach(id => {
+    (adj.get(id) || []).forEach(n => visible.add(n));
   });
 
   // if no filter, show all
-  if (!f) return allIds;
+  if (!filterText && !opMode) {
+    data.nodes.forEach(n => visible.add(n.id));
+  }
 
-  // expand to neighbours
-  const neighbourEdges = edges.filter(e =>
-    match.has(e.source) || match.has(e.target)
-  );
-
-  neighbourEdges.forEach(e => {
-    match.add(e.source);
-    match.add(e.target);
-  });
-
-  return match;
+  return visible;
 }
 
 /* ----------------------------
    LOAD + RENDER
 ---------------------------- */
-async function loadGraph() {
+async function load() {
 
   const res = await fetch(API);
-  const data = await res.json();
+  fullData = await res.json();
 
   const nodeMap = new Map();
 
-  /* nodes */
-  (data.nodes || []).forEach(n => {
+  // nodes
+  (fullData.nodes || []).forEach(n => {
     nodeMap.set(n.id, {
       id: n.id,
       label: `${n.id}\n${n.alias || ""}`,
-      alias: n.alias || ""
+      color: nodeColor(n.id)
     });
   });
 
-  /* ensure edge endpoints exist */
-  (data.edges || []).forEach(e => {
-
+  // ensure edge endpoints exist (CRITICAL FIX)
+  (fullData.edges || []).forEach(e => {
     if (!nodeMap.has(e.source)) {
       nodeMap.set(e.source, {
         id: e.source,
         label: e.source,
-        alias: ""
+        color: nodeColor(e.source)
       });
     }
-
     if (!nodeMap.has(e.target)) {
       nodeMap.set(e.target, {
         id: e.target,
         label: e.target,
-        alias: ""
+        color: nodeColor(e.target)
       });
     }
   });
 
-  const nodes = new vis.DataSet([...nodeMap.values()]);
+  nodesDS = new vis.DataSet([...nodeMap.values()]);
 
-  const edges = new vis.DataSet(
-    (data.edges || []).map((e, i) => ({
+  edgesDS = new vis.DataSet(
+    (fullData.edges || []).map((e, i) => ({
       id: i,
       from: e.source,
       to: e.target,
       arrows: "to",
-      label: e.quality ? String(e.quality) : "",
-
       width: qualityWidth(e.quality),
-
+      label: e.quality ? String(e.quality) : "",
       color: {
         color: portColor(e.port),
         highlight: "#ffffff"
       },
-
       dashes: e.quality === 0,
-
-      shadow: isActive(e),
-
-      font: {
-        color: "#222",
-        size: 10
-      }
+      font: { color: "#c9d1d9", size: 10 },
+      shadow: e.state === "Active"
     }))
   );
 
-  const container = document.getElementById("network");
-
-  const network = new vis.Network(container, {
-    nodes,
-    edges
-  }, {
-    physics: {
-      stabilization: true,
-      barnesHut: {
-        gravitationalConstant: -9000,
-        springLength: 140,
-        springConstant: 0.04
-      }
-    },
-
-    interaction: {
-      hover: true,
-      tooltipDelay: 150
-    },
-
-    nodes: {
-      shape: "dot",
-      size: 12,
-      font: {
-        color: "#111"
-      }
-    },
-
-    edges: {
-      smooth: {
-        type: "dynamic"
+  network = new vis.Network(
+    document.getElementById("network"),
+    { nodes: nodesDS, edges: edgesDS },
+    {
+      physics: {
+        stabilization: true,
+        barnesHut: {
+          gravitationalConstant: -9000,
+          springLength: 140
+        }
+      },
+      nodes: {
+        shape: "dot",
+        size: 14,
+        font: { color: "#e6edf3" },
+        borderWidth: 1
+      },
+      edges: {
+        smooth: { type: "dynamic" }
       }
     }
-  });
+  );
 
-  /* ----------------------------
-     APPLY FILTER (NEIGHBOUR SAFE)
-  ---------------------------- */
-  function apply() {
-
-    const filter = document.getElementById("filter").value;
-    const opMode = document.getElementById("opMode").checked;
-
-    const visible = computeVisible(
-      nodes.get(),
-      edges.get(),
-      filter,
-      opMode
-    );
-
-    nodes.forEach(n => {
-      nodes.update({
-        id: n.id,
-        hidden: !visible.has(n.id)
-      });
-    });
-
-    edges.forEach(e => {
-      edges.update({
-        id: e.id,
-        hidden: !(visible.has(e.from) && visible.has(e.to))
-      });
-    });
-  }
-
-  document.getElementById("filter").addEventListener("input", apply);
-  document.getElementById("opMode").addEventListener("change", apply);
-
+  setupUI();
 }
 
-loadGraph();
+/* ----------------------------
+   APPLY FILTER
+---------------------------- */
+function applyFilter() {
 
+  const filterText = document.getElementById("filter").value;
+  const opMode = document.getElementById("opMode").checked;
+
+  const visible = computeVisible(fullData, filterText, opMode);
+
+  nodesDS.forEach(n => {
+    nodesDS.update({
+      id: n.id,
+      hidden: !visible.has(n.id)
+    });
+  });
+
+  edgesDS.forEach(e => {
+    const show =
+      visible.has(e.from) &&
+      visible.has(e.to);
+
+    edgesDS.update({
+      id: e.id,
+      hidden: !show
+    });
+  });
+}
+
+/* ----------------------------
+   UI
+---------------------------- */
+function setupUI() {
+  document.getElementById("filter").addEventListener("input", applyFilter);
+  document.getElementById("opMode").addEventListener("change", applyFilter);
+}
+
+load();
 </script>
