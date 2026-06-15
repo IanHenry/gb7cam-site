@@ -1,5 +1,5 @@
 ---
-title: "GB7CAM Network Graph (Stable Model)"
+title: "GB7CAM Network Graph (Stable Vis View)"
 format:
   html:
     self-contained: true
@@ -7,259 +7,227 @@ execute:
   echo: false
 ---
 
-<div style="display:flex; gap:12px; align-items:center; margin-bottom:10px;">
+<div id="controls" style="display:flex; gap:12px; align-items:center; margin-bottom:10px;">
   <label>
     <input type="checkbox" id="opMode">
-    Operator Mode (full registry)
-  </label>
-
-  <label>
-    <input type="checkbox" id="showHub" checked>
-    Show Core Hub (GB7CAM)
+    Operator Mode (show isolates)
   </label>
 
   <input id="filter" placeholder="filter node e.g. GB7FCI" />
 </div>
 
-<div id="cy" style="width:100%; height:90vh; border:1px solid #ddd;"></div>
+<div id="network" style="height: 90vh; border: 1px solid #222;"></div>
 
-<script src="https://unpkg.com/cytoscape@3.26.0/dist/cytoscape.min.js"></script>
+<script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
 
 <script>
 
 const API = "https://api.gb7cam.org.uk/graph";
 
-let cy;
-let fullData = null;
-
-/* ---------------------------
-   PORT COLOUR MODEL (truth)
-----------------------------*/
+/* ----------------------------
+   PORT COLOURS (truth model)
+---------------------------- */
 function portColor(port) {
   switch(String(port)) {
     case "1": return "#2ca02c"; // RF
     case "2": return "#ffbf00"; // TELNET
     case "3": return "#1f77b4"; // AXIP
-    default:  return "#999999";
+    default:  return "#999";
   }
 }
 
-/* ---------------------------
-   NODE LABEL (NO TYPE GUESSING)
-----------------------------*/
-function label(n) {
-  return n.alias && n.alias.length > 0
-    ? `${n.id}\n${n.alias}`
-    : n.id;
+/* ----------------------------
+   EDGE WIDTH (quality)
+---------------------------- */
+function qualityWidth(q) {
+  if (!q) return 1;
+  return Math.max(1, Math.min(8, q / 40));
 }
 
-/* ---------------------------
-   CORE HUB HANDLING
-----------------------------*/
-function isHub(id) {
-  return id === "GB7CAM";
+/* ----------------------------
+   ACTIVE LINK DETECTION
+---------------------------- */
+function isActive(e) {
+  return e.state === "Active" || (e.quality || 0) >= 250;
 }
 
-/* ---------------------------
-   BUILD SAFE GRAPH
-----------------------------*/
-function buildGraph(data) {
+/* ----------------------------
+   BUILD NEIGHBOUR SET FILTER
+---------------------------- */
+function computeVisible(nodes, edges, filterText, opMode) {
 
-  const nodes = new Map();
+  const f = (filterText || "").toUpperCase();
 
-  // registry nodes
-  for (const n of data.nodes) {
-    nodes.set(n.id, {
-      data: {
-        id: n.id,
-        label: label(n),
-        kind: "node"
-      }
+  const allIds = new Set(nodes.map(n => n.id));
+
+  // operator mode = show everything
+  if (!f && opMode) return allIds;
+
+  let match = new Set();
+
+  // direct matches
+  nodes.forEach(n => {
+    const id = (n.id || "").toUpperCase();
+    const alias = (n.alias || "").toUpperCase();
+
+    if (!f || id.includes(f) || alias.includes(f)) {
+      if (f) match.add(n.id);
+    }
+  });
+
+  // if no filter, show all
+  if (!f) return allIds;
+
+  // expand to neighbours
+  const neighbourEdges = edges.filter(e =>
+    match.has(e.source) || match.has(e.target)
+  );
+
+  neighbourEdges.forEach(e => {
+    match.add(e.source);
+    match.add(e.target);
+  });
+
+  return match;
+}
+
+/* ----------------------------
+   LOAD + RENDER
+---------------------------- */
+async function loadGraph() {
+
+  const res = await fetch(API);
+  const data = await res.json();
+
+  const nodeMap = new Map();
+
+  /* nodes */
+  (data.nodes || []).forEach(n => {
+    nodeMap.set(n.id, {
+      id: n.id,
+      label: `${n.id}\n${n.alias || ""}`,
+      alias: n.alias || ""
     });
-  }
+  });
 
-  const edges = [];
+  /* ensure edge endpoints exist */
+  (data.edges || []).forEach(e => {
 
-  for (const e of data.edges) {
-
-    // NEVER infer missing nodes as real nodes
-    if (!nodes.has(e.source)) {
-      nodes.set(e.source, {
-        data: {
-          id: e.source,
-          label: e.source,
-          kind: "unknown"
-        }
+    if (!nodeMap.has(e.source)) {
+      nodeMap.set(e.source, {
+        id: e.source,
+        label: e.source,
+        alias: ""
       });
     }
 
-    if (!nodes.has(e.target)) {
-      nodes.set(e.target, {
-        data: {
-          id: e.target,
-          label: e.target,
-          kind: "unknown"
-        }
+    if (!nodeMap.has(e.target)) {
+      nodeMap.set(e.target, {
+        id: e.target,
+        label: e.target,
+        alias: ""
       });
     }
+  });
 
-    edges.push({
-      data: {
-        source: e.source,
-        target: e.target,
-        port: e.port || "3",
-        quality: e.quality || 0
-      }
-    });
-  }
+  const nodes = new vis.DataSet([...nodeMap.values()]);
 
-  return [...nodes.values(), ...edges];
-}
+  const edges = new vis.DataSet(
+    (data.edges || []).map((e, i) => ({
+      id: i,
+      from: e.source,
+      to: e.target,
+      arrows: "to",
+      label: e.quality ? String(e.quality) : "",
 
-/* ---------------------------
-   NODE COLOUR (ONLY HUB + UNKNOWN)
-----------------------------*/
-function nodeColor(node) {
+      width: qualityWidth(e.quality),
 
-  const id = node.data('id');
-
-  if (isHub(id)) return "#111111";   // core hub black
-  if (node.data('kind') === "unknown") return "#aaaaaa";
-
-  return "#4c4c4c";
-}
-
-/* ---------------------------
-   RENDER
-----------------------------*/
-function render(data) {
-
-  const elements = buildGraph(data);
-
-  cy = cytoscape({
-    container: document.getElementById('cy'),
-
-    elements,
-
-    layout: {
-      name: 'cose',
-      animate: true,
-      fit: true,
-      padding: 40
-    },
-
-    style: [
-
-      /* NODES */
-      {
-        selector: 'node',
-        style: {
-          'label': 'data(label)',
-          'font-size': 10,
-          'text-wrap': 'wrap',
-          'text-valign': 'center',
-          'text-halign': 'center',
-
-          'background-color': ele => nodeColor(ele),
-
-          'width': 28,
-          'height': 28,
-
-          'border-width': 1,
-          'border-color': '#ccc'
-        }
+      color: {
+        color: portColor(e.port),
+        highlight: "#ffffff"
       },
 
-      /* EDGES */
-      {
-        selector: 'edge',
-        style: {
-          'curve-style': 'bezier',
+      dashes: e.quality === 0,
 
-          'line-color': ele => portColor(ele.data('port')),
-          'target-arrow-color': ele => portColor(ele.data('port')),
-          'target-arrow-shape': 'triangle',
+      shadow: isActive(e),
 
-          'width': ele => Math.max(1, (ele.data('quality') || 0) / 60),
-
-          'opacity': 0.85
-        }
+      font: {
+        color: "#222",
+        size: 10
       }
+    }))
+  );
 
-    ]
+  const container = document.getElementById("network");
+
+  const network = new vis.Network(container, {
+    nodes,
+    edges
+  }, {
+    physics: {
+      stabilization: true,
+      barnesHut: {
+        gravitationalConstant: -9000,
+        springLength: 140,
+        springConstant: 0.04
+      }
+    },
+
+    interaction: {
+      hover: true,
+      tooltipDelay: 150
+    },
+
+    nodes: {
+      shape: "dot",
+      size: 12,
+      font: {
+        color: "#111"
+      }
+    },
+
+    edges: {
+      smooth: {
+        type: "dynamic"
+      }
+    }
   });
 
-  setupUI();
-}
-
-/* ---------------------------
-   FILTER + OP MODE
-----------------------------*/
-function setupUI() {
-
-  const filter = document.getElementById("filter");
-  const opMode = document.getElementById("opMode");
-  const showHub = document.getElementById("showHub");
-
+  /* ----------------------------
+     APPLY FILTER (NEIGHBOUR SAFE)
+  ---------------------------- */
   function apply() {
 
-    const f = filter.value.toUpperCase();
-    const op = opMode.checked;
-    const hub = showHub.checked;
+    const filter = document.getElementById("filter").value;
+    const opMode = document.getElementById("opMode").checked;
 
-    cy.nodes().forEach(n => {
+    const visible = computeVisible(
+      nodes.get(),
+      edges.get(),
+      filter,
+      opMode
+    );
 
-      const id = n.id().toUpperCase();
-      const label = (n.data('label') || "").toUpperCase();
-
-      let visible = true;
-
-      /* filter */
-      if (f && !(id.includes(f) || label.includes(f))) {
-        visible = false;
-      }
-
-      /* hub toggle */
-      if (!hub && isHub(n.id())) {
-        visible = false;
-      }
-
-      /* operator mode = show full registry only */
-      if (!op && n.data('kind') === "unknown") {
-        visible = false;
-      }
-
-      n.style("display", visible ? "element" : "none");
+    nodes.forEach(n => {
+      nodes.update({
+        id: n.id,
+        hidden: !visible.has(n.id)
+      });
     });
 
-    cy.edges().forEach(e => {
-
-      const s = e.source().style("display");
-      const t = e.target().style("display");
-
-      e.style("display",
-        (s === "element" && t === "element")
-          ? "element"
-          : "none"
-      );
+    edges.forEach(e => {
+      edges.update({
+        id: e.id,
+        hidden: !(visible.has(e.from) && visible.has(e.to))
+      });
     });
   }
 
-  filter.addEventListener("input", apply);
-  opMode.addEventListener("change", apply);
-  showHub.addEventListener("change", apply);
+  document.getElementById("filter").addEventListener("input", apply);
+  document.getElementById("opMode").addEventListener("change", apply);
+
 }
 
-/* ---------------------------
-   LOAD
-----------------------------*/
-fetch(API)
-  .then(r => r.json())
-  .then(data => render(data))
-  .catch(err => {
-    console.error(err);
-    document.getElementById("cy").innerHTML =
-      "<p style='color:red'>Graph load failed</p>";
-  });
+loadGraph();
 
 </script>
