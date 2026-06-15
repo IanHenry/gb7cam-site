@@ -9,118 +9,91 @@ execute:
 
 <div id="controls" style="display:flex;gap:12px;align-items:center;margin-bottom:8px;">
   <input id="filter" placeholder="Filter node e.g. GB7FCI" style="padding:6px;width:220px;">
-  <label style="color:#c9d1d9;font-family:sans-serif;">
+  <label>
     <input type="checkbox" id="opMode">
     Operator mode
   </label>
 </div>
 
-<div id="network" style="height: 90vh; border: 1px solid #222; background: #0b0f14;"></div>
+<div id="network" style="height: 90vh; border: 1px solid #ddd; background: #ffffff;"></div>
 
 <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
 
 <script>
 const API = "https://api.gb7cam.org.uk/graph";
 
-let network;
 let nodesDS;
 let edgesDS;
 let fullData;
+let network;
 
 /* ----------------------------
-   PORT COLOURS (your real mapping)
+   NODE COLOURS
+---------------------------- */
+function nodeColor(id) {
+
+  // collapse ALL GB7CAM variants
+  if (id.startsWith("GB7CAM")) return "#e74c3c"; // core red
+
+  if (id.startsWith("GB7")) return "#3498db";     // UK infra
+  if (id.startsWith("M7") || id.startsWith("2E1")) return "#2ecc71";
+  if (id.startsWith("KC2") || id.startsWith("N2") || id.startsWith("ZL")) return "#f1c40f";
+
+  return "#7f8c8d";
+}
+
+/* ----------------------------
+   PORT COLOURS
 ---------------------------- */
 function portColor(port) {
   switch(String(port)) {
-    case "1": return "#2ecc71"; // RF green
-    case "2": return "#f1c40f"; // telnet amber
-    case "3": return "#3498db"; // AXIP blue
+    case "1": return "#2ecc71"; // RF
+    case "2": return "#f39c12"; // Telnet
+    case "3": return "#3498db"; // AXIP
     default:  return "#95a5a6";
   }
 }
 
 /* ----------------------------
-   NODE COLOURS (family-based)
----------------------------- */
-function nodeColor(id) {
-  if (id.startsWith("GB7CAM")) return "#ff6b6b"; // core
-  if (id.startsWith("GB7")) return "#4dabf7";     // UK infra
-  if (id.startsWith("M7") || id.startsWith("2E1")) return "#51cf66";
-  if (id.startsWith("KC2") || id.startsWith("N2") || id.startsWith("ZL")) return "#ffd43b";
-  return "#adb5bd";
-}
-
-/* ----------------------------
    EDGE WIDTH
 ---------------------------- */
-function qualityWidth(q) {
+function width(q) {
   if (!q) return 1;
   return Math.max(1, Math.min(8, q / 45));
 }
 
 /* ----------------------------
-   BUILD NEIGHBOUR MAP
+   EDGE STYLE (FIXED SEMANTICS)
 ---------------------------- */
-function buildAdj(edges) {
-  const adj = new Map();
+function edgeStyle(e) {
 
-  function add(a,b){
-    if(!adj.has(a)) adj.set(a,new Set());
-    adj.get(a).add(b);
-  }
+  const active = e.state === "Active";
+  const unknown = e.quality === 0;
 
-  edges.forEach(e => {
-    add(e.source, e.target);
-    add(e.target, e.source);
-  });
+  return {
+    width: width(e.quality),
 
-  return adj;
-}
+    color: {
+      color: portColor(e.port),
+      highlight: "#2c3e50"
+    },
 
-/* ----------------------------
-   FILTER LOGIC (FIXED)
-   - keeps 1-hop neighbours
----------------------------- */
-function computeVisible(data, filterText, opMode) {
+    arrows: "to",
 
-  const nodes = new Map();
-  const adj = buildAdj(data.edges || []);
+    font: {
+      color: "#2c3e50",
+      size: 10
+    },
 
-  const match = (id, alias) => {
-    const t = filterText.toUpperCase();
-    return id.includes(t) || (alias||"").toUpperCase().includes(t);
+    // FIXED: dashed is NOT "dead", only unknown metric
+    dashes: unknown,
+
+    shadow: active
   };
-
-  let seed = new Set();
-
-  if (filterText) {
-    data.nodes.forEach(n => {
-      if (match(n.id, n.alias)) seed.add(n.id);
-    });
-  }
-
-  // operator mode = remove isolates
-  if (opMode && seed.size === 0) {
-    data.nodes.forEach(n => seed.add(n.id));
-  }
-
-  // expand neighbours (THIS FIXES YOUR ISSUE)
-  let visible = new Set(seed);
-
-  seed.forEach(id => {
-    (adj.get(id) || []).forEach(n => visible.add(n));
-  });
-
-  // if no filter, show all
-  if (!filterText && !opMode) {
-    data.nodes.forEach(n => visible.add(n.id));
-  }
-
-  return visible;
 }
 
 /* ----------------------------
-   LOAD + RENDER
+   LOAD DATA
 ---------------------------- */
 async function load() {
 
@@ -138,8 +111,9 @@ async function load() {
     });
   });
 
-  // ensure edge endpoints exist (CRITICAL FIX)
+  // ensure endpoints exist (IMPORTANT FIX)
   (fullData.edges || []).forEach(e => {
+
     if (!nodeMap.has(e.source)) {
       nodeMap.set(e.source, {
         id: e.source,
@@ -147,6 +121,7 @@ async function load() {
         color: nodeColor(e.source)
       });
     }
+
     if (!nodeMap.has(e.target)) {
       nodeMap.set(e.target, {
         id: e.target,
@@ -163,16 +138,7 @@ async function load() {
       id: i,
       from: e.source,
       to: e.target,
-      arrows: "to",
-      width: qualityWidth(e.quality),
-      label: e.quality ? String(e.quality) : "",
-      color: {
-        color: portColor(e.port),
-        highlight: "#ffffff"
-      },
-      dashes: e.quality === 0,
-      font: { color: "#c9d1d9", size: 10 },
-      shadow: e.state === "Active"
+      ...edgeStyle(e)
     }))
   );
 
@@ -183,18 +149,24 @@ async function load() {
       physics: {
         stabilization: true,
         barnesHut: {
-          gravitationalConstant: -9000,
-          springLength: 140
+          gravitationalConstant: -8000,
+          springLength: 130
         }
       },
+
       nodes: {
         shape: "dot",
         size: 14,
-        font: { color: "#e6edf3" },
+        font: {
+          color: "#2c3e50"
+        },
         borderWidth: 1
       },
+
       edges: {
-        smooth: { type: "dynamic" }
+        smooth: {
+          type: "dynamic"
+        }
       }
     }
   );
@@ -203,14 +175,57 @@ async function load() {
 }
 
 /* ----------------------------
+   FILTER WITH NEIGHBOURS
+---------------------------- */
+function computeVisible(filterText, opMode) {
+
+  const adj = new Map();
+
+  (fullData.edges || []).forEach(e => {
+    if (!adj.has(e.source)) adj.set(e.source, new Set());
+    if (!adj.has(e.target)) adj.set(e.target, new Set());
+
+    adj.get(e.source).add(e.target);
+    adj.get(e.target).add(e.source);
+  });
+
+  let seed = new Set();
+
+  if (filterText) {
+    const f = filterText.toUpperCase();
+    fullData.nodes.forEach(n => {
+      if (n.id.includes(f) || (n.alias||"").toUpperCase().includes(f)) {
+        seed.add(n.id);
+      }
+    });
+  }
+
+  if (opMode && seed.size === 0) {
+    fullData.nodes.forEach(n => seed.add(n.id));
+  }
+
+  let visible = new Set(seed);
+
+  seed.forEach(n => {
+    (adj.get(n) || []).forEach(x => visible.add(x));
+  });
+
+  if (!filterText && !opMode) {
+    fullData.nodes.forEach(n => visible.add(n.id));
+  }
+
+  return visible;
+}
+
+/* ----------------------------
    APPLY FILTER
 ---------------------------- */
-function applyFilter() {
+function apply() {
 
-  const filterText = document.getElementById("filter").value;
-  const opMode = document.getElementById("opMode").checked;
+  const filter = document.getElementById("filter").value;
+  const op = document.getElementById("opMode").checked;
 
-  const visible = computeVisible(fullData, filterText, opMode);
+  const visible = computeVisible(filter, op);
 
   nodesDS.forEach(n => {
     nodesDS.update({
@@ -220,23 +235,16 @@ function applyFilter() {
   });
 
   edgesDS.forEach(e => {
-    const show =
-      visible.has(e.from) &&
-      visible.has(e.to);
-
     edgesDS.update({
       id: e.id,
-      hidden: !show
+      hidden: !(visible.has(e.from) && visible.has(e.to))
     });
   });
 }
 
-/* ----------------------------
-   UI
----------------------------- */
 function setupUI() {
-  document.getElementById("filter").addEventListener("input", applyFilter);
-  document.getElementById("opMode").addEventListener("change", applyFilter);
+  document.getElementById("filter").addEventListener("input", apply);
+  document.getElementById("opMode").addEventListener("change", apply);
 }
 
 load();
