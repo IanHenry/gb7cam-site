@@ -126,13 +126,6 @@
     "text": "Services Available\nThis node runs a LINBPQ and combines Node, BBS, Mail and Chat Services as well as a few games and a system monitor tool.\n\nRequirements\nFirst you require an amateur radio license. This is essential!\nSecond you must configure your radio to transmit and receive packets using a software TNC such as Direwolf or a hardware TNC such as NinoTNC. Using Direwolf is a great starting point and can be used with usb soundcards such as DigiRig. There are many guides online to set this up.\n\n\nNode\nOnce setup, you can connect to the GB7CAM using QTermTCP. Simply select CONNECT and enter GB7CAM\nOnce connected, the following commands are available:\nBBS CHAT GAMES SYSMON CONNECT BYE INFO NODES PORTS ROUTES USERS MHEARD\n\nBBS enters the Buletin Board / Mail System\nCHAT enters the Chat System\nGAMES enters a game selection menu\nSYSMON launches a system monitor tool\nCONNECT   allows you to connect to another linked node using CONNECT &lt;PORT&gt; GB7CAM (Port 3 for AXIP and Port 1 for RF)\nBYE Exits the node or current connection\nINFO Displays the node info message\nNODES shows list of nodes you can connect to\nPORTS show ports available for communication (PORT 1 - RF 2m, PORT 3 - AXIP)\nROUTES shows routes to other nodes\nMHEARD \nUSERS shows users currently logged in to the node\n\nFurther node information can be found via the linBPQ node page or advanced information on the status page\n\n\n\nBBS\nTo connect to the BBS, first login as above and then type\nBBS\nTyping HELP will also then give you a full command list.\n\nOnly licensed amateur radio operators are allowed to setup and account.\nIf you have an account you can access your mail via the web using https://node.gb7cam.org.uk/Webmail\nIf you would like mail or bulletins forwarded to your node just let me know.\nThe HA of GB7CAM is GB7CAM.#22.GBR.EURO and you can set this to be your home BBS if you wish.\n\n\n\n\nCHAT\nTo connect to the BBS, first login as above and then type\nCHAT\nTyping /h will also then give you a full command list."
   },
   {
-    "objectID": "graph.html",
-    "href": "graph.html",
-    "title": "GB7CAM Network Graph",
-    "section": "",
-    "text": "Live Network Topology\nThis graph is built directly from the live API endpoint:\nhttps://api.gb7cam.org.uk/graph\nIt shows: - Nodes (callsigns / systems) - Edges (routes + active links) - Link quality as edge labels"
-  },
-  {
     "objectID": "index.html#ax.25-packet-node-gb7cam",
     "href": "index.html#ax.25-packet-node-gb7cam",
     "title": "GB7CAM Packet System",
