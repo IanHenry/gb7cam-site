@@ -4527,11 +4527,11 @@ background: #fff5f5;
 </header>
 
 
-<div style="margin-bottom:8px;">
-<p><input id="filter" placeholder="Filter node e.g. GB7FCI" style="padding:6px;width:240px;"></p>
-</div>
 <div id="network" style="height: 90vh; border: 1px solid #ddd; background: #ffffff;">
 
+</div>
+<div style="padding:10px;font-family:sans-serif;">
+<p><input id="filter" placeholder="Filter node (e.g. GB7FCI)" style="padding:6px;width:240px;"></p>
 </div>
 <script>/**
  * vis-network
@@ -4571,49 +4571,31 @@ function Dd(){return Dd=Object.assign||function(g){for(var A=1;A<arguments.lengt
 <script>
 const API = "https://api.gb7cam.org.uk/graph";
 
-/* ----------------------------
-   CALLSIGN CLASSIFICATION
----------------------------- */
-function classify(id) {
-
-  if (id === "GB7CAM") return "core";
-
-  if (id.startsWith("GB7")) return "mailbox";
-  if (id.startsWith("MB7")) return "data";
-
-  if (
-    id.startsWith("G0") || id.startsWith("G1") ||
-    id.startsWith("G2") ||
-    id.startsWith("2E0") || id.startsWith("2E1") ||
-    id.startsWith("M7") || id.startsWith("M8") || id.startsWith("M9")
-  ) return "uk_personal";
-
-  return "other";
-}
+let nodes, edges, network;
+let fullData = null;
 
 /* ----------------------------
-   CANONICALISE ONLY GB7CAM
+   NODE NORMALISATION
 ---------------------------- */
-function canonical(id) {
+function normalizeId(id) {
   if (!id) return id;
   if (id.startsWith("GB7CAM")) return "GB7CAM";
   return id;
 }
 
 /* ----------------------------
-   NODE COLOURS
+   NODE TYPE COLOURS
 ---------------------------- */
 function nodeColor(id) {
 
-  const type = classify(id);
+  if (id === "GB7CAM") return "#ff6b6b"; // core
 
-  switch(type) {
-    case "core": return "#e74c3c";
-    case "mailbox": return "#3498db";
-    case "data": return "#2ecc71";
-    case "uk_personal": return "#f1c40f";
-    default: return "#7f8c8d";
-  }
+  if (id.startsWith("GB7")) return "#4dabf7"; // BBS/mailbox
+  if (id.startsWith("MB7")) return "#20c997"; // data nodes
+
+  if (/^(G[0-9]|M[0-9]|2E|2M)/.test(id)) return "#ffd43b"; // UK personals
+
+  return "#adb5bd";
 }
 
 /* ----------------------------
@@ -4621,156 +4603,163 @@ function nodeColor(id) {
 ---------------------------- */
 function portColor(port) {
   switch(String(port)) {
-    case "1": return "#2ecc71"; // RF
-    case "2": return "#f39c12"; // Telnet
-    case "3": return "#3498db"; // AXIP
-    default:  return "#95a5a6";
+    case "1": return "#2ca02c"; // RF
+    case "2": return "#ffbf00"; // telnet
+    case "3": return "#1f77b4"; // AXIP
+    default: return "#999999";
   }
 }
 
 /* ----------------------------
-   EDGE WIDTH
+   EDGE WIDTH (quality)
 ---------------------------- */
 function width(q) {
-  if (!q) return 1;
-  return Math.max(1, Math.min(8, q / 45));
+  return Math.max(1, Math.min(8, (q || 50) / 40));
 }
 
-let nodesDS, edgesDS, fullData, network;
+/* ----------------------------
+   ACTIVE EDGE RULE
+---------------------------- */
+function isBroken(e) {
+  return (e.quality === 0);
+}
 
 /* ----------------------------
-   LOAD GRAPH
+   BUILD GRAPH
 ---------------------------- */
-async function load() {
-
-  const res = await fetch(API);
-  fullData = await res.json();
+function build(data) {
 
   const nodeMap = new Map();
 
-  /* nodes */
-  (fullData.nodes || []).forEach(n => {
-
-    const id = canonical(n.id);
+  // nodes
+  (data.nodes || []).forEach(n => {
+    const id = normalizeId(n.id);
 
     nodeMap.set(id, {
       id,
-      label: id === "GB7CAM"
-        ? "GB7CAM\nCAMNOD"
-        : `${id}\n${n.alias || ""}`,
-
+      label: id + (n.alias ? `\n${n.alias}` : ""),
       color: nodeColor(id)
     });
   });
 
-  /* ensure edge endpoints exist */
-  (fullData.edges || []).forEach(e => {
+  // ensure endpoints exist
+  (data.edges || []).forEach(e => {
+    const s = normalizeId(e.source);
+    const t = normalizeId(e.target);
 
-    const s = canonical(e.source);
-    const t = canonical(e.target);
-
-    if (!nodeMap.has(s)) {
-      nodeMap.set(s, {
-        id: s,
-        label: s,
-        color: nodeColor(s)
-      });
-    }
-
-    if (!nodeMap.has(t)) {
-      nodeMap.set(t, {
-        id: t,
-        label: t,
-        color: nodeColor(t)
-      });
-    }
+    if (!nodeMap.has(s)) nodeMap.set(s, { id: s, label: s, color: nodeColor(s) });
+    if (!nodeMap.has(t)) nodeMap.set(t, { id: t, label: t, color: nodeColor(t) });
   });
 
-  nodesDS = new vis.DataSet([...nodeMap.values()]);
+  nodes = new vis.DataSet([...nodeMap.values()]);
 
-  edgesDS = new vis.DataSet(
-    (fullData.edges || []).map((e, i) => ({
+  edges = new vis.DataSet(
+    (data.edges || []).map((e, i) => ({
       id: i,
-      from: canonical(e.source),
-      to: canonical(e.target),
-
-      arrows: "to",
-      width: width(e.quality),
-
+      from: normalizeId(e.source),
+      to: normalizeId(e.target),
       label: e.quality ? String(e.quality) : "",
-
-      color: {
-        color: portColor(e.port),
-        highlight: "#2c3e50"
-      },
-
-      dashes: e.quality === 0,
-
-      font: {
-        color: "#2c3e50",
-        size: 10
-      },
-
-      shadow: e.state === "Active"
+      width: width(e.quality),
+      arrows: "to",
+      color: { color: portColor(e.port), highlight: "#000" },
+      dashes: isBroken(e)
     }))
   );
 
-  network = new vis.Network(
-    document.getElementById("network"),
-    { nodes: nodesDS, edges: edgesDS },
-    {
-      physics: {
-        stabilization: true,
-        barnesHut: {
-          gravitationalConstant: -8000,
-          springLength: 130
-        }
-      },
-
-      nodes: {
-        shape: "dot",
-        size: 14,
-        font: { color: "#2c3e50" },
-        borderWidth: 1
-      },
-
-      edges: {
-        smooth: { type: "dynamic" }
-      }
-    }
-  );
+  render();
 }
 
 /* ----------------------------
-   SIMPLE FILTER
+   RENDER
+---------------------------- */
+function render() {
+
+  const container = document.getElementById("network");
+
+  network = new vis.Network(container, {
+    nodes,
+    edges
+  }, {
+    physics: {
+      stabilization: true,
+      barnesHut: {
+        gravitationalConstant: -9000,
+        springLength: 140
+      }
+    },
+    nodes: {
+      shape: "dot",
+      size: 12,
+      font: { color: "#222" }
+    },
+    edges: {
+      smooth: { type: "dynamic" }
+    }
+  });
+
+  setupFilter();
+}
+
+/* ----------------------------
+   FILTER WITH +1 NEIGHBOUR HOPE
 ---------------------------- */
 function applyFilter() {
 
-  const f = document.getElementById("filter").value.toUpperCase();
+  const q = document.getElementById("filter").value.trim().toUpperCase();
 
-  nodesDS.forEach(n => {
-    const show =
-      !f ||
-      n.id.includes(f) ||
-      (n.label || "").toUpperCase().includes(f);
+  if (!q) {
+    nodes.forEach(n => nodes.update({ id: n.id, hidden: false }));
+    edges.forEach(e => edges.update({ id: e.id, hidden: false }));
+    return;
+  }
 
-    nodesDS.update({ id: n.id, hidden: !show });
+  const matchNodes = new Set();
+
+  nodes.forEach(n => {
+    if (n.id.includes(q)) matchNodes.add(n.id);
   });
 
-  edgesDS.forEach(e => {
+  // +1 hop expansion
+  edges.forEach(e => {
+    if (matchNodes.has(e.from) || matchNodes.has(e.to)) {
+      matchNodes.add(e.from);
+      matchNodes.add(e.to);
+    }
+  });
 
-    const a = nodesDS.get(e.from);
-    const b = nodesDS.get(e.to);
+  nodes.forEach(n => {
+    nodes.update({
+      id: n.id,
+      hidden: !matchNodes.has(n.id)
+    });
+  });
 
-    edgesDS.update({
+  edges.forEach(e => {
+    edges.update({
       id: e.id,
-      hidden: !(a && b && !a.hidden && !b.hidden)
+      hidden: !(matchNodes.has(e.from) && matchNodes.has(e.to))
     });
   });
 }
 
-load();
-document.getElementById("filter").addEventListener("input", applyFilter);
+/* ----------------------------
+   FILTER EVENT
+---------------------------- */
+function setupFilter() {
+  document.getElementById("filter")
+    .addEventListener("input", applyFilter);
+}
+
+/* ----------------------------
+   LOAD
+---------------------------- */
+fetch(API)
+  .then(r => r.json())
+  .then(data => {
+    fullData = data;
+    build(data);
+  });
+
 </script>
 
 
