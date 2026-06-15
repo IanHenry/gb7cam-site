@@ -7,11 +7,16 @@ execute:
   echo: false
 ---
 
-<div id="network" style="height: 90vh; border: 1px solid #ddd; background: #ffffff;"></div>
+<img src="images/main_logo.png" class="centered-image">
+
+## Network Graph
+Nodes currently connected to GB7CAM
 
 <div style="padding:10px;font-family:sans-serif;">
   <input id="filter" placeholder="Filter node (e.g. GB7FCI)" style="padding:6px;width:240px;">
 </div>
+
+<div id="network" style="height: 90vh; border: 1px solid #ddd; background: #ffffff;"></div>
 
 <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
 
