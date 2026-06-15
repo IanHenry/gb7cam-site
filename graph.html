@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>GB7CAM Network Graph</title>
+<title>GB7CAM Network Topology</title>
 <style>
 
 code{white-space: pre-wrap;}
@@ -4519,7 +4519,7 @@ background: #fff5f5;
 <!-- margin-sidebar -->
     
 <!-- main -->
-<main class="content column-page" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><h1 class="title display-7">GB7CAM Network Graph</h1></header>
+<main class="content column-page" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><h1 class="title display-7">GB7CAM Network Topology</h1></header>
 
 <header id="title-block-header">
 
@@ -4527,7 +4527,7 @@ background: #fff5f5;
 </header>
 
 
-<div id="network" style="height: 85vh; border: 1px solid #ddd;">
+<div id="network" style="height: 90vh; border: 1px solid #222; background: #0b0f14;">
 
 </div>
 <script>/**
@@ -4566,60 +4566,171 @@ function Dd(){return Dd=Object.assign||function(g){for(var A=1;A<arguments.lengt
 //# sourceMappingURL=vis-network.min.js.map
 </script>
 <script>
+const API = "https://api.gb7cam.org.uk/graph";
+
+/* ----------------------------
+   NODE COLOR (by family)
+---------------------------- */
+function nodeColor(id) {
+  if (id.startsWith("GB7CAM")) return "#ff6b6b"; // core
+  if (id.startsWith("GB7")) return "#4dabf7";     // UK infra
+  if (id.startsWith("M7") || id.startsWith("2E1")) return "#51cf66";
+  if (id.startsWith("KC2") || id.startsWith("N2") || id.startsWith("ZL")) return "#ffd43b";
+  return "#adb5bd";
+}
+
+/* ----------------------------
+   EDGE COLOUR (by port)
+---------------------------- */
+function portColor(port) {
+  switch(String(port)) {
+    case "1": return "#845ef7";
+    case "2": return "#20c997";
+    case "3": return "#339af0";
+    case "4": return "#ff922b";
+    default:  return "#868e96";
+  }
+}
+
+/* ----------------------------
+   EDGE WIDTH (quality scaling)
+---------------------------- */
+function qualityWidth(q) {
+  if (!q) return 1;
+  return Math.max(1, Math.min(8, q / 40));
+}
+
+/* ----------------------------
+   EDGE PULSE (active links)
+---------------------------- */
+function isActive(e) {
+  return e.state === "Active" || e.quality >= 250;
+}
+
 async function loadGraph() {
-  const res = await fetch("https://api.gb7cam.org.uk/graph");
+  const res = await fetch(API);
   const data = await res.json();
 
-  // Build node map from API nodes
+  /* ----------------------------
+     Build node map (canonical ID)
+  ---------------------------- */
   const nodeMap = new Map();
 
   (data.nodes || []).forEach(n => {
     nodeMap.set(n.id, {
       id: n.id,
-      label: n.alias || n.id
+      label: `${n.id}\n${n.alias || ""}`,
+      color: nodeColor(n.id)
     });
   });
 
-  // Ensure all edge endpoints exist as nodes (fixes GB7CAM error)
+  /* ensure edge endpoints exist */
   (data.edges || []).forEach(e => {
     if (!nodeMap.has(e.source)) {
-      nodeMap.set(e.source, { id: e.source, label: e.source });
+      nodeMap.set(e.source, {
+        id: e.source,
+        label: e.source,
+        color: nodeColor(e.source)
+      });
     }
     if (!nodeMap.has(e.target)) {
-      nodeMap.set(e.target, { id: e.target, label: e.target });
+      nodeMap.set(e.target, {
+        id: e.target,
+        label: e.target,
+        color: nodeColor(e.target)
+      });
     }
   });
 
-  const nodes = new vis.DataSet(Array.from(nodeMap.values()));
+  const nodes = new vis.DataSet([...nodeMap.values()]);
 
+  /* ----------------------------
+     Edges
+  ---------------------------- */
   const edges = new vis.DataSet(
-    (data.edges || []).map((e, i) => ({
-      id: i,
-      from: e.source,
-      to: e.target,
-      label: e.quality ? String(e.quality) : "",
-      arrows: "to"
-    }))
+    (data.edges || []).map((e, i) => {
+
+      const pulse = isActive(e);
+
+      return {
+        id: i,
+        from: e.source,
+        to: e.target,
+
+        arrows: "to",
+
+        label: e.quality ? String(e.quality) : "",
+
+        width: qualityWidth(e.quality),
+
+        color: {
+          color: portColor(e.port),
+          highlight: "#ffffff"
+        },
+
+        dashes: e.quality === 0, // broken routes dashed
+
+        /* subtle pulse effect */
+        shadow: pulse,
+
+        font: {
+          color: "#c9d1d9",
+          size: 10
+        }
+      };
+    })
   );
 
   const container = document.getElementById("network");
 
-  const options = {
+  const network = new vis.Network(container, {
+    nodes,
+    edges
+  }, {
+    physics: {
+      stabilization: true,
+      barnesHut: {
+        gravitationalConstant: -8000,
+        springLength: 120
+      }
+    },
+
+    interaction: {
+      hover: true,
+      tooltipDelay: 200
+    },
+
     nodes: {
       shape: "dot",
-      size: 10,
-      font: { size: 12 }
+      size: 12,
+      borderWidth: 1,
+      font: {
+        color: "#e6edf3"
+      }
     },
-    edges: {
-      color: "#999",
-      smooth: true
-    },
-    physics: {
-      stabilization: true
-    }
-  };
 
-  new vis.Network(container, { nodes, edges }, options);
+    edges: {
+      smooth: {
+        type: "dynamic"
+      }
+    }
+  });
+
+  /* ----------------------------
+     LIVE PULSE LOOP
+     (fake animation by toggling shadow)
+  ---------------------------- */
+  setInterval(() => {
+    edges.forEach(e => {
+      const edge = edges.get(e.id);
+      if (!edge) return;
+
+      if (isActive(edge)) {
+        edge.shadow = !edge.shadow;
+        edges.update(edge);
+      }
+    });
+  }, 1200);
 }
 
 loadGraph();
