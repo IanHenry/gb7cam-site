@@ -1,5 +1,5 @@
 ---
-title: "GB7CAM Network Graph"
+title: "GB7CAM Network Graph (Stable Model)"
 format:
   html:
     self-contained: true
@@ -10,7 +10,12 @@ execute:
 <div style="display:flex; gap:12px; align-items:center; margin-bottom:10px;">
   <label>
     <input type="checkbox" id="opMode">
-    Operator Mode
+    Operator Mode (full registry)
+  </label>
+
+  <label>
+    <input type="checkbox" id="showHub" checked>
+    Show Core Hub (GB7CAM)
   </label>
 
   <input id="filter" placeholder="filter node e.g. GB7FCI" />
@@ -21,63 +26,80 @@ execute:
 <script src="https://unpkg.com/cytoscape@3.26.0/dist/cytoscape.min.js"></script>
 
 <script>
+
 const API = "https://api.gb7cam.org.uk/graph";
 
 let cy;
+let fullData = null;
 
 /* ---------------------------
-   PORT COLOURS (your spec)
+   PORT COLOUR MODEL (truth)
 ----------------------------*/
 function portColor(port) {
   switch(String(port)) {
-    case "3": return "#1f77b4"; // AXIP (blue)
-    case "1": return "#2ca02c"; // RF (green)
-    case "2": return "#ffbf00"; // telnet/internal (amber)
+    case "1": return "#2ca02c"; // RF
+    case "2": return "#ffbf00"; // TELNET
+    case "3": return "#1f77b4"; // AXIP
     default:  return "#999999";
   }
 }
 
 /* ---------------------------
-   NODE LABEL
-   IMPORTANT: id = callsign
-   alias = display only
+   NODE LABEL (NO TYPE GUESSING)
 ----------------------------*/
-function nodeLabel(n) {
+function label(n) {
   return n.alias && n.alias.length > 0
     ? `${n.id}\n${n.alias}`
     : n.id;
 }
 
 /* ---------------------------
-   SAFE GRAPH NORMALISATION
-   prevents Cytoscape crashes
+   CORE HUB HANDLING
 ----------------------------*/
-function normaliseGraph(data) {
+function isHub(id) {
+  return id === "GB7CAM";
+}
+
+/* ---------------------------
+   BUILD SAFE GRAPH
+----------------------------*/
+function buildGraph(data) {
+
   const nodes = new Map();
 
-  // add nodes
+  // registry nodes
   for (const n of data.nodes) {
     nodes.set(n.id, {
       data: {
         id: n.id,
-        label: nodeLabel(n)
+        label: label(n),
+        kind: "node"
       }
     });
   }
 
-  // ensure edge endpoints exist
   const edges = [];
+
   for (const e of data.edges) {
 
+    // NEVER infer missing nodes as real nodes
     if (!nodes.has(e.source)) {
       nodes.set(e.source, {
-        data: { id: e.source, label: e.source }
+        data: {
+          id: e.source,
+          label: e.source,
+          kind: "unknown"
+        }
       });
     }
 
     if (!nodes.has(e.target)) {
       nodes.set(e.target, {
-        data: { id: e.target, label: e.target }
+        data: {
+          id: e.target,
+          label: e.target,
+          kind: "unknown"
+        }
       });
     }
 
@@ -85,44 +107,39 @@ function normaliseGraph(data) {
       data: {
         source: e.source,
         target: e.target,
-        port: e.port || e.type || "3",
+        port: e.port || "3",
         quality: e.quality || 0
       }
     });
   }
 
-  return {
-    elements: [
-      ...nodes.values(),
-      ...edges
-    ]
-  };
+  return [...nodes.values(), ...edges];
 }
 
 /* ---------------------------
-   STYLE HELPERS
+   NODE COLOUR (ONLY HUB + UNKNOWN)
 ----------------------------*/
-function nodeColor(label) {
-  const l = label.toUpperCase();
+function nodeColor(node) {
 
-  if (l.includes("BBS")) return "#d62728";
-  if (l.includes("CHAT")) return "#9467bd";
-  if (l.includes("NODE")) return "#17a2b8";
+  const id = node.data('id');
 
-  return "#444";
+  if (isHub(id)) return "#111111";   // core hub black
+  if (node.data('kind') === "unknown") return "#aaaaaa";
+
+  return "#4c4c4c";
 }
 
 /* ---------------------------
-   RENDER GRAPH
+   RENDER
 ----------------------------*/
 function render(data) {
 
-  const graph = normaliseGraph(data);
+  const elements = buildGraph(data);
 
   cy = cytoscape({
     container: document.getElementById('cy'),
 
-    elements: graph.elements,
+    elements,
 
     layout: {
       name: 'cose',
@@ -133,7 +150,7 @@ function render(data) {
 
     style: [
 
-      /* nodes */
+      /* NODES */
       {
         selector: 'node',
         style: {
@@ -143,16 +160,17 @@ function render(data) {
           'text-valign': 'center',
           'text-halign': 'center',
 
-          'background-color': ele => nodeColor(ele.data('label')),
+          'background-color': ele => nodeColor(ele),
 
           'width': 28,
           'height': 28,
+
           'border-width': 1,
           'border-color': '#ccc'
         }
       },
 
-      /* edges */
+      /* EDGES */
       {
         selector: 'edge',
         style: {
@@ -164,7 +182,7 @@ function render(data) {
 
           'width': ele => Math.max(1, (ele.data('quality') || 0) / 60),
 
-          'opacity': 0.8
+          'opacity': 0.85
         }
       }
 
@@ -175,52 +193,65 @@ function render(data) {
 }
 
 /* ---------------------------
-   UI FILTER + OP MODE
+   FILTER + OP MODE
 ----------------------------*/
 function setupUI() {
 
   const filter = document.getElementById("filter");
   const opMode = document.getElementById("opMode");
+  const showHub = document.getElementById("showHub");
 
   function apply() {
 
     const f = filter.value.toUpperCase();
     const op = opMode.checked;
+    const hub = showHub.checked;
 
     cy.nodes().forEach(n => {
 
       const id = n.id().toUpperCase();
       const label = (n.data('label') || "").toUpperCase();
 
-      let show = true;
+      let visible = true;
 
+      /* filter */
       if (f && !(id.includes(f) || label.includes(f))) {
-        show = false;
+        visible = false;
       }
 
-      if (op && n.degree() === 0) {
-        show = false;
+      /* hub toggle */
+      if (!hub && isHub(n.id())) {
+        visible = false;
       }
 
-      n.style("display", show ? "element" : "none");
+      /* operator mode = show full registry only */
+      if (!op && n.data('kind') === "unknown") {
+        visible = false;
+      }
+
+      n.style("display", visible ? "element" : "none");
     });
 
     cy.edges().forEach(e => {
+
       const s = e.source().style("display");
       const t = e.target().style("display");
 
       e.style("display",
-        (s === "element" && t === "element") ? "element" : "none"
+        (s === "element" && t === "element")
+          ? "element"
+          : "none"
       );
     });
   }
 
   filter.addEventListener("input", apply);
   opMode.addEventListener("change", apply);
+  showHub.addEventListener("change", apply);
 }
 
 /* ---------------------------
-   LOAD DATA
+   LOAD
 ----------------------------*/
 fetch(API)
   .then(r => r.json())
