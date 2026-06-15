@@ -4572,7 +4572,27 @@ function Dd(){return Dd=Object.assign||function(g){for(var A=1;A<arguments.lengt
 const API = "https://api.gb7cam.org.uk/graph";
 
 /* ----------------------------
-   CANONICAL NODE NAME FIX
+   CALLSIGN CLASSIFICATION
+---------------------------- */
+function classify(id) {
+
+  if (id === "GB7CAM") return "core";
+
+  if (id.startsWith("GB7")) return "mailbox";
+  if (id.startsWith("MB7")) return "data";
+
+  if (
+    id.startsWith("G0") || id.startsWith("G1") ||
+    id.startsWith("G2") ||
+    id.startsWith("2E0") || id.startsWith("2E1") ||
+    id.startsWith("M7") || id.startsWith("M8") || id.startsWith("M9")
+  ) return "uk_personal";
+
+  return "other";
+}
+
+/* ----------------------------
+   CANONICALISE ONLY GB7CAM
 ---------------------------- */
 function canonical(id) {
   if (!id) return id;
@@ -4584,13 +4604,16 @@ function canonical(id) {
    NODE COLOURS
 ---------------------------- */
 function nodeColor(id) {
-  if (id === "GB7CAM") return "#e74c3c";  // core
 
-  if (id.startsWith("GB7")) return "#3498db";
-  if (id.startsWith("M7") || id.startsWith("2E1")) return "#2ecc71";
-  if (id.startsWith("KC2") || id.startsWith("N2") || id.startsWith("ZL")) return "#f1c40f";
+  const type = classify(id);
 
-  return "#7f8c8d";
+  switch(type) {
+    case "core": return "#e74c3c";
+    case "mailbox": return "#3498db";
+    case "data": return "#2ecc71";
+    case "uk_personal": return "#f1c40f";
+    default: return "#7f8c8d";
+  }
 }
 
 /* ----------------------------
@@ -4616,7 +4639,7 @@ function width(q) {
 let nodesDS, edgesDS, fullData, network;
 
 /* ----------------------------
-   LOAD
+   LOAD GRAPH
 ---------------------------- */
 async function load() {
 
@@ -4625,27 +4648,51 @@ async function load() {
 
   const nodeMap = new Map();
 
-  /* ---- NODES (canonicalised) ---- */
+  /* nodes */
   (fullData.nodes || []).forEach(n => {
+
     const id = canonical(n.id);
 
     nodeMap.set(id, {
       id,
-      label: `${id}\n${n.alias || ""}`,
+      label: id === "GB7CAM"
+        ? "GB7CAM\nCAMNOD"
+        : `${id}\n${n.alias || ""}`,
+
       color: nodeColor(id)
     });
   });
 
-  /* ---- EDGES (canonicalised) ---- */
-  const edges = (fullData.edges || []).map((e, i) => {
+  /* ensure edge endpoints exist */
+  (fullData.edges || []).forEach(e => {
 
-    const source = canonical(e.source);
-    const target = canonical(e.target);
+    const s = canonical(e.source);
+    const t = canonical(e.target);
 
-    return {
+    if (!nodeMap.has(s)) {
+      nodeMap.set(s, {
+        id: s,
+        label: s,
+        color: nodeColor(s)
+      });
+    }
+
+    if (!nodeMap.has(t)) {
+      nodeMap.set(t, {
+        id: t,
+        label: t,
+        color: nodeColor(t)
+      });
+    }
+  });
+
+  nodesDS = new vis.DataSet([...nodeMap.values()]);
+
+  edgesDS = new vis.DataSet(
+    (fullData.edges || []).map((e, i) => ({
       id: i,
-      from: source,
-      to: target,
+      from: canonical(e.source),
+      to: canonical(e.target),
 
       arrows: "to",
       width: width(e.quality),
@@ -4665,12 +4712,8 @@ async function load() {
       },
 
       shadow: e.state === "Active"
-    };
-  });
-
-  edgesDS = new vis.DataSet(edges);
-
-  nodesDS = new vis.DataSet([...nodeMap.values()]);
+    }))
+  );
 
   network = new vis.Network(
     document.getElementById("network"),
@@ -4699,7 +4742,7 @@ async function load() {
 }
 
 /* ----------------------------
-   SIMPLE FILTER (no UI modes)
+   SIMPLE FILTER
 ---------------------------- */
 function applyFilter() {
 
@@ -4711,25 +4754,22 @@ function applyFilter() {
       n.id.includes(f) ||
       (n.label || "").toUpperCase().includes(f);
 
-    nodesDS.update({
-      id: n.id,
-      hidden: !show
-    });
+    nodesDS.update({ id: n.id, hidden: !show });
   });
 
   edgesDS.forEach(e => {
-    const fromNode = nodesDS.get(e.from);
-    const toNode = nodesDS.get(e.to);
+
+    const a = nodesDS.get(e.from);
+    const b = nodesDS.get(e.to);
 
     edgesDS.update({
       id: e.id,
-      hidden: !(fromNode && !fromNode.hidden && toNode && !toNode.hidden)
+      hidden: !(a && b && !a.hidden && !b.hidden)
     });
   });
 }
 
 load();
-
 document.getElementById("filter").addEventListener("input", applyFilter);
 </script>
 
