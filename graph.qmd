@@ -16,7 +16,7 @@ Nodes currently connected to GB7CAM
   <input id="filter" placeholder="Filter node (e.g. GB7FCI)" style="padding:6px;width:240px;">
 </div>
 
-<div id="network" style="height: 90vh; border: 1px solid #ddd; background: #ffffff;"></div>
+<div id="network" style="height: 50vh; border: 1px solid #ddd; background: #ffffff;"></div>
 
 <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
 
