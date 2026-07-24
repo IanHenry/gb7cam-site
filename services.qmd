@@ -24,7 +24,7 @@ Once connected, the following commands are available:
 BBS CHAT GAMES SYSMON CONNECT BYE INFO NODES PORTS ROUTES USERS MHEARD
 ```
 
-- **BBS** enters the Buletin Board / Mail System
+- **BBS** enters the Bulletin Board / Mail System
 - **CHAT** enters the Chat System
 - **GAMES** enters a game selection menu
 - **SYSMON** launches a system monitor tool
@@ -34,7 +34,7 @@ BBS CHAT GAMES SYSMON CONNECT BYE INFO NODES PORTS ROUTES USERS MHEARD
 - **NODES** shows list of nodes you can connect to
 - **PORTS** show ports available for communication (PORT 1 - RF 2m, PORT 3 - AXIP)
 - **ROUTES** shows routes to other nodes
-- **MHEARD <PORT NUM>** 
+- **MHEARD <PORT NUM>** shows stations heard on the specified port
 - **USERS** shows users currently logged in to the node
 
 Further node information can be found via the [linBPQ node page](https://node.gb7cam.org.uk) or advanced information on the [status page](status.qmd)
@@ -49,7 +49,7 @@ BBS
 ```
 Typing HELP will also then give you a full command list.
 
-- Only licensed amateur radio operators are allowed to setup and account.
+- Only licensed amateur radio operators are allowed to set up an account.
 - If you have an account you can access your mail via the web using [https://node.gb7cam.org.uk/Webmail](https://node.gb7cam.org.uk/Webmail)
 - If you would like mail or bulletins forwarded to your node just let me know.
 - The HA of GB7CAM is ```GB7CAM.#22.GBR.EURO``` and you can set this to be your home BBS if you wish.

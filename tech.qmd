@@ -25,7 +25,7 @@ GB7CAM is a LINBPQ-based [licensed](https://ukrepeater.net/my_repeater.php?id=68
 - **[Tait 2000 Mk2](https://wiki.oarc.uk/radios:tait2xxx):** a modified commercial radio bought from Simon (G4WQG)
 - **[NinoTNC](https://wiki.oarc.uk/packet:ninotnc):** an amazing little TNC bought from Chris (G1FEF)
 - **Diamond X50:** vertical 2m/70cm antenna
-- **Raspbery Pi 4:** picked up from the [CDARC](https://www.cdarc.org.uk/) Bring and Buy for £20
+- **Raspberry Pi 400:** picked up from the [CDARC](https://www.cdarc.org.uk/) Bring and Buy for £20
 
 ---
 
