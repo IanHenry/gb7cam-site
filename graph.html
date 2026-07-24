@@ -4535,11 +4535,27 @@ background: #fff5f5;
 <section id="network-graph" class="level2">
 <h2 class="anchored" data-anchor-id="network-graph">Network Graph</h2>
 <p>Nodes currently connected to GB7CAM</p>
+<p>Two renderings of the same routing data, side by side. <strong>Spoke</strong> draws an edge from each node to the peer it was learned through - that is what the NODES table actually records, and it produces a star shape because the multi-hop chain behind each entry isn’t preserved. <strong>Matrix</strong> instead joins every pair of nodes that share a peer, treating “reachable via the same neighbour” as a connection. Neither is the real network topology; the gap between the two is the point.</p>
 <div style="padding:10px;font-family:sans-serif;">
 <p><input id="filter" placeholder="Filter node (e.g. GB7FCI)" style="padding:6px;width:240px;"></p>
 </div>
-<div id="network" style="height: 50vh; border: 1px solid #ddd; background: #ffffff;">
+<div style="display:flex; gap:10px; flex-wrap:wrap;">
+<div style="flex:1; min-width:300px;">
+<h3 style="font-family:sans-serif; text-align:center; margin:6px 0;" class="anchored">
+Spoke
+</h3>
+<div id="network-spoke" style="height: 50vh; border: 1px solid #ddd; background: #ffffff;">
 
+</div>
+</div>
+<div style="flex:1; min-width:300px;">
+<h3 style="font-family:sans-serif; text-align:center; margin:6px 0;" class="anchored">
+Matrix
+</h3>
+<div id="network-matrix" style="height: 50vh; border: 1px solid #ddd; background: #ffffff;">
+
+</div>
+</div>
 </div>
 <script>/**
  * vis-network
@@ -4579,8 +4595,8 @@ function Dd(){return Dd=Object.assign||function(g){for(var A=1;A<arguments.lengt
 <script>
 const API = "https://api.gb7cam.org.uk/graph";
 
-let nodes, edges, network;
-let fullData = null;
+let spokeNodes, spokeEdges, networkSpoke;
+let matrixNodes, matrixEdges, networkMatrix;
 
 /* ----------------------------
    NODE NORMALISATION
@@ -4633,31 +4649,23 @@ function isBroken(e) {
 }
 
 /* ----------------------------
-   BUILD GRAPH
+   NODE MAP (shared by both views)
 ---------------------------- */
-function build(data) {
-
+function buildNodeMap(data) {
   const nodeMap = new Map();
 
-  // nodes
   (data.nodes || []).forEach(n => {
     const id = normalizeId(n.id);
+    let label = id;
 
-  let label = id;
-
-  // only your node is simplified
+    // only your node is simplified
     if (id === "GB7CAM") {
       label = "GB7CAM";
     } else if (n.alias) {
       label = id + "\n" + n.alias;
     }
 
-    nodeMap.set(id, {
-      id,
-      label: label,
-      color: nodeColor(id),
-      //title: n.alias || ""   // optional hover info
-    });
+    nodeMap.set(id, { id, label, color: nodeColor(id) });
   });
 
   // ensure endpoints exist
@@ -4669,9 +4677,16 @@ function build(data) {
     if (!nodeMap.has(t)) nodeMap.set(t, { id: t, label: t, color: nodeColor(t) });
   });
 
-  nodes = new vis.DataSet([...nodeMap.values()]);
+  return nodeMap;
+}
 
-  edges = new vis.DataSet(
+/* ----------------------------
+   SPOKE VIEW: node -> via_peer, as the NODES table actually has it
+---------------------------- */
+function buildSpoke(data, nodeMap) {
+  const nodes = new vis.DataSet([...nodeMap.values()]);
+
+  const edges = new vis.DataSet(
     (data.edges || []).map((e, i) => ({
       id: i,
       from: normalizeId(e.source),
@@ -4684,80 +4699,159 @@ function build(data) {
     }))
   );
 
-  render();
+  return { nodes, edges };
+}
+
+/* ----------------------------
+   MATRIX VIEW: every pair of nodes that share a peer, joined
+---------------------------- */
+function buildPeerSets(edges) {
+  const sets = new Map(); // peer -> Set of node ids reachable via it
+
+  (edges || []).forEach(e => {
+    if (e.type !== "route") return; // "link" edges are GB7CAM's own AXUDP links, not route data
+    const peer = normalizeId(e.target);
+    const node = normalizeId(e.source);
+    if (node === peer) return; // a peer's self-entry in its own NODES table
+    if (!sets.has(peer)) sets.set(peer, new Set());
+    sets.get(peer).add(node);
+  });
+
+  return sets;
+}
+
+function buildMatrixEdgeList(peerSets) {
+  const byPair = new Map(); // "a|b" -> {from, to}
+
+  peerSets.forEach((nodeSet) => {
+    const members = [...nodeSet];
+    for (let i = 0; i < members.length; i++) {
+      for (let j = i + 1; j < members.length; j++) {
+        const key = [members[i], members[j]].sort().join("|");
+        if (!byPair.has(key)) {
+          byPair.set(key, { from: members[i], to: members[j] });
+        }
+      }
+    }
+  });
+
+  return [...byPair.values()];
+}
+
+// Evenly-spaced circular layout: a clique this dense is unreadable under
+// force physics, and the crossing chords are themselves the point.
+function circularPositions(ids, radius = 320) {
+  const positions = new Map();
+  ids.forEach((id, i) => {
+    const angle = (2 * Math.PI * i) / ids.length;
+    positions.set(id, { x: radius * Math.cos(angle), y: radius * Math.sin(angle) });
+  });
+  return positions;
+}
+
+function buildMatrix(data, nodeMap) {
+  const peerSets = buildPeerSets(data.edges);
+
+  // Only nodes that appear in at least one peer's set - GB7CAM and the
+  // peers themselves aren't "reachable via a peer" in this sense.
+  const memberIds = new Set();
+  peerSets.forEach(set => set.forEach(id => memberIds.add(id)));
+
+  const ids = [...memberIds];
+  const positions = circularPositions(ids);
+
+  const nodes = new vis.DataSet(ids.map(id => {
+    const base = nodeMap.get(id) || { id, label: id, color: nodeColor(id) };
+    const pos = positions.get(id);
+    return { ...base, x: pos.x, y: pos.y, fixed: true };
+  }));
+
+  const edges = new vis.DataSet(
+    buildMatrixEdgeList(peerSets).map((e, i) => ({
+      id: i,
+      from: e.from,
+      to: e.to,
+      color: { color: "#bbbbbb", highlight: "#000" },
+      width: 1
+    }))
+  );
+
+  return { nodes, edges };
 }
 
 /* ----------------------------
    RENDER
 ---------------------------- */
-function render() {
+function render(data) {
+  const nodeMap = buildNodeMap(data);
 
-  const container = document.getElementById("network");
+  ({ nodes: spokeNodes, edges: spokeEdges } = buildSpoke(data, nodeMap));
+  ({ nodes: matrixNodes, edges: matrixEdges } = buildMatrix(data, nodeMap));
 
-  network = new vis.Network(container, {
-    nodes,
-    edges
+  networkSpoke = new vis.Network(document.getElementById("network-spoke"), {
+    nodes: spokeNodes,
+    edges: spokeEdges
   }, {
     physics: {
       stabilization: true,
-      barnesHut: {
-        gravitationalConstant: -9000,
-        springLength: 140
-      }
+      barnesHut: { gravitationalConstant: -9000, springLength: 140 }
     },
-    nodes: {
-      shape: "dot",
-      size: 12,
-      font: { color: "#222" }
-    },
-    edges: {
-      smooth: { type: "dynamic" }
-    }
+    nodes: { shape: "dot", size: 12, font: { color: "#222" } },
+    edges: { smooth: { type: "dynamic" } }
+  });
+
+  networkMatrix = new vis.Network(document.getElementById("network-matrix"), {
+    nodes: matrixNodes,
+    edges: matrixEdges
+  }, {
+    physics: false,
+    nodes: { shape: "dot", size: 10, font: { color: "#222" } },
+    edges: { smooth: false }
   });
 
   setupFilter();
 }
 
 /* ----------------------------
-   FILTER WITH +1 NEIGHBOUR HOPE
+   FILTER WITH +1 NEIGHBOUR HOP, applied to both views
 ---------------------------- */
-function applyFilter() {
-
-  const q = document.getElementById("filter").value.trim().toUpperCase();
-
+function applyFilterTo(nodes, edges, q) {
   if (!q) {
     nodes.forEach(n => nodes.update({ id: n.id, hidden: false }));
     edges.forEach(e => edges.update({ id: e.id, hidden: false }));
     return;
   }
 
-  const matchNodes = new Set();
-
+  const seed = new Set();
   nodes.forEach(n => {
-    if (n.id.includes(q)) matchNodes.add(n.id);
+    if (n.id.includes(q)) seed.add(n.id);
   });
 
-  // +1 hop expansion
+  // +1 hop expansion. Checked against the frozen seed set, not the
+  // growing matchNodes - otherwise a node added mid-loop can trigger
+  // further additions in the same pass, cascading well past one hop
+  // on a dense graph depending on edge order.
+  const matchNodes = new Set(seed);
   edges.forEach(e => {
-    if (matchNodes.has(e.from) || matchNodes.has(e.to)) {
+    if (seed.has(e.from) || seed.has(e.to)) {
       matchNodes.add(e.from);
       matchNodes.add(e.to);
     }
   });
 
   nodes.forEach(n => {
-    nodes.update({
-      id: n.id,
-      hidden: !matchNodes.has(n.id)
-    });
+    nodes.update({ id: n.id, hidden: !matchNodes.has(n.id) });
   });
 
   edges.forEach(e => {
-    edges.update({
-      id: e.id,
-      hidden: !(matchNodes.has(e.from) && matchNodes.has(e.to))
-    });
+    edges.update({ id: e.id, hidden: !(matchNodes.has(e.from) && matchNodes.has(e.to)) });
   });
+}
+
+function applyFilter() {
+  const q = document.getElementById("filter").value.trim().toUpperCase();
+  applyFilterTo(spokeNodes, spokeEdges, q);
+  applyFilterTo(matrixNodes, matrixEdges, q);
 }
 
 /* ----------------------------
@@ -4773,10 +4867,7 @@ function setupFilter() {
 ---------------------------- */
 fetch(API)
   .then(r => r.json())
-  .then(data => {
-    fullData = data;
-    build(data);
-  });
+  .then(render);
 
 </script>
 

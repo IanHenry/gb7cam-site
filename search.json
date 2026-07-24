@@ -11,7 +11,7 @@
     "href": "graph.html#network-graph",
     "title": "GB7CAM Network Graph",
     "section": "Network Graph",
-    "text": "Network Graph\nNodes currently connected to GB7CAM"
+    "text": "Network Graph\nNodes currently connected to GB7CAM\nTwo renderings of the same routing data, side by side. Spoke draws an edge from each node to the peer it was learned through - that is what the NODES table actually records, and it produces a star shape because the multi-hop chain behind each entry isn’t preserved. Matrix instead joins every pair of nodes that share a peer, treating “reachable via the same neighbour” as a connection. Neither is the real network topology; the gap between the two is the point.\n\n\n\n\n\n\nSpoke\n\n\n\n\n\n\n\nMatrix"
   },
   {
     "objectID": "contact.html#sysop",
