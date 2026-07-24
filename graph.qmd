@@ -25,10 +25,7 @@ Two renderings of the same routing data, side by side. **Spoke** draws an edge f
 </div>
 <div style="flex:1; min-width:300px;">
 <h3 style="font-family:sans-serif; text-align:center; margin:6px 0;">Matrix</h3>
-<div style="position:relative;">
 <div id="network-matrix" style="height: 50vh; border: 1px solid #ddd; background: #ffffff;"></div>
-<div id="network-matrix-labels" style="position:absolute; top:0; left:0; right:0; bottom:0; pointer-events:none;"></div>
-</div>
 </div>
 </div>
 
@@ -39,7 +36,6 @@ const API = "https://api.gb7cam.org.uk/graph";
 
 let spokeNodes, spokeEdges, networkSpoke;
 let matrixNodes, matrixEdges, networkMatrix;
-let matrixLayout = null; // id -> {angle, x, y}, the circle position used to place labels radially
 
 /* ----------------------------
    NODE NORMALISATION
@@ -182,9 +178,7 @@ function buildMatrixEdgeList(peerSets) {
 }
 
 // Evenly-spaced circular layout: a clique this dense is unreadable under
-// force physics, and the crossing chords are themselves the point. Angle
-// is kept per node so labels can be placed further out along the same
-// radius, rather than under the dot where they'd collide with neighbours.
+// force physics, and the crossing chords are themselves the point.
 function circularLayout(ids, radius = 320) {
   const layout = new Map();
   ids.forEach((id, i) => {
@@ -203,15 +197,29 @@ function buildMatrix(data, nodeMap) {
   peerSets.forEach(set => set.forEach(id => memberIds.add(id)));
 
   const ids = [...memberIds];
-  matrixLayout = circularLayout(ids);
+  const layout = circularLayout(ids);
 
   const nodes = new vis.DataSet(ids.map(id => {
     const base = nodeMap.get(id) || { id, label: id, color: nodeColor(id) };
-    const pos = matrixLayout.get(id);
-    // The canvas label is suppressed (labelled via the DOM overlay
-    // instead, see updateMatrixLabels) - title keeps the full text on
-    // hover as a fallback.
-    return { ...base, label: "", title: base.label, x: pos.x, y: pos.y, fixed: true };
+    const pos = layout.get(id);
+    // Native canvas label, kept short (callsign only, no alias) since
+    // this is a dense circle - vadjust nudges it vertically away from
+    // the node using the node's own position on the circle, so top-half
+    // labels sit above their dot and bottom-half labels sit below,
+    // instead of the default fixed offset that reads fine on a sparse
+    // graph but collides constantly here. This is a real vis-network
+    // node property, so it scales and stays attached correctly under
+    // zoom/pan - unlike an earlier attempt at a hand-positioned HTML
+    // overlay, which didn't.
+    return {
+      ...base,
+      label: id,
+      title: base.label,
+      x: pos.x,
+      y: pos.y,
+      fixed: true,
+      font: { size: 7, color: "#444", vadjust: -10 * Math.sign(Math.sin(pos.angle) || 1) }
+    };
   }));
 
   const edges = new vis.DataSet(
@@ -255,78 +263,12 @@ function render(data) {
     edges: matrixEdges
   }, {
     physics: false,
-    nodes: { shape: "dot", size: 8, font: { size: 8, color: "#222" } },
+    nodes: { shape: "dot", size: 6 },
     edges: { smooth: false },
     interaction: { hover: true }
   });
 
-  // fit() frames the dots themselves; zoom out a bit further so the
-  // radial labels (drawn outside the circle) have room too.
-  networkMatrix.once("afterDrawing", () => {
-    networkMatrix.moveTo({ scale: networkMatrix.getScale() * 0.78 });
-    updateMatrixLabels();
-  });
-  networkMatrix.on("zoom", updateMatrixLabels);
-  networkMatrix.on("dragging", updateMatrixLabels);
-  networkMatrix.on("dragEnd", updateMatrixLabels);
-  window.addEventListener("resize", updateMatrixLabels);
-
   setupFilter();
-}
-
-function escapeHtml(s) {
-  return s.replace(/[&<>"']/g, c => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
-  }[c]));
-}
-
-/* ----------------------------
-   MATRIX LABELS: drawn as a DOM overlay outside the node circle, since
-   vis-network's canvas labels have no radial-offset option and would
-   otherwise sit under the dot, colliding with dense neighbours.
----------------------------- */
-function updateMatrixLabels() {
-  const container = document.getElementById("network-matrix-labels");
-  if (!container || !networkMatrix || !matrixLayout) return;
-
-  const LABEL_RADIUS = 320 + 56; // just beyond the node circle (radius 320)
-  const pieces = [];
-
-  matrixNodes.forEach(n => {
-    if (n.hidden) return;
-    const layout = matrixLayout.get(n.id);
-    if (!layout) return;
-
-    const labelGraphPos = {
-      x: LABEL_RADIUS * Math.cos(layout.angle),
-      y: LABEL_RADIUS * Math.sin(layout.angle)
-    };
-    const domPos = networkMatrix.canvasToDOM(labelGraphPos);
-
-    // Text grows away from the circle: right half left-aligns outward,
-    // left half right-aligns outward, top/bottom centre.
-    const cos = Math.cos(layout.angle);
-    let transform, textAlign;
-    if (cos > 0.15) {
-      transform = "translate(0%, -50%)";
-      textAlign = "left";
-    } else if (cos < -0.15) {
-      transform = "translate(-100%, -50%)";
-      textAlign = "right";
-    } else {
-      transform = `translate(-50%, ${Math.sin(layout.angle) >= 0 ? "0%" : "-100%"})`;
-      textAlign = "center";
-    }
-
-    const label = escapeHtml((n.title || n.id).replace("\n", " "));
-    pieces.push(
-      `<span style="position:absolute; left:${domPos.x}px; top:${domPos.y}px; ` +
-      `transform:${transform}; font:8px sans-serif; color:#444; ` +
-      `text-align:${textAlign}; white-space:nowrap;">${label}</span>`
-    );
-  });
-
-  container.innerHTML = pieces.join("");
 }
 
 /* ----------------------------
@@ -372,7 +314,6 @@ function applyFilter() {
   const q = document.getElementById("filter").value.trim().toUpperCase();
   applyFilterTo(spokeNodes, spokeEdges, q);
   applyFilterTo(matrixNodes, matrixEdges, q);
-  updateMatrixLabels();
 }
 
 /* ----------------------------
