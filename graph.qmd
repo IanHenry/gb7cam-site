@@ -203,9 +203,10 @@ function buildMatrix(data, nodeMap) {
     const base = nodeMap.get(id) || { id, label: id, color: nodeColor(id) };
     const pos = layout.get(id);
     // Native canvas label, kept short (callsign only, no alias) since
-    // this is a dense circle. No vadjust - straight through the node's
-    // own position, same as every other node property here, so it
-    // scales and stays attached correctly under zoom/pan for free.
+    // this is a dense circle. vadjust:0 (vis-network's default) draws
+    // the label below the node by size+margin, which reads as too far
+    // detached at this density - a flat negative pulls it up closer to
+    // the dot instead. Same value for every node, not angle-dependent.
     return {
       ...base,
       label: id,
@@ -213,7 +214,7 @@ function buildMatrix(data, nodeMap) {
       x: pos.x,
       y: pos.y,
       fixed: true,
-      font: { size: 7, color: "#444", vadjust: 0 }
+      font: { size: 7, color: "#444", vadjust: -14 }
     };
   }));
 
