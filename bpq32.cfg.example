@@ -1,0 +1,181 @@
+; Example LinBPQ configuration for a small AX.25/AXUDP packet node.
+;
+; This is GB7CAM's real config with passwords, sysop details, peer
+; addresses and exact home coordinates replaced by placeholders. Structure,
+; port settings and comments are otherwise as actually deployed and tested.
+;
+; The APRS block in particular took a few evenings to get right the first
+; time (see https://gb7cam.org.uk for the full story) - the syntax is
+; unforgiving and not especially well documented, so it is reproduced here
+; in full working form.
+
+SIMPLE
+
+NODECALL=YOURCALL
+NODEALIAS=YOURALIAS
+LOCATOR=AA00AA              ; Your 6-figure Maidenhead locator
+MAPCOMMENT=145.xxxMHz
+
+PASSWORD=ChangeThisNodePassword   ; NET/ROM remote sysop password - keep this secret
+AUTOSAVE=1
+EnableEvents=1
+EnableM0LTEMap=1
+
+NODESINTERVAL=25
+MINQUAL=1                   ; GB7CAM runs this unusually low (10); published
+                             ; configs elsewhere typically range 50-210
+
+IDINTERVAL=15
+IDMSG:
+!5000.00N/00100.00WBYOURCALL LinBPQ Packet Mailbox (https://example.org) AX.25 1200bd @ 145.xxx MHz
+***
+
+INFOMSG:
+YOURCALL See https://example.org
+***
+
+CTEXT:
+Welcome to YOURCALL. Sysop YOURCALLSIGN.
+Type ? for Help
+***
+
+BTINTERVAL=25
+BTEXT:
+YOURCALL LinBPQ Packet Mailbox (https://example.org) AX.25 1200bd @ 145.xxx MHz
+***
+
+; --- RF port: adjust COMPORT/SPEED/CHANNEL for your TNC ---
+PORT
+    PORTNUM=1
+    ID=Example TNC 145.xxx MHz, 1200 Bd
+    TYPE=ASYNC
+    PROTOCOL=KISS
+    COMPORT=/dev/ttyACM0
+    SPEED=57600
+    CHANNEL=A
+    FULLDUP=0
+    PERSIST=225
+    SLOTTIME=20
+    TXTAIL=1
+    TXDELAY=150
+    QUALITY=192
+    MINQUAL=1
+    MAXFRAME=4
+    FRACK=4000
+    RESPTIME=500
+    RETRIES=10
+    PACLEN=236
+    BCALL=YOURCALL
+    UNPROTO=ID
+    L3ONLY=0
+    DIGIFLAG=0
+    DIGIPORT=0
+    USERS=3
+    IGNOREUNLOCKEDROUTES=1
+ENDPORT
+
+; --- Telnet port: local BBS/chat/sysop access ---
+PORT
+   PORTNUM=2
+   ID=
+   DRIVER=Telnet
+   CONFIG
+     SECURETELNET=1
+     LOGGING=1
+     CMS=1
+     DisconnectOnClose=0
+     TCPPORT=8010
+     FBBPORT=8011
+     HTTPPORT=8088
+     LOCALNET=192.168.1.0/24            ; restrict to your own LAN
+     LOGINPROMPT=Username:
+     PASSWORDPROMPT=Password:
+     MAXSESSIONS=10
+     WebTermCSS=font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background-color:#ffffff;color:#333333;font-size:14px;line-height:1.5;padding:15px;border:1px solid #cccccc;
+     RELAYAPPL=BBS
+     CTEXT=Welcome to YOURCALL Packet Node providing, Mail, Chat, Games and More.\nFor help type ?\n\n
+     ; SYSOPUSER=/SYSOPPASS= are not recognised by this LinBPQ version (logged
+     ; as "Bad config record" at startup and silently ignored) - sysop access
+     ; comes entirely from the ",,sysop" privilege field on a USER= line below.
+     ; Don't set them expecting them to do anything.
+     USER=YourSysopUsername,ChangeThisPassword,YOURCALLSIGN,,sysop
+     USER=webreader,ChangeThisPassword,YOURCALL,BBS,
+     CMDPORT 63001 63004
+ENDPORT
+
+; --- AXUDP port: IP peering with other nodes, e.g. over 44Net ---
+; Each MAP line is one peer. UDP <port> is your local listen port; the
+; per-peer UDP <port> after the hostname is that peer's listen port, which
+; can differ from yours. KEEPALIVE <seconds> is optional and only needed
+; for peers behind NAT/dynamic IPs. Trailing B enables NODES/ID broadcast
+; to that peer.
+PORT
+  PORTNUM=3
+  ID=AXUDP LINKS
+  DRIVER=BPQAXIP
+  QUALITY=255
+  MINQUAL=0
+  MAXFRAME=3
+  FRACK=10000
+  RESPTIME=1500
+  RETRIES=15
+  UNPROTO=ID
+  BCALL=YOURCALL
+  PACLEN=236                       ; needs "=" and belongs here, not inside
+                                    ; CONFIG below - "PACLEN 236" in CONFIG
+                                    ; logs "Bad config record" and is dropped
+CONFIG
+  UDP 10093
+  MHEARD ON
+  BROADCAST NODES
+  BROADCAST ID
+  MAP EXAMPLE1-1 peer1.example.org UDP 10093 B
+  MAP EXAMPLE2-7 203.0.113.42 KEEPALIVE 60 UDP 10093 B
+ENDPORT
+
+LINMAIL
+LINCHAT
+
+;APPLICATION n,CMD,New Command,Call,Alias,Quality,L2Alias
+;
+;n Application Number. You can define up to 32.
+;CMD The command the user types
+;New Command (optional) The Node command to be run
+;Call (optional) The call which directly invokes CMD
+;Alias,Quality (optional) If specified, causes an entry for Call and Alias to be added to your NODES table with the specified Quality
+;L2Alias (optional)is an additional Alias for direct (L2) connects to the Node.
+
+APPLICATION 1,BBS,,YOURCALL-2,YOURALIASB,255
+APPLICATION 2,CHAT,,YOURCALL-1,YOURALIASC,255
+APPLICATION 3,GAMES,C 2 HOST 0 S,YOURCALL
+APPLICATION 4,SYSMON,C 2 HOST 1 S,YOURCALL
+
+; --- APRS beaconing: reports your node's position to APRS-IS ---
+; The tricky part is the IDMSG line above: the 'B' (BBS symbol) goes
+; immediately after the coordinates ending in N/E/S/W with NO spaces,
+; directly followed by your callsign.
+APRSDIGI
+  APRSCall=YOURCALL      ; Your node callsign with an SSID (like -10)
+  LAT=5000.00N               ; Format: DDMM.mmN (use a lat/long-to-Maidenhead calculator)
+  LON=00100.00W               ; Format: DDDMM.mmW or E
+
+  StatusMsg=YOURCALL LinBPQ Packet Mailbox (https://example.org) AX.25 1200bd @ 145.xxx MHz
+  Symbol=B                       ; 'B' with '/' creates the BBS mailbox icon
+  Symset=/
+
+  ; --- Receive-Only RF Configurations ---
+  ; This listens to Port 1 but setting it blank prevents transmitting back on RF
+  APRSPath 1=
+  Digimap 1=IS                   ; Tells LinBPQ to take Port 1 data and map it to the Internet
+
+  ; --- APRS-IS Internet Settings ---
+  ISHost=rotate.aprs2.net          ; Or a regional server e.g. england.aprs2.net
+  ISPort=14580
+  ISPasscode=00000       ; Generate from your callsign, e.g. via an APRS passcode calculator
+
+  ; --- The Map Pin (Object) ---
+  ; This creates a text/icon entry on aprs.fi via the internet every interval below
+  OBJECT PATH=IS PORT=1,IS INTERVAL=15 TEXT=>Antenna: 5m AGL - Power: ERP 14 dBW (25W) - Keeper: YOURCALLSIGN
+
+  BeaconInterval=15              ; Sends your node info to the web map every 15 mins
+***

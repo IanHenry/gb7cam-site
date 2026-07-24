@@ -1,2 +1,13 @@
 /.quarto/
 **/*.quarto_ipynb
+
+# Node secrets / local config - never belongs in this public repo.
+# See bpq32.cfg.example for a redacted, shareable version.
+bpq32.cfg
+bpq32.cfg.old*
+wg.conf
+wg-quick.conf
+*.env
+.env
+*.duckdb
+*.db
