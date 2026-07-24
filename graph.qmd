@@ -203,14 +203,9 @@ function buildMatrix(data, nodeMap) {
     const base = nodeMap.get(id) || { id, label: id, color: nodeColor(id) };
     const pos = layout.get(id);
     // Native canvas label, kept short (callsign only, no alias) since
-    // this is a dense circle - vadjust nudges it vertically away from
-    // the node using the node's own position on the circle, so top-half
-    // labels sit above their dot and bottom-half labels sit below,
-    // instead of the default fixed offset that reads fine on a sparse
-    // graph but collides constantly here. This is a real vis-network
-    // node property, so it scales and stays attached correctly under
-    // zoom/pan - unlike an earlier attempt at a hand-positioned HTML
-    // overlay, which didn't.
+    // this is a dense circle. No vadjust - straight through the node's
+    // own position, same as every other node property here, so it
+    // scales and stays attached correctly under zoom/pan for free.
     return {
       ...base,
       label: id,
@@ -218,7 +213,7 @@ function buildMatrix(data, nodeMap) {
       x: pos.x,
       y: pos.y,
       fixed: true,
-      font: { size: 7, color: "#444", vadjust: -10 * Math.sign(Math.sin(pos.angle) || 1) }
+      font: { size: 7, color: "#444", vadjust: 0 }
     };
   }));
 
