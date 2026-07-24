@@ -202,7 +202,10 @@ function buildMatrix(data, nodeMap) {
   const nodes = new vis.DataSet(ids.map(id => {
     const base = nodeMap.get(id) || { id, label: id, color: nodeColor(id) };
     const pos = positions.get(id);
-    return { ...base, x: pos.x, y: pos.y, fixed: true };
+    // Labels this close together on a packed circle are unreadable at
+    // default size; shrink them and rely on hover (title) to identify
+    // a specific node instead.
+    return { ...base, title: base.label, x: pos.x, y: pos.y, fixed: true };
   }));
 
   const edges = new vis.DataSet(
@@ -210,7 +213,9 @@ function buildMatrix(data, nodeMap) {
       id: i,
       from: e.from,
       to: e.to,
-      color: { color: "#bbbbbb", highlight: "#000" },
+      // Semi-transparent so overlapping chords read as density (darker
+      // where many peers' cliques cross) rather than a solid grey mess.
+      color: { color: "rgba(90,90,90,0.12)", highlight: "#000" },
       width: 1
     }))
   );
@@ -244,8 +249,9 @@ function render(data) {
     edges: matrixEdges
   }, {
     physics: false,
-    nodes: { shape: "dot", size: 10, font: { color: "#222" } },
-    edges: { smooth: false }
+    nodes: { shape: "dot", size: 8, font: { size: 8, color: "#222" } },
+    edges: { smooth: false },
+    interaction: { hover: true }
   });
 
   setupFilter();
@@ -255,9 +261,14 @@ function render(data) {
    FILTER WITH +1 NEIGHBOUR HOP, applied to both views
 ---------------------------- */
 function applyFilterTo(nodes, edges, q) {
+  // Batched into one nodes.update()/edges.update() call each, rather than
+  // one call per item - on the matrix view's ~2000 edges, per-item updates
+  // meant thousands of individual DataSet writes (each triggering its own
+  // internal recalculation) on every keystroke, which is what made the
+  // page feel unresponsive while filtering.
   if (!q) {
-    nodes.forEach(n => nodes.update({ id: n.id, hidden: false }));
-    edges.forEach(e => edges.update({ id: e.id, hidden: false }));
+    nodes.update(nodes.map(n => ({ id: n.id, hidden: false })));
+    edges.update(edges.map(e => ({ id: e.id, hidden: false })));
     return;
   }
 
@@ -278,13 +289,11 @@ function applyFilterTo(nodes, edges, q) {
     }
   });
 
-  nodes.forEach(n => {
-    nodes.update({ id: n.id, hidden: !matchNodes.has(n.id) });
-  });
-
-  edges.forEach(e => {
-    edges.update({ id: e.id, hidden: !(matchNodes.has(e.from) && matchNodes.has(e.to)) });
-  });
+  nodes.update(nodes.map(n => ({ id: n.id, hidden: !matchNodes.has(n.id) })));
+  edges.update(edges.map(e => ({
+    id: e.id,
+    hidden: !(matchNodes.has(e.from) && matchNodes.has(e.to))
+  })));
 }
 
 function applyFilter() {
@@ -294,11 +303,20 @@ function applyFilter() {
 }
 
 /* ----------------------------
-   FILTER EVENT
+   FILTER EVENT (debounced so a dense matrix pass doesn't run on every
+   single keystroke while still typing)
 ---------------------------- */
+function debounce(fn, delayMs) {
+  let timer;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), delayMs);
+  };
+}
+
 function setupFilter() {
   document.getElementById("filter")
-    .addEventListener("input", applyFilter);
+    .addEventListener("input", debounce(applyFilter, 150));
 }
 
 /* ----------------------------
