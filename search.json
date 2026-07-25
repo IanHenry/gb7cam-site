@@ -147,6 +147,13 @@
     "text": "Peer Overlap\nHow much the peers duplicate each other. Unique contribution is how many nodes are reachable through exactly one peer, and it moves a lot: see the notebook post Packet Networks and Protein Networks on g0lft.org for why.\n\nUnique contribution over time\n\n\n\n\n\n\n\n\nLatest snapshot\n\n\nLoading…"
   },
   {
+    "objectID": "trends.html#backbone-nodes",
+    "href": "trends.html#backbone-nodes",
+    "title": "Network Trends",
+    "section": "Backbone Nodes",
+    "text": "Backbone Nodes\nThe complement of unique contribution: nodes reachable through more than one peer. The more peers reach a node, the more redundantly it sits in the network, so this ranking tends to surface the backbone the wider network routes toward. Averaged over all snapshots, so a momentary double-sighting does not count.\n\n\nLoading…"
+  },
+  {
     "objectID": "index.html#ax.25-packet-node-gb7cam",
     "href": "index.html#ax.25-packet-node-gb7cam",
     "title": "GB7CAM Packet System",
