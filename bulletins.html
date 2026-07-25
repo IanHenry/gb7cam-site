@@ -212,7 +212,7 @@ async function loadBulletins(topic) {
         &nbsp;<span class="text-muted">${esc(b.callsign)}</span>
         &nbsp; ${esc(b.title)}
       </summary>
-      <pre class="bulletin-body" style="white-space:pre-wrap; word-break:break-word; background:#f7f7f7; padding:10px; border-radius:4px; margin:6px 0; font-size:0.85em;">Loading...</pre>
+      <pre class="bulletin-body" style="white-space:pre; overflow-x:auto; background:#f7f7f7; padding:10px; border-radius:4px; margin:6px 0; font-size:0.82em; line-height:1.2; font-family:'Consolas','DejaVu Sans Mono','Menlo','Courier New',monospace;">Loading...</pre>
     </details>`).join("");
 
   // lazy-load body on first expand
