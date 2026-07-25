@@ -207,16 +207,16 @@ async function loadStatic() {
      fixed percentage. 100% erodes over time - any flap, or GB7CAM's own
      downtime, drops nodes off it - so top/bottom N stays meaningful whatever
      the absolute levels. The summary counts use soft thresholds for context. */
-  const N = Math.min(15, Math.floor(nodes.length / 2));
+  const N = Math.min(20, Math.floor(nodes.length / 2));
   const mostStable = nodes.slice(0, N);                    // endpoint sorts pct desc
   const leastStable = nodes.slice(-N).reverse();           // bottom N, least first
   const reliable = nodes.filter(n => n.pct >= 90).length;
   const marginal = nodes.filter(n => n.pct < 50).length;
   document.getElementById("stability-container").innerHTML = `
-    <div class="metric-grid" style="margin-bottom:10px;">
-      <div class="metric"><strong>Total tracked:</strong> ${nodes.length}</div>
-      <div class="metric"><strong>Reliable (&ge; 90%):</strong> ${reliable}</div>
-      <div class="metric"><strong>Marginal (&lt; 50%):</strong> ${marginal}</div>
+    <div style="display:flex; gap:6px 28px; flex-wrap:wrap; margin-bottom:12px; font-family:sans-serif;">
+      <span><strong>Total tracked:</strong> ${nodes.length}</span>
+      <span><strong>Reliable (&ge; 90%):</strong> ${reliable}</span>
+      <span><strong>Marginal (&lt; 50%):</strong> ${marginal}</span>
     </div>
     <div style="display:flex; gap:16px; flex-wrap:wrap;">
       <div style="flex:1; min-width:260px;">
