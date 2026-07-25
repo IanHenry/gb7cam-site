@@ -20,7 +20,11 @@ attributed to the originating station. Personal mail is never shown.
 .topic-chip.active .count { opacity:0.9; }
 </style>
 
-<div style="margin:12px 0 4px; font-family:sans-serif;">
+<div style="margin:12px 0 6px; font-family:sans-serif;">
+<input id="search-box" class="search-box" type="search" placeholder="Search titles and text..." style="padding:6px; width:300px; max-width:100%;">
+</div>
+
+<div style="margin:6px 0 4px; font-family:sans-serif;">
 <label for="date-select"><strong>Show:</strong></label>
 <select id="date-select" class="search-box" style="width:auto; padding:5px;">
 <option value="0">All dates</option>
@@ -45,6 +49,12 @@ attributed to the originating station. Personal mail is never shown.
 const BASE = "https://api.gb7cam.org.uk";
 let currentTopic = "";
 let currentSince = "";   // ISO date, or "" for all
+let currentQuery = "";   // search text, or ""
+
+function debounce(fn, ms) {
+  let t;
+  return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); };
+}
 
 function sinceFromDays(days) {
   days = parseInt(days, 10);
@@ -85,6 +95,7 @@ async function loadBulletins() {
   const params = new URLSearchParams();
   if (currentTopic) params.set("topic", currentTopic);
   if (currentSince) params.set("since", currentSince);
+  if (currentQuery) params.set("q", currentQuery);
   params.set("limit", "100");
   const list = (await (await fetch(`${BASE}/bulletins?${params}`)).json()).bulletins || [];
   const el = document.getElementById("bulletins-container");
@@ -127,6 +138,10 @@ async function init() {
       currentSince = sinceFromDays(e.target.value);
       loadBulletins().catch(console.error);
     });
+    document.getElementById("search-box").addEventListener("input", debounce(e => {
+      currentQuery = e.target.value.trim();
+      loadBulletins().catch(console.error);
+    }, 300));
     await loadBulletins();
   } catch (e) {
     console.error("Bulletins load failed:", e);
