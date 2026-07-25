@@ -176,6 +176,9 @@ ul.task-list li input[type="checkbox"] {
 <strong>Active peers now:</strong> <span id="t-peers">…</span>
 </div>
 </div>
+<div style="margin:14px 0; font-family:sans-serif;">
+<p><label for="range-select"><strong>Time range:</strong></label> <select id="range-select" class="search-box" style="width:auto; padding:5px;"> <option value="24">Last 24 hours</option> <option value="48" selected="">Last 48 hours</option> <option value="168">Last 7 days</option> <option value="720">Last 30 days</option> </select> <span id="range-note" class="text-muted" style="margin-left:8px;"></span></p>
+</div>
 <hr>
 </section>
 <section id="nodes-and-peers-over-time" class="level2">
@@ -191,6 +194,9 @@ ul.task-list li input[type="checkbox"] {
 <section id="peer-scorecard" class="level2">
 <h2 class="anchored" data-anchor-id="peer-scorecard">Peer Scorecard</h2>
 <p>How reliably each peer has been reachable, and how many nodes it can itself reach (its horizon, from its own routing table).</p>
+<p class="text-muted">
+Uptime is measured from GB7CAM’s vantage point, so a gap can reflect this node or its link being down rather than a fault at the peer.
+</p>
 <div id="peers-container" class="panel">
 <p>
 Loading…
@@ -200,7 +206,7 @@ Loading…
 </section>
 <section id="node-stability" class="level2">
 <h2 class="anchored" data-anchor-id="node-stability">Node Stability</h2>
-<p>What fraction of snapshots each node has appeared in. A stable core is always present; the marginal ones flicker in and out, and are the routes a stricter quality threshold would drop first.</p>
+<p>What fraction of snapshots each node has appeared in. The stable core is present in every snapshot; the marginal ones flicker in and out, and are the routes a stricter quality threshold would drop first.</p>
 <div id="stability-container" class="panel">
 <p>
 Loading…
@@ -208,9 +214,20 @@ Loading…
 </div>
 <hr>
 </section>
-<section id="peer-overlap-latest-snapshot" class="level2">
-<h2 class="anchored" data-anchor-id="peer-overlap-latest-snapshot">Peer Overlap (latest snapshot)</h2>
-<p>How much the peers duplicate each other. Unique contribution is how many nodes are reachable through exactly one peer. These numbers are a point-in-time reading and they move; see the notebook post <a href="https://g0lft.org/notebook-posts/2026-07-24-packet-networks-and-protein-networks/2026-07-24-packet-networks-and-protein-networks.html">Packet Networks and Protein Networks</a> on g0lft.org for why.</p>
+<section id="peer-overlap" class="level2">
+<h2 class="anchored" data-anchor-id="peer-overlap">Peer Overlap</h2>
+<p>How much the peers duplicate each other. Unique contribution is how many nodes are reachable through exactly one peer, and it moves a lot: see the notebook post <a href="https://g0lft.org/notebook-posts/2026-07-24-packet-networks-and-protein-networks/2026-07-24-packet-networks-and-protein-networks.html">Packet Networks and Protein Networks</a> on g0lft.org for why.</p>
+<section id="unique-contribution-over-time" class="level3">
+<h3 class="anchored" data-anchor-id="unique-contribution-over-time">Unique contribution over time</h3>
+<div class="panel">
+<div style="position:relative; height:320px;">
+<canvas id="overlapChart">
+</canvas>
+</div>
+</div>
+</section>
+<section id="latest-snapshot" class="level3">
+<h3 class="anchored" data-anchor-id="latest-snapshot">Latest snapshot</h3>
 <div id="overlap-container" class="panel">
 <p>
 Loading…
@@ -219,121 +236,163 @@ Loading…
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <script>
 const BASE = "https://api.gb7cam.org.uk";
-const NODE_COLOUR = "#1f77b4";   // AXIP blue, matches the rest of the site
+const NODE_COLOUR = "#1f77b4";   // AXIP blue
 const PEER_COLOUR = "#2ca02c";   // RF green
+const PEER_PALETTE = {           // per-peer colours for the overlap chart
+  "GB7BDH": "#4dabf7", "GB7BED-5": "#ff6b6b", "GB7NPR": "#f6a821", "G0NMY-7": "#20c997",
+};
+const FALLBACK = ["#845ef7", "#e64980", "#12b886", "#fab005", "#495057"];
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
-function fmtTs(iso) {
-  // "2026-07-25T11:45:31" -> "25 11:45" (day + HH:MM, UTC)
-  const d = new Date(iso + "Z");
-  const day = String(d.getUTCDate()).padStart(2, "0");
-  const hh = String(d.getUTCHours()).padStart(2, "0");
-  const mm = String(d.getUTCMinutes()).padStart(2, "0");
-  return `${day} ${hh}:${mm}`;
+function pUTC(iso) { return new Date(iso.endsWith("Z") ? iso : iso + "Z"); }
+function fmtFull(iso) {
+  const d = pUTC(iso);
+  return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}, `
+       + `${String(d.getUTCHours()).padStart(2,"0")}:${String(d.getUTCMinutes()).padStart(2,"0")} UTC`;
+}
+function fmtLabel(iso, hours) {
+  const d = pUTC(iso);
+  const dm = `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]}`;
+  if (hours > 72) return dm;   // long ranges: date only
+  return `${dm} ${String(d.getUTCHours()).padStart(2,"0")}:${String(d.getUTCMinutes()).padStart(2,"0")}`;
 }
 
-async function loadTrends() {
-  try {
-    const [timelineR, peersR, stabilityR, overlapR] = await Promise.all([
-      fetch(BASE + "/history/timeline?hours=48"),
-      fetch(BASE + "/history/peers"),
-      fetch(BASE + "/history/stability"),
-      fetch(BASE + "/history/overlap"),
-    ]);
+let timelineChart = null;
+let overlapChart = null;
 
-    const timeline = (await timelineR.json()).timeline || [];
-    const peers = (await peersR.json()).peers || [];
-    const stability = await stabilityR.json();
-    const overlap = await overlapR.json();
+async function loadRanged(hours) {
+  const [tlR, ovR] = await Promise.all([
+    fetch(`${BASE}/history/timeline?hours=${hours}`),
+    fetch(`${BASE}/history/overlap-timeline?hours=${hours}`),
+  ]);
+  const tl = (await tlR.json());
+  const timeline = tl.timeline || [];
+  const series = (await ovR.json()).series || [];
 
-    /* ---- summary ---- */
-    if (timeline.length) {
-      document.getElementById("t-since").innerText = fmtTs(timeline[0].ts) + " UTC";
-      document.getElementById("t-peers").innerText = timeline[timeline.length - 1].peers;
-    }
-    document.getElementById("t-snaps").innerText = stability.total_snapshots ?? "—";
-    document.getElementById("t-nodes").innerText = (stability.nodes || []).length;
+  document.getElementById("range-note").innerText =
+    timeline.length ? `${timeline.length} points, ${tl.bucket_minutes} min each` : "";
+  if (timeline.length) document.getElementById("t-peers").innerText = timeline[timeline.length - 1].peers;
 
-    /* ---- timeline chart ---- */
-    new Chart(document.getElementById("timelineChart"), {
-      type: "line",
-      data: {
-        labels: timeline.map(p => fmtTs(p.ts)),
-        datasets: [
-          {
-            label: "Nodes visible", data: timeline.map(p => p.nodes),
-            borderColor: NODE_COLOUR, backgroundColor: NODE_COLOUR,
-            yAxisID: "yNodes", tension: 0.25, pointRadius: 0, borderWidth: 2,
-          },
-          {
-            label: "Active peers", data: timeline.map(p => p.peers),
-            borderColor: PEER_COLOUR, backgroundColor: PEER_COLOUR,
-            yAxisID: "yPeers", tension: 0.25, pointRadius: 0, borderWidth: 2,
-            stepped: true,
-          },
-        ],
+  /* timeline chart */
+  if (timelineChart) timelineChart.destroy();
+  timelineChart = new Chart(document.getElementById("timelineChart"), {
+    type: "line",
+    data: {
+      labels: timeline.map(p => fmtLabel(p.ts, hours)),
+      datasets: [
+        { label: "Nodes visible", data: timeline.map(p => p.nodes), borderColor: NODE_COLOUR,
+          yAxisID: "yNodes", tension: 0.25, pointRadius: 0, borderWidth: 2 },
+        { label: "Active peers", data: timeline.map(p => p.peers), borderColor: PEER_COLOUR,
+          yAxisID: "yPeers", tension: 0.15, pointRadius: 0, borderWidth: 2, stepped: true },
+      ],
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, interaction: { mode: "index", intersect: false },
+      scales: {
+        x: { ticks: { maxTicksLimit: 9, autoSkip: true } },
+        yNodes: { position: "left", beginAtZero: true, title: { display: true, text: "nodes" } },
+        yPeers: { position: "right", beginAtZero: true, suggestedMax: 6, grid: { drawOnChartArea: false },
+                  title: { display: true, text: "peers" }, ticks: { stepSize: 1 } },
       },
-      options: {
-        responsive: true, maintainAspectRatio: false, interaction: { mode: "index", intersect: false },
-        scales: {
-          x: { ticks: { maxTicksLimit: 10, autoSkip: true }, title: { display: true, text: "day HH:MM UTC" } },
-          yNodes: { position: "left", beginAtZero: true, title: { display: true, text: "nodes" } },
-          yPeers: { position: "right", beginAtZero: true, suggestedMax: 6, grid: { drawOnChartArea: false }, title: { display: true, text: "peers" }, ticks: { stepSize: 1 } },
-        },
+    },
+  });
+
+  /* overlap-over-time chart: one line per peer */
+  const peers = [...new Set(series.map(r => r.peer))];
+  const buckets = [...new Set(series.map(r => r.ts))].sort();
+  const byPeerTs = {};
+  series.forEach(r => { (byPeerTs[r.peer] ||= {})[r.ts] = r.unique_nodes; });
+  if (overlapChart) overlapChart.destroy();
+  overlapChart = new Chart(document.getElementById("overlapChart"), {
+    type: "line",
+    data: {
+      labels: buckets.map(ts => fmtLabel(ts, hours)),
+      datasets: peers.map((p, i) => ({
+        label: p, data: buckets.map(ts => byPeerTs[p][ts] ?? null),
+        borderColor: PEER_PALETTE[p] || FALLBACK[i % FALLBACK.length],
+        tension: 0.25, pointRadius: 0, borderWidth: 2, spanGaps: true,
+      })),
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, interaction: { mode: "index", intersect: false },
+      scales: {
+        x: { ticks: { maxTicksLimit: 9, autoSkip: true } },
+        y: { beginAtZero: true, title: { display: true, text: "nodes unique to this peer" } },
       },
-    });
+    },
+  });
+}
 
-    /* ---- peer scorecard ---- */
-    document.getElementById("peers-container").innerHTML = `
-      <table class="table-dashboard">
-        <thead><tr><th>Peer</th><th>Uptime</th><th>Seen</th><th>Reach (nodes it can see)</th></tr></thead>
-        <tbody>
-          ${peers.map(p => `
-            <tr>
-              <td style="font-weight:bold;">${p.peer}</td>
-              <td>${p.uptime_pct}%</td>
-              <td>${p.snapshots_seen} / ${p.snapshots_total}</td>
-              <td>${p.reach ?? "—"}</td>
-            </tr>`).join("")}
-        </tbody>
-      </table>`;
+async function loadStatic() {
+  const [peersR, stabilityR, overlapR] = await Promise.all([
+    fetch(BASE + "/history/peers"),
+    fetch(BASE + "/history/stability"),
+    fetch(BASE + "/history/overlap"),
+  ]);
+  const peers = (await peersR.json()).peers || [];
+  const stability = await stabilityR.json();
+  const overlap = await overlapR.json();
 
-    /* ---- node stability ---- */
-    const nodes = stability.nodes || [];
-    const core = nodes.filter(n => n.pct === 100).length;
-    const marginal = nodes.filter(n => n.pct < 50);
-    document.getElementById("stability-container").innerHTML = `
-      <div class="metric-grid" style="margin-bottom:10px;">
-        <div class="metric"><strong>Stable core (every snapshot):</strong> ${core}</div>
-        <div class="metric"><strong>Marginal (&lt; 50%):</strong> ${marginal.length}</div>
-        <div class="metric"><strong>Total tracked:</strong> ${nodes.length}</div>
+  document.getElementById("t-snaps").innerText = stability.total_snapshots ?? "—";
+  const nodes = stability.nodes || [];
+  document.getElementById("t-nodes").innerText = nodes.length;
+  if (stability.first_ts) document.getElementById("t-since").innerText = fmtFull(stability.first_ts);
+
+  /* peer scorecard */
+  document.getElementById("peers-container").innerHTML = `
+    <table class="table-dashboard">
+      <thead><tr><th>Peer</th><th>Uptime</th><th>Seen</th><th>Reach (nodes it can see)</th></tr></thead>
+      <tbody>${peers.map(p => `
+        <tr><td style="font-weight:bold;">${p.peer}</td><td>${p.uptime_pct}%</td>
+        <td>${p.snapshots_seen} / ${p.snapshots_total}</td><td>${p.reach ?? "—"}</td></tr>`).join("")}
+      </tbody>
+    </table>`;
+
+  /* node stability: two tables - stable core (most stable) and marginal (least stable first) */
+  const core = nodes.filter(n => n.pct === 100);            // already desc
+  const marginal = nodes.filter(n => n.pct < 50).sort((a, b) => a.pct - b.pct);  // least stable first
+  document.getElementById("stability-container").innerHTML = `
+    <div class="metric-grid" style="margin-bottom:10px;">
+      <div class="metric"><strong>Stable core:</strong> ${core.length}</div>
+      <div class="metric"><strong>Marginal (&lt; 50%):</strong> ${marginal.length}</div>
+      <div class="metric"><strong>Total tracked:</strong> ${nodes.length}</div>
+    </div>
+    <div style="display:flex; gap:16px; flex-wrap:wrap;">
+      <div style="flex:1; min-width:260px;">
+        <p class="text-muted">Stable core, present in every snapshot:</p>
+        <table class="table-dashboard"><thead><tr><th>Node</th><th>Present in</th></tr></thead>
+          <tbody>${core.map(n => `<tr><td>${n.node}</td><td>${n.pct}%</td></tr>`).join("")}</tbody></table>
       </div>
-      <p class="text-muted">The marginal nodes, least stable first:</p>
-      <table class="table-dashboard">
-        <thead><tr><th>Node</th><th>Present in</th></tr></thead>
-        <tbody>
-          ${marginal.map(n => `<tr><td>${n.node}</td><td>${n.pct}%</td></tr>`).join("")}
-        </tbody>
-      </table>`;
+      <div style="flex:1; min-width:260px;">
+        <p class="text-muted">Most marginal, least stable first:</p>
+        <table class="table-dashboard"><thead><tr><th>Node</th><th>Present in</th></tr></thead>
+          <tbody>${marginal.map(n => `<tr><td>${n.node}</td><td>${n.pct}%</td></tr>`).join("")}</tbody></table>
+      </div>
+    </div>`;
 
-    /* ---- overlap ---- */
-    const contrib = overlap.contribution || [];
-    const pairs = overlap.pairwise || [];
-    document.getElementById("overlap-container").innerHTML = `
-      <p class="text-muted">Unique contribution per peer:</p>
-      <table class="table-dashboard">
-        <thead><tr><th>Peer</th><th>Nodes via</th><th>Unique to it</th></tr></thead>
-        <tbody>
-          ${contrib.map(c => `<tr><td style="font-weight:bold;">${c.peer}</td><td>${c.nodes_via}</td><td>${c.unique_nodes}</td></tr>`).join("")}
-        </tbody>
-      </table>
-      <p class="text-muted" style="margin-top:14px;">Pairwise overlap (Jaccard):</p>
-      <table class="table-dashboard">
-        <thead><tr><th>Peer A</th><th>Peer B</th><th>Shared</th><th>Jaccard</th></tr></thead>
-        <tbody>
-          ${pairs.map(p => `<tr><td>${p.peer_a}</td><td>${p.peer_b}</td><td>${p.shared}</td><td>${p.jaccard}</td></tr>`).join("")}
-        </tbody>
-      </table>`;
+  /* overlap latest */
+  const contrib = overlap.contribution || [];
+  const pairs = overlap.pairwise || [];
+  document.getElementById("overlap-container").innerHTML = `
+    <p class="text-muted">Unique contribution per peer:</p>
+    <table class="table-dashboard">
+      <thead><tr><th>Peer</th><th>Nodes via</th><th>Unique to it</th></tr></thead>
+      <tbody>${contrib.map(c => `<tr><td style="font-weight:bold;">${c.peer}</td><td>${c.nodes_via}</td><td>${c.unique_nodes}</td></tr>`).join("")}</tbody>
+    </table>
+    <p class="text-muted" style="margin-top:14px;">Pairwise overlap (Jaccard):</p>
+    <table class="table-dashboard">
+      <thead><tr><th>Peer A</th><th>Peer B</th><th>Shared</th><th>Jaccard</th></tr></thead>
+      <tbody>${pairs.map(p => `<tr><td>${p.peer_a}</td><td>${p.peer_b}</td><td>${p.shared}</td><td>${p.jaccard}</td></tr>`).join("")}</tbody>
+    </table>`;
+}
 
+async function init() {
+  try {
+    await loadStatic();   // sets "tracking since" from stability.first_ts
+    await loadRanged(parseInt(document.getElementById("range-select").value, 10));
+    document.getElementById("range-select").addEventListener("change", e => {
+      loadRanged(parseInt(e.target.value, 10)).catch(console.error);
+    });
   } catch (e) {
     console.error("Trends load failed:", e);
     for (const id of ["peers-container", "stability-container", "overlap-container"]) {
@@ -342,10 +401,11 @@ async function loadTrends() {
   }
 }
 
-loadTrends();
+init();
 </script>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->

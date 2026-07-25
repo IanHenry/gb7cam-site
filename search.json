@@ -116,7 +116,7 @@
     "href": "trends.html#network-trends",
     "title": "Network Trends",
     "section": "Network Trends",
-    "text": "Network Trends\nHistory assembled from a snapshot of the routing tables taken every fifteen minutes. These are trends over time, not the live picture; for current state see the status page.\n\n\nTracking since: …\n\n\nSnapshots: …\n\n\nDistinct nodes seen: …\n\n\nActive peers now: …"
+    "text": "Network Trends\nHistory assembled from a snapshot of the routing tables taken every fifteen minutes. These are trends over time, not the live picture; for current state see the status page.\n\n\nTracking since: …\n\n\nSnapshots: …\n\n\nDistinct nodes seen: …\n\n\nActive peers now: …\n\n\n\nTime range:  Last 24 hours Last 48 hours Last 7 days Last 30 days"
   },
   {
     "objectID": "trends.html#nodes-and-peers-over-time",
@@ -130,21 +130,21 @@
     "href": "trends.html#peer-scorecard",
     "title": "Network Trends",
     "section": "Peer Scorecard",
-    "text": "Peer Scorecard\nHow reliably each peer has been reachable, and how many nodes it can itself reach (its horizon, from its own routing table).\n\n\nLoading…"
+    "text": "Peer Scorecard\nHow reliably each peer has been reachable, and how many nodes it can itself reach (its horizon, from its own routing table).\n\nUptime is measured from GB7CAM’s vantage point, so a gap can reflect this node or its link being down rather than a fault at the peer.\n\n\n\nLoading…"
   },
   {
     "objectID": "trends.html#node-stability",
     "href": "trends.html#node-stability",
     "title": "Network Trends",
     "section": "Node Stability",
-    "text": "Node Stability\nWhat fraction of snapshots each node has appeared in. A stable core is always present; the marginal ones flicker in and out, and are the routes a stricter quality threshold would drop first.\n\n\nLoading…"
+    "text": "Node Stability\nWhat fraction of snapshots each node has appeared in. The stable core is present in every snapshot; the marginal ones flicker in and out, and are the routes a stricter quality threshold would drop first.\n\n\nLoading…"
   },
   {
-    "objectID": "trends.html#peer-overlap-latest-snapshot",
-    "href": "trends.html#peer-overlap-latest-snapshot",
+    "objectID": "trends.html#peer-overlap",
+    "href": "trends.html#peer-overlap",
     "title": "Network Trends",
-    "section": "Peer Overlap (latest snapshot)",
-    "text": "Peer Overlap (latest snapshot)\nHow much the peers duplicate each other. Unique contribution is how many nodes are reachable through exactly one peer. These numbers are a point-in-time reading and they move; see the notebook post Packet Networks and Protein Networks on g0lft.org for why.\n\n\nLoading…"
+    "section": "Peer Overlap",
+    "text": "Peer Overlap\nHow much the peers duplicate each other. Unique contribution is how many nodes are reachable through exactly one peer, and it moves a lot: see the notebook post Packet Networks and Protein Networks on g0lft.org for why.\n\nUnique contribution over time\n\n\n\n\n\n\n\n\nLatest snapshot\n\n\nLoading…"
   },
   {
     "objectID": "index.html#ax.25-packet-node-gb7cam",
