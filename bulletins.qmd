@@ -1,0 +1,103 @@
+---
+title: "Bulletins"
+---
+
+<img src="images/main_logo.png" class="centered-image">
+
+## Bulletins
+
+Recent bulletins received at GB7CAM, grouped by topic. Bulletins are broadcast
+messages relayed across the packet network; they are shown here as received and
+attributed to the originating station. Personal mail is never shown.
+
+<div style="margin:14px 0; font-family:sans-serif; display:flex; gap:14px; align-items:center; flex-wrap:wrap;">
+  <label for="topic-select"><strong>Topic:</strong></label>
+  <select id="topic-select" class="search-box" style="width:auto; padding:6px;">
+    <option value="">All topics</option>
+  </select>
+  <a id="rss-link" href="https://api.gb7cam.org.uk/bulletins/rss" target="_blank" rel="noopener">RSS feed &#128248;</a>
+</div>
+
+<div id="bulletins-container" class="panel">
+  <p>Loading...</p>
+</div>
+
+<script>
+const BASE = "https://api.gb7cam.org.uk";
+
+function fmtDate(iso) {
+  if (!iso) return "";
+  const [y, m, d] = iso.split("-").map(Number);
+  const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  return `${d} ${MON[m - 1]}`;
+}
+function esc(s) {
+  return (s || "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+}
+
+async function loadTopics() {
+  const topics = (await (await fetch(BASE + "/bulletins/topics")).json()).topics || [];
+  const sel = document.getElementById("topic-select");
+  for (const t of topics) {
+    const o = document.createElement("option");
+    o.value = t.topic;
+    o.textContent = `${t.topic} (${t.count})`;
+    sel.appendChild(o);
+  }
+}
+
+async function loadBulletins(topic) {
+  const url = topic ? `${BASE}/bulletins?topic=${encodeURIComponent(topic)}&limit=100`
+                    : `${BASE}/bulletins?limit=100`;
+  const list = (await (await fetch(url)).json()).bulletins || [];
+  const el = document.getElementById("bulletins-container");
+  if (!list.length) { el.innerHTML = "<p class='text-muted'>No bulletins.</p>"; return; }
+  el.innerHTML = list.map(b => `
+    <details class="bulletin-item" data-id="${b.id}">
+      <summary style="cursor:pointer; padding:6px 0;">
+        <span class="text-muted">${fmtDate(b.msg_date)}</span>
+        &nbsp;<span class="port--axip" style="font-weight:bold;">${esc(b.category)}</span>
+        &nbsp;<span class="text-muted">${esc(b.callsign)}</span>
+        &nbsp; ${esc(b.title)}
+      </summary>
+      <pre class="bulletin-body" style="white-space:pre-wrap; word-break:break-word; background:#f7f7f7; padding:10px; border-radius:4px; margin:6px 0; font-size:0.85em;">Loading...</pre>
+    </details>`).join("");
+
+  // lazy-load body on first expand
+  el.querySelectorAll("details.bulletin-item").forEach(d => {
+    d.addEventListener("toggle", async () => {
+      if (!d.open || d.dataset.loaded) return;
+      d.dataset.loaded = "1";
+      const pre = d.querySelector(".bulletin-body");
+      try {
+        const body = (await (await fetch(`${BASE}/bulletins/${d.dataset.id}`)).json()).body || "";
+        pre.textContent = body;
+      } catch (e) {
+        pre.textContent = "(body unavailable)";
+      }
+    });
+  });
+}
+
+function updateRss(topic) {
+  document.getElementById("rss-link").href =
+    topic ? `${BASE}/bulletins/rss?topic=${encodeURIComponent(topic)}` : `${BASE}/bulletins/rss`;
+}
+
+async function init() {
+  try {
+    await loadTopics();
+    await loadBulletins("");
+    document.getElementById("topic-select").addEventListener("change", e => {
+      loadBulletins(e.target.value).catch(console.error);
+      updateRss(e.target.value);
+    });
+  } catch (e) {
+    console.error("Bulletins load failed:", e);
+    document.getElementById("bulletins-container").innerHTML =
+      "<p class='text-muted'>Bulletins unavailable right now.</p>";
+  }
+}
+
+init();
+</script>

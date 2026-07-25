@@ -18,6 +18,8 @@ website:
         href: graph.qmd
       - text: Trends
         href: trends.qmd
+      - text: Bulletins
+        href: bulletins.qmd
       - text: Services
         href: services.qmd
       - text: Tech
