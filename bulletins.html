@@ -175,7 +175,10 @@ ul.task-list li input[type="checkbox"] {
 .topic-chip .count { opacity:0.7; font-size:0.85em; margin-left:5px; }
 .topic-chip.active .count { opacity:0.9; }
 </style>
-<div id="topic-chips" style="margin:12px 0;">
+<div style="margin:12px 0 4px; font-family:sans-serif;">
+<p><label for="date-select"><strong>Show:</strong></label> <select id="date-select" class="search-box" style="width:auto; padding:5px;"> <option value="0">All dates</option> <option value="1">Today</option> <option value="3">Last 3 days</option> <option value="7">Last 7 days</option> </select></p>
+</div>
+<div id="topic-chips" style="margin:8px 0;">
 Loading topics…
 </div>
 <div style="margin:6px 0 16px; font-family:sans-serif; font-size:0.9em;">
@@ -189,6 +192,15 @@ Loading…
 <script>
 const BASE = "https://api.gb7cam.org.uk";
 let currentTopic = "";
+let currentSince = "";   // ISO date, or "" for all
+
+function sinceFromDays(days) {
+  days = parseInt(days, 10);
+  if (!days) return "";
+  const d = new Date();
+  d.setUTCDate(d.getUTCDate() - (days - 1));  // "Today" (1) -> today; "3 days" -> today-2
+  return d.toISOString().slice(0, 10);
+}
 
 function fmtDate(iso) {
   if (!iso) return "";
@@ -211,16 +223,18 @@ async function loadTopics() {
     c.addEventListener("click", () => {
       currentTopic = c.dataset.topic;
       el.querySelectorAll(".topic-chip").forEach(x => x.classList.toggle("active", x.dataset.topic === currentTopic));
-      loadBulletins(currentTopic).catch(console.error);
+      loadBulletins().catch(console.error);
       updateRss(currentTopic);
     });
   });
 }
 
-async function loadBulletins(topic) {
-  const url = topic ? `${BASE}/bulletins?topic=${encodeURIComponent(topic)}&limit=100`
-                    : `${BASE}/bulletins?limit=100`;
-  const list = (await (await fetch(url)).json()).bulletins || [];
+async function loadBulletins() {
+  const params = new URLSearchParams();
+  if (currentTopic) params.set("topic", currentTopic);
+  if (currentSince) params.set("since", currentSince);
+  params.set("limit", "100");
+  const list = (await (await fetch(`${BASE}/bulletins?${params}`)).json()).bulletins || [];
   const el = document.getElementById("bulletins-container");
   if (!list.length) { el.innerHTML = "<p class='text-muted'>No bulletins.</p>"; return; }
   el.innerHTML = list.map(b => `
@@ -257,7 +271,11 @@ function updateRss(topic) {
 async function init() {
   try {
     await loadTopics();
-    await loadBulletins("");
+    document.getElementById("date-select").addEventListener("change", e => {
+      currentSince = sinceFromDays(e.target.value);
+      loadBulletins().catch(console.error);
+    });
+    await loadBulletins();
   } catch (e) {
     console.error("Bulletins load failed:", e);
     document.getElementById("bulletins-container").innerHTML =
