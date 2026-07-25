@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>GB7CAM Packet System</title>
+<title>Bulletins</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -110,7 +110,7 @@ ul.task-list li input[type="checkbox"] {
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link active" href="./index.html" aria-current="page"> 
+    <a class="nav-link" href="./index.html"> 
 <span class="menu-text">Home</span></a>
   </li>  
   <li class="nav-item">
@@ -126,7 +126,7 @@ ul.task-list li input[type="checkbox"] {
 <span class="menu-text">Trends</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./bulletins.html"> 
+    <a class="nav-link active" href="./bulletins.html" aria-current="page"> 
 <span class="menu-text">Bulletins</span></a>
   </li>  
   <li class="nav-item">
@@ -154,7 +154,7 @@ ul.task-list li input[type="checkbox"] {
 <!-- margin-sidebar -->
     
 <!-- main -->
-<main class="content column-page" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><h1 class="title display-7">GB7CAM Packet System</h1></header>
+<main class="content column-page" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><h1 class="title display-7">Bulletins</h1></header>
 
 <header id="title-block-header">
 
@@ -163,201 +163,98 @@ ul.task-list li input[type="checkbox"] {
 
 
 <p><img src="images/main_logo.png" class="centered-image"></p>
-<section id="ax.25-packet-node-gb7cam" class="level2">
-<h2 class="anchored" data-anchor-id="ax.25-packet-node-gb7cam">AX.25 Packet Node GB7CAM</h2>
-<p>GB7CAM is a 2m AX.25 packet radio node serving the Cambridge area. The station provides node, mailbox and chat services using LINBPQ and is connected to the wider packet radio network via RF and IP links.</p>
-<div id="api-status-widget" class="status-card metric-grid">
-<div class="metric">
-<strong>Status:</strong> <span id="w-status">Operational</span>
+<section id="bulletins" class="level2">
+<h2 class="anchored" data-anchor-id="bulletins">Bulletins</h2>
+<p>Recent bulletins received at GB7CAM, grouped by topic. Bulletins are broadcast messages relayed across the packet network; they are shown here as received and attributed to the originating station. Personal mail is never shown.</p>
+<div style="margin:14px 0; font-family:sans-serif; display:flex; gap:14px; align-items:center; flex-wrap:wrap;">
+<p><label for="topic-select"><strong>Topic:</strong></label> <select id="topic-select" class="search-box" style="width:auto; padding:6px;"> <option value="">All topics</option> </select> <a id="rss-link" href="https://api.gb7cam.org.uk/bulletins/rss" target="_blank" rel="noopener">RSS feed 📸</a></p>
 </div>
-<div class="metric">
-<strong>Active Links:</strong> <span id="w-links">…</span>
+<div id="bulletins-container" class="panel">
+<p>
+Loading…
+</p>
 </div>
-<div class="metric">
-<strong>Stations Heard via RF (last 4 hours):</strong> <span id="w-rf">…</span>
-</div>
-<div class="metric">
-<strong>Stations Heard via AXIP (last 4 hours):</strong> <span id="w-axip">…</span>
-</div>
-<div class="metric">
-<strong>Last Packet:</strong> <span id="w-last">…</span>
-</div>
-</div>
-<p>More detailed status information can be found on the <a href="./status.html">status page</a> and a full network connectivity graph is available on the <a href="./graph.html">Network Connectivity Graph</a> page.</p>
-</section>
-<section id="station-overview" class="level2">
-<h2 class="anchored" data-anchor-id="station-overview">Station Overview</h2>
-<section id="radio-parameters" class="level3">
-<h3 class="anchored" data-anchor-id="radio-parameters">Radio Parameters</h3>
-<table class="caption-top table">
-<thead>
-<tr class="header">
-<th>Parameter</th>
-<th>Value</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>Band</td>
-<td>2m</td>
-</tr>
-<tr class="even">
-<td>TX Frequency</td>
-<td>144.9500 MHz</td>
-</tr>
-<tr class="odd">
-<td>RX Frequency</td>
-<td>144.9500 MHz</td>
-</tr>
-<tr class="even">
-<td>Mode</td>
-<td>AX.25 Packet / LINBPQ</td>
-</tr>
-</tbody>
-</table>
-<hr>
-</section>
-<section id="location" class="level3">
-<h3 class="anchored" data-anchor-id="location">Location</h3>
-<ul>
-<li>Locator: JO02AD<br>
-</li>
-<li>Near: Harston<br>
-</li>
-<li>Latitude: 52.14<br>
-</li>
-<li>Longitude: 0.08<br>
-</li>
-<li>Antenna height: 5 m AGL<br>
-</li>
-<li>ERP: 14 dBW (25W)</li>
-</ul>
-<hr>
-</section>
-<section id="administration" class="level3">
-<h3 class="anchored" data-anchor-id="administration">Administration</h3>
-<ul>
-<li>RSGB held <a href="https://ukrepeater.net/my_repeater.php?id=6891">station details</a></li>
-<li>ETCC Region: East Anglia (EA)<br>
-</li>
-<li>RSGB Region: 12<br>
-</li>
-<li>Keeper: <a href="https://g0lft.org">G0LFT</a> (Ian Henry)</li>
-</ul>
 <script>
-/* ----------------------------
-   CONSTANTS & HELPERS
----------------------------- */
-const RF_PORT = 1;
-const AXIP_PORT = 3;
-const FOUR_HOURS_MS = 4 * 60 * 60 * 1000;
+const BASE = "https://api.gb7cam.org.uk";
 
-function parseTime(st) {
-  if (!st?.lastHeard) return NaN;
-
-  const [datePart, timePart] = st.lastHeard.split(" ");
-  if (!datePart || !timePart) return NaN;
-
-  const [y, m, d] = datePart.split("-").map(Number);
-  const [hh, mm, ss = 0] = timePart.split(":").map(Number);
-
-  return Date.UTC(y, m - 1, d, hh, mm, ss);
+function fmtDate(iso) {
+  if (!iso) return "";
+  const [y, m, d] = iso.split("-").map(Number);
+  const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  return `${d} ${MON[m - 1]}`;
+}
+function esc(s) {
+  return (s || "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
 }
 
-/* ----------------------------
-   FETCH DATA
----------------------------- */
-async function fetchWidgetTelemetry() {
-  const statusEl = document.getElementById("api-status-widget");
-
-  function setOffline() {
-    statusEl.classList.remove("status-card--good", "status-card--bad");
-    statusEl.classList.add("status-card--bad");
-
-    document.getElementById("w-status").innerText = "Offline";
-    document.getElementById("w-links").innerText = "—";
-    document.getElementById("w-rf").innerText = "—";
-    document.getElementById("w-axip").innerText = "—";
-    document.getElementById("w-last").innerText = "No data";
+async function loadTopics() {
+  const topics = (await (await fetch(BASE + "/bulletins/topics")).json()).topics || [];
+  const sel = document.getElementById("topic-select");
+  for (const t of topics) {
+    const o = document.createElement("option");
+    o.value = t.topic;
+    o.textContent = `${t.topic} (${t.count})`;
+    sel.appendChild(o);
   }
+}
 
-  const base = "https://api.gb7cam.org.uk";
+async function loadBulletins(topic) {
+  const url = topic ? `${BASE}/bulletins?topic=${encodeURIComponent(topic)}&limit=100`
+                    : `${BASE}/bulletins?limit=100`;
+  const list = (await (await fetch(url)).json()).bulletins || [];
+  const el = document.getElementById("bulletins-container");
+  if (!list.length) { el.innerHTML = "<p class='text-muted'>No bulletins.</p>"; return; }
+  el.innerHTML = list.map(b => `
+    <details class="bulletin-item" data-id="${b.id}">
+      <summary style="cursor:pointer; padding:6px 0;">
+        <span class="text-muted">${fmtDate(b.msg_date)}</span>
+        &nbsp;<span class="port--axip" style="font-weight:bold;">${esc(b.category)}</span>
+        &nbsp;<span class="text-muted">${esc(b.callsign)}</span>
+        &nbsp; ${esc(b.title)}
+      </summary>
+      <pre class="bulletin-body" style="white-space:pre-wrap; word-break:break-word; background:#f7f7f7; padding:10px; border-radius:4px; margin:6px 0; font-size:0.85em;">Loading...</pre>
+    </details>`).join("");
 
-  try {
-    const [linksRes, mheardRes] = await Promise.all([
-      fetch(base + "/links"),
-      fetch(base + "/mheard/all")
-    ]);
-
-    if (!linksRes.ok || !mheardRes.ok) {
-      setOffline();
-      return;
-    }
-
-    const links = (await linksRes.json()).links || [];
-    const rawMheard = (await mheardRes.json()).mheard || [];
-    const cutoff = Date.now() - FOUR_HOURS_MS;
-
-    // Filter and clean incoming data based on the 4-hour window
-    const mheardAll = rawMheard
-      .map(st => ({ ...st, ts: parseTime(st) }))
-      .filter(st => !isNaN(st.ts) && st.ts >= cutoff);
-
-    /* ----------------------------
-       COMPUTE METRICS
-    ---------------------------- */
-    let rf = 0, axip = 0, latest = 0, latestCall = "";
-
-    for (const st of mheardAll) {
-      const port = Number(st.port);
-
-      if (st.ts > latest) {
-        latest = st.ts;
-        latestCall = st.callSign;
+  // lazy-load body on first expand
+  el.querySelectorAll("details.bulletin-item").forEach(d => {
+    d.addEventListener("toggle", async () => {
+      if (!d.open || d.dataset.loaded) return;
+      d.dataset.loaded = "1";
+      const pre = d.querySelector(".bulletin-body");
+      try {
+        const body = (await (await fetch(`${BASE}/bulletins/${d.dataset.id}`)).json()).body || "";
+        pre.textContent = body;
+      } catch (e) {
+        pre.textContent = "(body unavailable)";
       }
+    });
+  });
+}
 
-      if (port === RF_PORT) rf++;
-      if (port === AXIP_PORT) axip++;
-    }
+function updateRss(topic) {
+  document.getElementById("rss-link").href =
+    topic ? `${BASE}/bulletins/rss?topic=${encodeURIComponent(topic)}` : `${BASE}/bulletins/rss`;
+}
 
-    // Output Telemetry Metrics to DOM
-    document.getElementById("w-links").innerText = links.length;
-    document.getElementById("w-rf").innerText = rf;
-    document.getElementById("w-axip").innerText = axip;
-
-    document.getElementById("w-last").innerText =
-      latest
-        ? `${latestCall} - ${Math.floor((Date.now() - latest) / 60000)} mins ago`
-        : "No data";
-
-    const ok = links.length > 0;
-
-    statusEl.classList.remove("status-card--good", "status-card--bad");
-    if (ok) {
-      statusEl.classList.add("status-card--good");
-      document.getElementById("w-status").innerText = "Operational";
-    } else {
-      statusEl.classList.add("status-card--bad");
-      document.getElementById("w-status").innerText = "Degraded";
-    }
-
+async function init() {
+  try {
+    await loadTopics();
+    await loadBulletins("");
+    document.getElementById("topic-select").addEventListener("change", e => {
+      loadBulletins(e.target.value).catch(console.error);
+      updateRss(e.target.value);
+    });
   } catch (e) {
-    setOffline();
-    console.error("Widget fetch offline:", e);
+    console.error("Bulletins load failed:", e);
+    document.getElementById("bulletins-container").innerHTML =
+      "<p class='text-muted'>Bulletins unavailable right now.</p>";
   }
 }
 
-/* ----------------------------
-   INITIALIZE TIMERS
----------------------------- */
-document.addEventListener("DOMContentLoaded", () => {
-  fetchWidgetTelemetry();
-  setInterval(fetchWidgetTelemetry, 60000);
-});
+init();
 </script>
 
 
-</section>
 </section>
 
 </main> <!-- /main -->
