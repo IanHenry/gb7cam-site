@@ -87,6 +87,19 @@ on g0lft.org for why.
   <p>Loading...</p>
 </div>
 
+---
+
+## Backbone Nodes
+
+The complement of unique contribution: nodes reachable through more than one
+peer. The more peers reach a node, the more redundantly it sits in the network,
+so this ranking tends to surface the backbone the wider network routes toward.
+Averaged over all snapshots, so a momentary double-sighting does not count.
+
+<div id="backbone-container" class="panel">
+  <p>Loading...</p>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 
 <script>
@@ -179,14 +192,16 @@ async function loadRanged(hours) {
 }
 
 async function loadStatic() {
-  const [peersR, stabilityR, overlapR] = await Promise.all([
+  const [peersR, stabilityR, overlapR, backboneR] = await Promise.all([
     fetch(BASE + "/history/peers"),
     fetch(BASE + "/history/stability"),
     fetch(BASE + "/history/overlap"),
+    fetch(BASE + "/history/backbone?limit=20"),
   ]);
   const peers = (await peersR.json()).peers || [];
   const stability = await stabilityR.json();
   const overlap = await overlapR.json();
+  const backbone = (await backboneR.json()).backbone || [];
 
   document.getElementById("t-snaps").innerText = stability.total_snapshots ?? "—";
   const nodes = stability.nodes || [];
@@ -244,6 +259,13 @@ async function loadStatic() {
     <table class="table-dashboard">
       <thead><tr><th>Peer A</th><th>Peer B</th><th>Shared</th><th>Jaccard</th></tr></thead>
       <tbody>${pairs.map(p => `<tr><td>${p.peer_a}</td><td>${p.peer_b}</td><td>${p.shared}</td><td>${p.jaccard}</td></tr>`).join("")}</tbody>
+    </table>`;
+
+  /* backbone: nodes reachable through more than one peer */
+  document.getElementById("backbone-container").innerHTML = `
+    <table class="table-dashboard">
+      <thead><tr><th>Node</th><th>Avg peers</th><th>Max</th><th>Reachable via 2+</th></tr></thead>
+      <tbody>${backbone.map(b => `<tr><td style="font-weight:bold;">${b.node}</td><td>${b.mean_peers}</td><td>${b.max_peers}</td><td>${b.multi_pct}%</td></tr>`).join("")}</tbody>
     </table>`;
 }
 
