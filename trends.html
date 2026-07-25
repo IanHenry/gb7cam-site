@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Credits &amp; Attributions</title>
+<title>Network Trends</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -122,7 +122,7 @@ ul.task-list li input[type="checkbox"] {
 <span class="menu-text">Network Graph</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./trends.html"> 
+    <a class="nav-link active" href="./trends.html" aria-current="page"> 
 <span class="menu-text">Trends</span></a>
   </li>  
   <li class="nav-item">
@@ -150,7 +150,7 @@ ul.task-list li input[type="checkbox"] {
 <!-- margin-sidebar -->
     
 <!-- main -->
-<main class="content column-page" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><h1 class="title display-7">Credits &amp; Attributions</h1></header>
+<main class="content column-page" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><h1 class="title display-7">Network Trends</h1></header>
 
 <header id="title-block-header">
 
@@ -158,41 +158,194 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<section id="image-credits-attributions" class="level1">
-<h1>Image Credits &amp; Attributions</h1>
-<p>Some images on this site are sourced from <strong>Creative Commons</strong>, free stock image providers, or generated via AI tools. Transparency and proper attribution are provided where applicable.</p>
-<section id="hero-images" class="level2">
-<h2 class="anchored" data-anchor-id="hero-images">Hero Images</h2>
-<table class="caption-top">
-<thead>
-<tr class="header">
-<th>Image</th>
-<th>Source / Method</th>
-<th>License / Notes</th>
-</tr>
-</thead>
-<tbody>
-</tbody>
-</table>
-</section>
-<section id="other-images" class="level2">
-<h2 class="anchored" data-anchor-id="other-images">Other Images</h2>
-<ul>
-<li>Any additional images are either created by Dr Ian Henry or sourced from free-to-use libraries.</li>
-</ul>
-<p><strong>License Notes:</strong></p>
-<ul>
-<li>All CC0 / public domain images are free to use without attribution, but attribution is provided where possible.<br>
-</li>
-<li>Other images are used with permission or created in-house.<br>
-</li>
-<li>AI-generated images are used under the respective AI tool’s terms and are intended solely for illustrative purposes.</li>
-</ul>
+<p><img src="images/main_logo.png" class="centered-image"></p>
+<section id="network-trends" class="level2">
+<h2 class="anchored" data-anchor-id="network-trends">Network Trends</h2>
+<p>History assembled from a snapshot of the routing tables taken every fifteen minutes. These are trends over time, not the live picture; for current state see the <a href="./status.html">status page</a>.</p>
+<div id="trends-summary" class="status-card metric-grid">
+<div class="metric">
+<strong>Tracking since:</strong> <span id="t-since">…</span>
+</div>
+<div class="metric">
+<strong>Snapshots:</strong> <span id="t-snaps">…</span>
+</div>
+<div class="metric">
+<strong>Distinct nodes seen:</strong> <span id="t-nodes">…</span>
+</div>
+<div class="metric">
+<strong>Active peers now:</strong> <span id="t-peers">…</span>
+</div>
+</div>
 <hr>
-<p>If you believe any content here infringes copyright, or you would like additional attribution, please <a href="./contact.html">contact me</a> and I will correct it immediately.</p>
-
-
 </section>
+<section id="nodes-and-peers-over-time" class="level2">
+<h2 class="anchored" data-anchor-id="nodes-and-peers-over-time">Nodes and Peers Over Time</h2>
+<div class="panel">
+<div style="position:relative; height:340px;">
+<canvas id="timelineChart">
+</canvas>
+</div>
+</div>
+<hr>
+</section>
+<section id="peer-scorecard" class="level2">
+<h2 class="anchored" data-anchor-id="peer-scorecard">Peer Scorecard</h2>
+<p>How reliably each peer has been reachable, and how many nodes it can itself reach (its horizon, from its own routing table).</p>
+<div id="peers-container" class="panel">
+<p>
+Loading…
+</p>
+</div>
+<hr>
+</section>
+<section id="node-stability" class="level2">
+<h2 class="anchored" data-anchor-id="node-stability">Node Stability</h2>
+<p>What fraction of snapshots each node has appeared in. A stable core is always present; the marginal ones flicker in and out, and are the routes a stricter quality threshold would drop first.</p>
+<div id="stability-container" class="panel">
+<p>
+Loading…
+</p>
+</div>
+<hr>
+</section>
+<section id="peer-overlap-latest-snapshot" class="level2">
+<h2 class="anchored" data-anchor-id="peer-overlap-latest-snapshot">Peer Overlap (latest snapshot)</h2>
+<p>How much the peers duplicate each other. Unique contribution is how many nodes are reachable through exactly one peer. These numbers are a point-in-time reading and they move; see the notebook post <a href="https://g0lft.org/notebook-posts/2026-07-24-packet-networks-and-protein-networks/2026-07-24-packet-networks-and-protein-networks.html">Packet Networks and Protein Networks</a> on g0lft.org for why.</p>
+<div id="overlap-container" class="panel">
+<p>
+Loading…
+</p>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script>
+const BASE = "https://api.gb7cam.org.uk";
+const NODE_COLOUR = "#1f77b4";   // AXIP blue, matches the rest of the site
+const PEER_COLOUR = "#2ca02c";   // RF green
+
+function fmtTs(iso) {
+  // "2026-07-25T11:45:31" -> "25 11:45" (day + HH:MM, UTC)
+  const d = new Date(iso + "Z");
+  const day = String(d.getUTCDate()).padStart(2, "0");
+  const hh = String(d.getUTCHours()).padStart(2, "0");
+  const mm = String(d.getUTCMinutes()).padStart(2, "0");
+  return `${day} ${hh}:${mm}`;
+}
+
+async function loadTrends() {
+  try {
+    const [timelineR, peersR, stabilityR, overlapR] = await Promise.all([
+      fetch(BASE + "/history/timeline?hours=48"),
+      fetch(BASE + "/history/peers"),
+      fetch(BASE + "/history/stability"),
+      fetch(BASE + "/history/overlap"),
+    ]);
+
+    const timeline = (await timelineR.json()).timeline || [];
+    const peers = (await peersR.json()).peers || [];
+    const stability = await stabilityR.json();
+    const overlap = await overlapR.json();
+
+    /* ---- summary ---- */
+    if (timeline.length) {
+      document.getElementById("t-since").innerText = fmtTs(timeline[0].ts) + " UTC";
+      document.getElementById("t-peers").innerText = timeline[timeline.length - 1].peers;
+    }
+    document.getElementById("t-snaps").innerText = stability.total_snapshots ?? "—";
+    document.getElementById("t-nodes").innerText = (stability.nodes || []).length;
+
+    /* ---- timeline chart ---- */
+    new Chart(document.getElementById("timelineChart"), {
+      type: "line",
+      data: {
+        labels: timeline.map(p => fmtTs(p.ts)),
+        datasets: [
+          {
+            label: "Nodes visible", data: timeline.map(p => p.nodes),
+            borderColor: NODE_COLOUR, backgroundColor: NODE_COLOUR,
+            yAxisID: "yNodes", tension: 0.25, pointRadius: 0, borderWidth: 2,
+          },
+          {
+            label: "Active peers", data: timeline.map(p => p.peers),
+            borderColor: PEER_COLOUR, backgroundColor: PEER_COLOUR,
+            yAxisID: "yPeers", tension: 0.25, pointRadius: 0, borderWidth: 2,
+            stepped: true,
+          },
+        ],
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false, interaction: { mode: "index", intersect: false },
+        scales: {
+          x: { ticks: { maxTicksLimit: 10, autoSkip: true }, title: { display: true, text: "day HH:MM UTC" } },
+          yNodes: { position: "left", beginAtZero: true, title: { display: true, text: "nodes" } },
+          yPeers: { position: "right", beginAtZero: true, suggestedMax: 6, grid: { drawOnChartArea: false }, title: { display: true, text: "peers" }, ticks: { stepSize: 1 } },
+        },
+      },
+    });
+
+    /* ---- peer scorecard ---- */
+    document.getElementById("peers-container").innerHTML = `
+      <table class="table-dashboard">
+        <thead><tr><th>Peer</th><th>Uptime</th><th>Seen</th><th>Reach (nodes it can see)</th></tr></thead>
+        <tbody>
+          ${peers.map(p => `
+            <tr>
+              <td style="font-weight:bold;">${p.peer}</td>
+              <td>${p.uptime_pct}%</td>
+              <td>${p.snapshots_seen} / ${p.snapshots_total}</td>
+              <td>${p.reach ?? "—"}</td>
+            </tr>`).join("")}
+        </tbody>
+      </table>`;
+
+    /* ---- node stability ---- */
+    const nodes = stability.nodes || [];
+    const core = nodes.filter(n => n.pct === 100).length;
+    const marginal = nodes.filter(n => n.pct < 50);
+    document.getElementById("stability-container").innerHTML = `
+      <div class="metric-grid" style="margin-bottom:10px;">
+        <div class="metric"><strong>Stable core (every snapshot):</strong> ${core}</div>
+        <div class="metric"><strong>Marginal (&lt; 50%):</strong> ${marginal.length}</div>
+        <div class="metric"><strong>Total tracked:</strong> ${nodes.length}</div>
+      </div>
+      <p class="text-muted">The marginal nodes, least stable first:</p>
+      <table class="table-dashboard">
+        <thead><tr><th>Node</th><th>Present in</th></tr></thead>
+        <tbody>
+          ${marginal.map(n => `<tr><td>${n.node}</td><td>${n.pct}%</td></tr>`).join("")}
+        </tbody>
+      </table>`;
+
+    /* ---- overlap ---- */
+    const contrib = overlap.contribution || [];
+    const pairs = overlap.pairwise || [];
+    document.getElementById("overlap-container").innerHTML = `
+      <p class="text-muted">Unique contribution per peer:</p>
+      <table class="table-dashboard">
+        <thead><tr><th>Peer</th><th>Nodes via</th><th>Unique to it</th></tr></thead>
+        <tbody>
+          ${contrib.map(c => `<tr><td style="font-weight:bold;">${c.peer}</td><td>${c.nodes_via}</td><td>${c.unique_nodes}</td></tr>`).join("")}
+        </tbody>
+      </table>
+      <p class="text-muted" style="margin-top:14px;">Pairwise overlap (Jaccard):</p>
+      <table class="table-dashboard">
+        <thead><tr><th>Peer A</th><th>Peer B</th><th>Shared</th><th>Jaccard</th></tr></thead>
+        <tbody>
+          ${pairs.map(p => `<tr><td>${p.peer_a}</td><td>${p.peer_b}</td><td>${p.shared}</td><td>${p.jaccard}</td></tr>`).join("")}
+        </tbody>
+      </table>`;
+
+  } catch (e) {
+    console.error("Trends load failed:", e);
+    for (const id of ["peers-container", "stability-container", "overlap-container"]) {
+      document.getElementById(id).innerHTML = "<p class='text-muted'>Trend data unavailable right now.</p>";
+    }
+  }
+}
+
+loadTrends();
+</script>
+
+
 </section>
 
 </main> <!-- /main -->

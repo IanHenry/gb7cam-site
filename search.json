@@ -14,18 +14,39 @@
     "text": "Network Graph\nNodes currently connected to GB7CAM\nTwo renderings of the same routing data, side by side. Spoke draws an edge from each node to the peer it was learned through - that is what the NODES table actually records, and it produces a star shape because the multi-hop chain behind each entry isn’t preserved. Matrix instead joins every pair of nodes that share a peer, treating “reachable via the same neighbour” as a connection. Neither is the real network topology; the gap between the two is the point.\n\n\n\n\n\n\nSpoke\n\n\n\n\n\n\n\nMatrix"
   },
   {
-    "objectID": "contact.html#sysop",
-    "href": "contact.html#sysop",
-    "title": "Contact",
-    "section": "Sysop",
-    "text": "Sysop\nIan Henry\nCallsign: G0LFT\n\nEmail: ian@g0lft.org\nQRZ Page: G0LFT"
+    "objectID": "tech.html#system-overview",
+    "href": "tech.html#system-overview",
+    "title": "Technical Information",
+    "section": "System Overview",
+    "text": "System Overview\nGB7CAM is a LINBPQ-based licensed packet radio node run by Ian Henry (G0LFT).\n\n\nRF configuration Notes\n\nFrequency: 144.950 MHz\n\nMode: AX.25 Packet\n\nAntenna: 5m AGL\nPower: ERP 14 dBW (25W)\n\nLocation: Harston Cambridge (Grid Squre: JO02AD)\n\n\n\n\nHardware\n\nTait 2000 Mk2: a modified commercial radio bought from Simon (G4WQG)\nNinoTNC: an amazing little TNC bought from Chris (G1FEF)\nDiamond X50: vertical 2m/70cm antenna\nRaspberry Pi 400: picked up from the CDARC Bring and Buy for £20\n\n\n\n\nSoftware\n\nLinBPQ: The core software running Node, BBS, Mail Forwarding and Chat Services\nFastAPI: Provides access to node information for the status page\nnginx: Reverse proxy for https://node.gb7cam.org.uk and the API\nQuarto: Used to create this site\n\n\n\nNetwork\n\nARDC 44Net: 44Net makes publicly reachable networking available for experimentation and learning. Amateur radio operators and groups use it to run systems that are directly accessible from the Internet using stable public IP addresses.\nWireguard Tunnel: Setup through 44Net Connect\nPublic Routed Subnet: Assigned by 44Net Connect\nAXUDP links to other packet nodes: visit my contact page and drop me a message with your MAP line if you run a node and want to peer"
   },
   {
-    "objectID": "contact.html#reporting-issues",
-    "href": "contact.html#reporting-issues",
-    "title": "Contact",
-    "section": "Reporting Issues",
-    "text": "Reporting Issues\nContact the sysop for:\n\nconnectivity problems\nforwarding issues\nnode linking requests"
+    "objectID": "credits.html#hero-images",
+    "href": "credits.html#hero-images",
+    "title": "Credits & Attributions",
+    "section": "Hero Images",
+    "text": "Hero Images\n\n\n\nImage\nSource / Method\nLicense / Notes"
+  },
+  {
+    "objectID": "credits.html#other-images",
+    "href": "credits.html#other-images",
+    "title": "Credits & Attributions",
+    "section": "Other Images",
+    "text": "Other Images\n\nAny additional images are either created by Dr Ian Henry or sourced from free-to-use libraries.\n\nLicense Notes:\n\nAll CC0 / public domain images are free to use without attribution, but attribution is provided where possible.\n\nOther images are used with permission or created in-house.\n\nAI-generated images are used under the respective AI tool’s terms and are intended solely for illustrative purposes.\n\n\nIf you believe any content here infringes copyright, or you would like additional attribution, please contact me and I will correct it immediately."
+  },
+  {
+    "objectID": "privacy.html#privacy-cookies",
+    "href": "privacy.html#privacy-cookies",
+    "title": "Privacy & Disclaimer",
+    "section": "Privacy & Cookies",
+    "text": "Privacy & Cookies\nWe use Google Analytics 4 (GA4) to collect anonymous site usage data.\nThis may involve cookies to track sessions, page views, and returning visitors.\n\nCookies used: _ga, _gid\nPurpose: Analyze site traffic and improve user experience\n\nIP anonymization: Enabled\n\nThird-party access: Data is processed by Google under their privacy policy: https://policies.google.com/privacy\n\nYou may withdraw consent at any time by clearing your cookies."
+  },
+  {
+    "objectID": "privacy.html#disclaimer",
+    "href": "privacy.html#disclaimer",
+    "title": "Privacy & Disclaimer",
+    "section": "Disclaimer",
+    "text": "Disclaimer\n\nThe information provided here is for informational purposes only.\n\nWhile care is taken to ensure accuracy, no guarantees are made regarding completeness or suitability.\n\nAny external links do not imply endorsement of those sites.\n\nIf you have concerns regarding your privacy or site content, please contact me."
   },
   {
     "objectID": "status.html#current-status",
@@ -77,39 +98,53 @@
     "text": "Network Routing Nodes\nFor a full network connectivity graph visit the Network Graph page.\n\n\n\nLoading routing node index…"
   },
   {
-    "objectID": "privacy.html#privacy-cookies",
-    "href": "privacy.html#privacy-cookies",
-    "title": "Privacy & Disclaimer",
-    "section": "Privacy & Cookies",
-    "text": "Privacy & Cookies\nWe use Google Analytics 4 (GA4) to collect anonymous site usage data.\nThis may involve cookies to track sessions, page views, and returning visitors.\n\nCookies used: _ga, _gid\nPurpose: Analyze site traffic and improve user experience\n\nIP anonymization: Enabled\n\nThird-party access: Data is processed by Google under their privacy policy: https://policies.google.com/privacy\n\nYou may withdraw consent at any time by clearing your cookies."
+    "objectID": "contact.html#sysop",
+    "href": "contact.html#sysop",
+    "title": "Contact",
+    "section": "Sysop",
+    "text": "Sysop\nIan Henry\nCallsign: G0LFT\n\nEmail: ian@g0lft.org\nQRZ Page: G0LFT"
   },
   {
-    "objectID": "privacy.html#disclaimer",
-    "href": "privacy.html#disclaimer",
-    "title": "Privacy & Disclaimer",
-    "section": "Disclaimer",
-    "text": "Disclaimer\n\nThe information provided here is for informational purposes only.\n\nWhile care is taken to ensure accuracy, no guarantees are made regarding completeness or suitability.\n\nAny external links do not imply endorsement of those sites.\n\nIf you have concerns regarding your privacy or site content, please contact me."
+    "objectID": "contact.html#reporting-issues",
+    "href": "contact.html#reporting-issues",
+    "title": "Contact",
+    "section": "Reporting Issues",
+    "text": "Reporting Issues\nContact the sysop for:\n\nconnectivity problems\nforwarding issues\nnode linking requests"
   },
   {
-    "objectID": "credits.html#hero-images",
-    "href": "credits.html#hero-images",
-    "title": "Credits & Attributions",
-    "section": "Hero Images",
-    "text": "Hero Images\n\n\n\nImage\nSource / Method\nLicense / Notes"
+    "objectID": "trends.html#network-trends",
+    "href": "trends.html#network-trends",
+    "title": "Network Trends",
+    "section": "Network Trends",
+    "text": "Network Trends\nHistory assembled from a snapshot of the routing tables taken every fifteen minutes. These are trends over time, not the live picture; for current state see the status page.\n\n\nTracking since: …\n\n\nSnapshots: …\n\n\nDistinct nodes seen: …\n\n\nActive peers now: …"
   },
   {
-    "objectID": "credits.html#other-images",
-    "href": "credits.html#other-images",
-    "title": "Credits & Attributions",
-    "section": "Other Images",
-    "text": "Other Images\n\nAny additional images are either created by Dr Ian Henry or sourced from free-to-use libraries.\n\nLicense Notes:\n\nAll CC0 / public domain images are free to use without attribution, but attribution is provided where possible.\n\nOther images are used with permission or created in-house.\n\nAI-generated images are used under the respective AI tool’s terms and are intended solely for illustrative purposes.\n\n\nIf you believe any content here infringes copyright, or you would like additional attribution, please contact me and I will correct it immediately."
+    "objectID": "trends.html#nodes-and-peers-over-time",
+    "href": "trends.html#nodes-and-peers-over-time",
+    "title": "Network Trends",
+    "section": "Nodes and Peers Over Time",
+    "text": "Nodes and Peers Over Time"
   },
   {
-    "objectID": "tech.html#system-overview",
-    "href": "tech.html#system-overview",
-    "title": "Technical Information",
-    "section": "System Overview",
-    "text": "System Overview\nGB7CAM is a LINBPQ-based licensed packet radio node run by Ian Henry (G0LFT).\n\n\nRF configuration Notes\n\nFrequency: 144.950 MHz\n\nMode: AX.25 Packet\n\nAntenna: 5m AGL\nPower: ERP 14 dBW (25W)\n\nLocation: Harston Cambridge (Grid Squre: JO02AD)\n\n\n\n\nHardware\n\nTait 2000 Mk2: a modified commercial radio bought from Simon (G4WQG)\nNinoTNC: an amazing little TNC bought from Chris (G1FEF)\nDiamond X50: vertical 2m/70cm antenna\nRaspberry Pi 400: picked up from the CDARC Bring and Buy for £20\n\n\n\n\nSoftware\n\nLinBPQ: The core software running Node, BBS, Mail Forwarding and Chat Services\nFastAPI: Provides access to node information for the status page\nnginx: Reverse proxy for https://node.gb7cam.org.uk and the API\nQuarto: Used to create this site\n\n\n\nNetwork\n\nARDC 44Net: 44Net makes publicly reachable networking available for experimentation and learning. Amateur radio operators and groups use it to run systems that are directly accessible from the Internet using stable public IP addresses.\nWireguard Tunnel: Setup through 44Net Connect\nPublic Routed Subnet: Assigned by 44Net Connect\nAXUDP links to other packet nodes: visit my contact page and drop me a message with your MAP line if you run a node and want to peer"
+    "objectID": "trends.html#peer-scorecard",
+    "href": "trends.html#peer-scorecard",
+    "title": "Network Trends",
+    "section": "Peer Scorecard",
+    "text": "Peer Scorecard\nHow reliably each peer has been reachable, and how many nodes it can itself reach (its horizon, from its own routing table).\n\n\nLoading…"
+  },
+  {
+    "objectID": "trends.html#node-stability",
+    "href": "trends.html#node-stability",
+    "title": "Network Trends",
+    "section": "Node Stability",
+    "text": "Node Stability\nWhat fraction of snapshots each node has appeared in. A stable core is always present; the marginal ones flicker in and out, and are the routes a stricter quality threshold would drop first.\n\n\nLoading…"
+  },
+  {
+    "objectID": "trends.html#peer-overlap-latest-snapshot",
+    "href": "trends.html#peer-overlap-latest-snapshot",
+    "title": "Network Trends",
+    "section": "Peer Overlap (latest snapshot)",
+    "text": "Peer Overlap (latest snapshot)\nHow much the peers duplicate each other. Unique contribution is how many nodes are reachable through exactly one peer. These numbers are a point-in-time reading and they move; see the notebook post Packet Networks and Protein Networks on g0lft.org for why.\n\n\nLoading…"
   },
   {
     "objectID": "index.html#ax.25-packet-node-gb7cam",
