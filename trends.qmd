@@ -203,25 +203,31 @@ async function loadStatic() {
       </tbody>
     </table>`;
 
-  /* node stability: two tables - stable core (most stable) and marginal (least stable first) */
-  const core = nodes.filter(n => n.pct === 100);            // already desc
-  const marginal = nodes.filter(n => n.pct < 50).sort((a, b) => a.pct - b.pct);  // least stable first
+  /* Node stability: top-N most stable and bottom-N least stable, rather than a
+     fixed percentage. 100% erodes over time - any flap, or GB7CAM's own
+     downtime, drops nodes off it - so top/bottom N stays meaningful whatever
+     the absolute levels. The summary counts use soft thresholds for context. */
+  const N = Math.min(15, Math.floor(nodes.length / 2));
+  const mostStable = nodes.slice(0, N);                    // endpoint sorts pct desc
+  const leastStable = nodes.slice(-N).reverse();           // bottom N, least first
+  const reliable = nodes.filter(n => n.pct >= 90).length;
+  const marginal = nodes.filter(n => n.pct < 50).length;
   document.getElementById("stability-container").innerHTML = `
     <div class="metric-grid" style="margin-bottom:10px;">
-      <div class="metric"><strong>Stable core:</strong> ${core.length}</div>
-      <div class="metric"><strong>Marginal (&lt; 50%):</strong> ${marginal.length}</div>
       <div class="metric"><strong>Total tracked:</strong> ${nodes.length}</div>
+      <div class="metric"><strong>Reliable (&ge; 90%):</strong> ${reliable}</div>
+      <div class="metric"><strong>Marginal (&lt; 50%):</strong> ${marginal}</div>
     </div>
     <div style="display:flex; gap:16px; flex-wrap:wrap;">
       <div style="flex:1; min-width:260px;">
-        <p class="text-muted">Stable core, present in every snapshot:</p>
+        <p class="text-muted">The ${N} most stable, most consistent first:</p>
         <table class="table-dashboard"><thead><tr><th>Node</th><th>Present in</th></tr></thead>
-          <tbody>${core.map(n => `<tr><td>${n.node}</td><td>${n.pct}%</td></tr>`).join("")}</tbody></table>
+          <tbody>${mostStable.map(n => `<tr><td>${n.node}</td><td>${n.pct}%</td></tr>`).join("")}</tbody></table>
       </div>
       <div style="flex:1; min-width:260px;">
-        <p class="text-muted">Most marginal, least stable first:</p>
+        <p class="text-muted">The ${N} least stable, least consistent first:</p>
         <table class="table-dashboard"><thead><tr><th>Node</th><th>Present in</th></tr></thead>
-          <tbody>${marginal.map(n => `<tr><td>${n.node}</td><td>${n.pct}%</td></tr>`).join("")}</tbody></table>
+          <tbody>${leastStable.map(n => `<tr><td>${n.node}</td><td>${n.pct}%</td></tr>`).join("")}</tbody></table>
       </div>
     </div>`;
 
