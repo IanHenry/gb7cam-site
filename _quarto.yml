@@ -16,6 +16,8 @@ website:
         href: status.qmd
       - text: Network Graph
         href: graph.qmd
+      - text: Trends
+        href: trends.qmd
       - text: Services
         href: services.qmd
       - text: Tech
