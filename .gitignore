@@ -1,4 +1,5 @@
 /.quarto/
+/_site/
 **/*.quarto_ipynb
 
 # Node secrets / local config - never belongs in this public repo.

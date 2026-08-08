@@ -10,330 +10,161 @@ execute:
 <img src="images/main_logo.png" class="centered-image">
 
 ## Network Graph
-Nodes currently connected to GB7CAM
 
-Two renderings of the same routing data, side by side. **Spoke** draws an edge from each node to the peer it was learned through - that is what the NODES table actually records, and it produces a star shape because the multi-hop chain behind each entry isn't preserved. **Matrix** instead joins every pair of nodes that share a peer, treating "reachable via the same neighbour" as a connection. Neither is the real network topology; the gap between the two is the point.
+The **real** peer-to-peer topology of the network around GB7CAM. Every few hours
+each of GB7CAM's peers is asked for its own ROUTES table (its direct neighbours),
+and those are drawn here as the true edges between stations: who actually links
+to whom. This is very different from a plain nodes table, which only records
+which neighbour each destination was *learned through* and collapses into a star.
 
-<div style="padding:10px;font-family:sans-serif;">
-  <input id="filter" placeholder="Filter node (e.g. GB7FCI)" style="padding:6px;width:240px;">
+Larger dots are better-connected hubs; highlighted dots are GB7CAM's direct
+peers. **Green** edges are RF links, **blue** are internet (AXIP). By default the
+view shows the connected backbone; switch to *Show all* to include every
+single-link leaf node as well.
+
+<style>
+.g-controls { font-family:sans-serif; display:flex; gap:14px; flex-wrap:wrap; align-items:center; margin:10px 0; }
+.g-controls input[type=search]{ padding:6px; width:220px; }
+.g-btn { padding:5px 10px; border:1px solid #cfd8e3; border-radius:14px; background:#f2f6fb; color:#1f5b8f; cursor:pointer; font-size:0.88em; }
+.g-btn.active { background:#1f77b4; border-color:#1f77b4; color:#fff; }
+.g-counts { font-family:sans-serif; font-size:0.85em; color:#666; }
+.g-legend { font-family:sans-serif; font-size:0.82em; color:#555; display:flex; gap:16px; flex-wrap:wrap; margin:4px 0 10px; }
+.g-legend span::before { content:""; display:inline-block; width:11px; height:11px; border-radius:50%; margin-right:5px; vertical-align:-1px; }
+.dot-cam::before{ background:#ff6b6b; } .dot-peer::before{ background:#4dabf7; } .dot-leaf::before{ background:#adb5bd; }
+.line-rf::before{ background:#2ca02c; border-radius:2px !important; width:16px !important; height:3px !important; }
+.line-ip::before{ background:#748ffc; border-radius:2px !important; width:16px !important; height:3px !important; }
+</style>
+
+<div class="g-controls">
+  <input id="filter" type="search" placeholder="Filter node (e.g. GB7BDH)">
+  <span><button class="g-btn active" id="btn-backbone">Backbone</button><button class="g-btn" id="btn-all">Show all</button></span>
+  <span>Window:
+    <button class="g-btn active" data-days="3">3 days</button>
+    <button class="g-btn" data-days="7">7 days</button>
+    <button class="g-btn" data-days="14">14 days</button>
+  </span>
+  <span class="g-counts" id="counts">loading…</span>
 </div>
 
-<div style="display:flex; gap:10px; flex-wrap:wrap;">
-<div style="flex:1; min-width:300px;">
-<h3 style="font-family:sans-serif; text-align:center; margin:6px 0;">Spoke</h3>
-<div id="network-spoke" style="height: 50vh; border: 1px solid #ddd; background: #ffffff;"></div>
+<div class="g-legend">
+  <span class="dot-cam">GB7CAM</span>
+  <span class="dot-peer">Direct peer</span>
+  <span class="dot-leaf">Other node</span>
+  <span class="line-rf">RF link</span>
+  <span class="line-ip">Internet (AXIP)</span>
 </div>
-<div style="flex:1; min-width:300px;">
-<h3 style="font-family:sans-serif; text-align:center; margin:6px 0;">Matrix</h3>
-<div id="network-matrix" style="height: 50vh; border: 1px solid #ddd; background: #ffffff;"></div>
-</div>
-</div>
+
+<div id="network" style="height:72vh; border:1px solid #ddd; background:#ffffff;"></div>
 
 <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
-
 <script>
-const API = "https://api.gb7cam.org.uk/graph";
+const API = "https://api.gb7cam.org.uk/graph/edges";
+let allData = null, network = null, visNodes = null, visEdges = null;
+let windowDays = 3, backboneOnly = true;
 
-let spokeNodes, spokeEdges, networkSpoke;
-let matrixNodes, matrixEdges, networkMatrix;
+function isCam(id){ return id.startsWith("GB7CAM"); }
+function nodeColor(n){ if (isCam(n.id)) return "#ff6b6b"; if (n.peer) return "#4dabf7"; return "#adb5bd"; }
+function nodeSize(n){ return Math.max(9, Math.min(34, 9 + n.degree * 2.5)); }
+function edgeColor(e){ if (e.rf) return "#2ca02c"; if (e.quality === 0) return "#e03131"; return "#748ffc"; }
+function edgeWidth(q){ return Math.max(1, Math.min(6, (q || 50) / 50)); }
 
-/* ----------------------------
-   NODE NORMALISATION
----------------------------- */
-function normalizeId(id) {
-  if (!id) return id;
-  if (id.startsWith("GB7CAM")) return "GB7CAM";
-  return id;
+// Backbone = GB7CAM, direct peers, and anything with more than one link.
+// That drops the single-link leaf nodes hanging off one peer, leaving the
+// interconnected core.
+function keepSet(nodes){
+  if (!backboneOnly) return new Set(nodes.map(n => n.id));
+  return new Set(nodes.filter(n => n.peer || isCam(n.id) || n.degree >= 2).map(n => n.id));
 }
 
-/* ----------------------------
-   NODE TYPE COLOURS
----------------------------- */
-function nodeColor(id) {
+function render(data){
+  allData = data;
+  const keep = keepSet(data.nodes);
 
-  if (id === "GB7CAM") return "#ff6b6b"; // core
+  visNodes = new vis.DataSet(data.nodes.filter(n => keep.has(n.id)).map(n => ({
+    id: n.id,
+    label: n.id,
+    color: { background: nodeColor(n), border: "#33475b" },
+    size: nodeSize(n),
+    shape: "dot",
+    title: `${n.id} — ${n.degree} link${n.degree === 1 ? "" : "s"}${n.peer ? " (direct peer)" : ""}`,
+    font: { size: (isCam(n.id) || n.peer) ? 15 : 10, color: "#222" }
+  })));
 
-  if (id.startsWith("GB7")) return "#4dabf7"; // BBS/mailbox
-  if (id.startsWith("MB7")) return "#20c997"; // data nodes
+  visEdges = new vis.DataSet(data.edges.filter(e => keep.has(e.from) && keep.has(e.to)).map((e, i) => ({
+    id: i,
+    from: e.from,
+    to: e.to,
+    color: { color: edgeColor(e), highlight: "#000", opacity: 0.7 },
+    width: edgeWidth(e.quality),
+    title: `${e.from} — ${e.to} · quality ${e.quality}${e.rf ? " · RF" : ""} · seen ${e.seen}×`
+  })));
 
-  if (/^(G[0-9]|M[0-9]|2E|2M)/.test(id)) return "#ffd43b"; // UK personals
+  network = new vis.Network(document.getElementById("network"),
+    { nodes: visNodes, edges: visEdges },
+    {
+      physics: {
+        stabilization: { iterations: 200 },
+        barnesHut: { gravitationalConstant: -14000, springLength: 130, springConstant: 0.03, avoidOverlap: 0.3 }
+      },
+      nodes: { shape: "dot" },
+      edges: { smooth: { type: "dynamic" } },
+      interaction: { hover: true, tooltipDelay: 120 }
+    });
 
-  return "#adb5bd";
+  updateCounts();
+  applyFilter();
 }
 
-/* ----------------------------
-   PORT COLOURS
----------------------------- */
-function portColor(port) {
-  switch(String(port)) {
-    case "1": return "#2ca02c"; // RF
-    case "2": return "#ffbf00"; // telnet
-    case "3": return "#1f77b4"; // AXIP
-    default: return "#999999";
-  }
+function updateCounts(){
+  document.getElementById("counts").textContent =
+    `${visNodes.length} nodes · ${visEdges.length} links · ${allData.peer_count} peers · last ${allData.window_days} days`;
 }
 
-/* ----------------------------
-   EDGE WIDTH (quality)
----------------------------- */
-function width(q) {
-  return Math.max(1, Math.min(8, (q || 50) / 40));
-}
-
-/* ----------------------------
-   ACTIVE EDGE RULE
----------------------------- */
-function isBroken(e) {
-  return (e.quality === 0);
-}
-
-/* ----------------------------
-   NODE MAP (shared by both views)
----------------------------- */
-function buildNodeMap(data) {
-  const nodeMap = new Map();
-
-  (data.nodes || []).forEach(n => {
-    const id = normalizeId(n.id);
-    let label = id;
-
-    // only your node is simplified
-    if (id === "GB7CAM") {
-      label = "GB7CAM";
-    } else if (n.alias) {
-      label = id + "\n" + n.alias;
-    }
-
-    nodeMap.set(id, { id, label, color: nodeColor(id) });
-  });
-
-  // ensure endpoints exist
-  (data.edges || []).forEach(e => {
-    const s = normalizeId(e.source);
-    const t = normalizeId(e.target);
-
-    if (!nodeMap.has(s)) nodeMap.set(s, { id: s, label: s, color: nodeColor(s) });
-    if (!nodeMap.has(t)) nodeMap.set(t, { id: t, label: t, color: nodeColor(t) });
-  });
-
-  return nodeMap;
-}
-
-/* ----------------------------
-   SPOKE VIEW: node -> via_peer, as the NODES table actually has it
----------------------------- */
-function buildSpoke(data, nodeMap) {
-  const nodes = new vis.DataSet([...nodeMap.values()]);
-
-  const edges = new vis.DataSet(
-    (data.edges || []).map((e, i) => ({
-      id: i,
-      from: normalizeId(e.source),
-      to: normalizeId(e.target),
-      label: e.quality ? String(e.quality) : "",
-      width: width(e.quality),
-      arrows: "to",
-      color: { color: portColor(e.port), highlight: "#000" },
-      dashes: isBroken(e)
-    }))
-  );
-
-  return { nodes, edges };
-}
-
-/* ----------------------------
-   MATRIX VIEW: every pair of nodes that share a peer, joined
----------------------------- */
-function buildPeerSets(edges) {
-  const sets = new Map(); // peer -> Set of node ids reachable via it
-
-  (edges || []).forEach(e => {
-    if (e.type !== "route") return; // "link" edges are GB7CAM's own AXUDP links, not route data
-    const peer = normalizeId(e.target);
-    const node = normalizeId(e.source);
-    if (node === peer) return; // a peer's self-entry in its own NODES table
-    if (!sets.has(peer)) sets.set(peer, new Set());
-    sets.get(peer).add(node);
-  });
-
-  return sets;
-}
-
-function buildMatrixEdgeList(peerSets) {
-  const byPair = new Map(); // "a|b" -> {from, to}
-
-  peerSets.forEach((nodeSet) => {
-    const members = [...nodeSet];
-    for (let i = 0; i < members.length; i++) {
-      for (let j = i + 1; j < members.length; j++) {
-        const key = [members[i], members[j]].sort().join("|");
-        if (!byPair.has(key)) {
-          byPair.set(key, { from: members[i], to: members[j] });
-        }
-      }
-    }
-  });
-
-  return [...byPair.values()];
-}
-
-// Evenly-spaced circular layout: a clique this dense is unreadable under
-// force physics, and the crossing chords are themselves the point.
-function circularLayout(ids, radius = 320) {
-  const layout = new Map();
-  ids.forEach((id, i) => {
-    const angle = (2 * Math.PI * i) / ids.length;
-    layout.set(id, { angle, x: radius * Math.cos(angle), y: radius * Math.sin(angle) });
-  });
-  return layout;
-}
-
-function buildMatrix(data, nodeMap) {
-  const peerSets = buildPeerSets(data.edges);
-
-  // Only nodes that appear in at least one peer's set - GB7CAM and the
-  // peers themselves aren't "reachable via a peer" in this sense.
-  const memberIds = new Set();
-  peerSets.forEach(set => set.forEach(id => memberIds.add(id)));
-
-  const ids = [...memberIds];
-  const layout = circularLayout(ids);
-
-  const nodes = new vis.DataSet(ids.map(id => {
-    const base = nodeMap.get(id) || { id, label: id, color: nodeColor(id) };
-    const pos = layout.get(id);
-    // Native canvas label, kept short (callsign only, no alias) since
-    // this is a dense circle. vadjust:0 (vis-network's default) draws
-    // the label below the node by size+margin, which reads as too far
-    // detached at this density - a flat negative pulls it up closer to
-    // the dot instead. Same value for every node, not angle-dependent.
-    return {
-      ...base,
-      label: id,
-      title: base.label,
-      x: pos.x,
-      y: pos.y,
-      fixed: true,
-      font: { size: 7, color: "#444", vadjust: -14 }
-    };
-  }));
-
-  const edges = new vis.DataSet(
-    buildMatrixEdgeList(peerSets).map((e, i) => ({
-      id: i,
-      from: e.from,
-      to: e.to,
-      // Semi-transparent so overlapping chords read as density (darker
-      // where many peers' cliques cross) rather than a solid grey mess.
-      color: { color: "rgba(90,90,90,0.12)", highlight: "#000" },
-      width: 1
-    }))
-  );
-
-  return { nodes, edges };
-}
-
-/* ----------------------------
-   RENDER
----------------------------- */
-function render(data) {
-  const nodeMap = buildNodeMap(data);
-
-  ({ nodes: spokeNodes, edges: spokeEdges } = buildSpoke(data, nodeMap));
-  ({ nodes: matrixNodes, edges: matrixEdges } = buildMatrix(data, nodeMap));
-
-  networkSpoke = new vis.Network(document.getElementById("network-spoke"), {
-    nodes: spokeNodes,
-    edges: spokeEdges
-  }, {
-    physics: {
-      stabilization: true,
-      barnesHut: { gravitationalConstant: -9000, springLength: 140 }
-    },
-    nodes: { shape: "dot", size: 12, font: { color: "#222" } },
-    edges: { smooth: { type: "dynamic" } }
-  });
-
-  networkMatrix = new vis.Network(document.getElementById("network-matrix"), {
-    nodes: matrixNodes,
-    edges: matrixEdges
-  }, {
-    physics: false,
-    nodes: { shape: "dot", size: 6 },
-    edges: { smooth: false },
-    interaction: { hover: true }
-  });
-
-  setupFilter();
-}
-
-/* ----------------------------
-   FILTER WITH +1 NEIGHBOUR HOP, applied to both views
----------------------------- */
-function applyFilterTo(nodes, edges, q) {
-  // Batched into one nodes.update()/edges.update() call each, rather than
-  // one call per item - on the matrix view's ~2000 edges, per-item updates
-  // meant thousands of individual DataSet writes (each triggering its own
-  // internal recalculation) on every keystroke, which is what made the
-  // page feel unresponsive while filtering.
-  if (!q) {
-    nodes.update(nodes.map(n => ({ id: n.id, hidden: false })));
-    edges.update(edges.map(e => ({ id: e.id, hidden: false })));
+/* filter, with +1 neighbour hop, applied to the single view (batched updates) */
+function applyFilter(){
+  if (!visNodes) return;
+  const q = document.getElementById("filter").value.trim().toUpperCase();
+  if (!q){
+    visNodes.update(visNodes.map(n => ({ id: n.id, hidden: false })));
+    visEdges.update(visEdges.map(e => ({ id: e.id, hidden: false })));
     return;
   }
-
   const seed = new Set();
-  nodes.forEach(n => {
-    if (n.id.includes(q)) seed.add(n.id);
-  });
-
-  // +1 hop expansion. Checked against the frozen seed set, not the
-  // growing matchNodes - otherwise a node added mid-loop can trigger
-  // further additions in the same pass, cascading well past one hop
-  // on a dense graph depending on edge order.
-  const matchNodes = new Set(seed);
-  edges.forEach(e => {
-    if (seed.has(e.from) || seed.has(e.to)) {
-      matchNodes.add(e.from);
-      matchNodes.add(e.to);
-    }
-  });
-
-  nodes.update(nodes.map(n => ({ id: n.id, hidden: !matchNodes.has(n.id) })));
-  edges.update(edges.map(e => ({
-    id: e.id,
-    hidden: !(matchNodes.has(e.from) && matchNodes.has(e.to))
-  })));
+  visNodes.forEach(n => { if (n.id.includes(q)) seed.add(n.id); });
+  const keep = new Set(seed);
+  visEdges.forEach(e => { if (seed.has(e.from) || seed.has(e.to)) { keep.add(e.from); keep.add(e.to); } });
+  visNodes.update(visNodes.map(n => ({ id: n.id, hidden: !keep.has(n.id) })));
+  visEdges.update(visEdges.map(e => ({ id: e.id, hidden: !(keep.has(e.from) && keep.has(e.to)) })));
 }
 
-function applyFilter() {
-  const q = document.getElementById("filter").value.trim().toUpperCase();
-  applyFilterTo(spokeNodes, spokeEdges, q);
-  applyFilterTo(matrixNodes, matrixEdges, q);
+function debounce(fn, ms){ let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
+
+function load(){
+  document.getElementById("counts").textContent = "loading…";
+  fetch(`${API}?days=${windowDays}`).then(r => r.json()).then(render)
+    .catch(() => { document.getElementById("counts").textContent = "graph unavailable"; });
 }
 
-/* ----------------------------
-   FILTER EVENT (debounced so a dense matrix pass doesn't run on every
-   single keystroke while still typing)
----------------------------- */
-function debounce(fn, delayMs) {
-  let timer;
-  return (...args) => {
-    clearTimeout(timer);
-    timer = setTimeout(() => fn(...args), delayMs);
-  };
-}
+/* controls */
+document.getElementById("filter").addEventListener("input", debounce(applyFilter, 150));
+document.getElementById("btn-backbone").addEventListener("click", () => {
+  backboneOnly = true;
+  document.getElementById("btn-backbone").classList.add("active");
+  document.getElementById("btn-all").classList.remove("active");
+  render(allData);
+});
+document.getElementById("btn-all").addEventListener("click", () => {
+  backboneOnly = false;
+  document.getElementById("btn-all").classList.add("active");
+  document.getElementById("btn-backbone").classList.remove("active");
+  render(allData);
+});
+document.querySelectorAll(".g-btn[data-days]").forEach(b => b.addEventListener("click", () => {
+  document.querySelectorAll(".g-btn[data-days]").forEach(x => x.classList.remove("active"));
+  b.classList.add("active");
+  windowDays = parseInt(b.dataset.days, 10);
+  load();
+}));
 
-function setupFilter() {
-  document.getElementById("filter")
-    .addEventListener("input", debounce(applyFilter, 150));
-}
-
-/* ----------------------------
-   LOAD
----------------------------- */
-fetch(API)
-  .then(r => r.json())
-  .then(render);
-
+load();
 </script>
