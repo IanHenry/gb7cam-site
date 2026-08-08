@@ -165,7 +165,7 @@
     "href": "graph.html#network-graph",
     "title": "GB7CAM Network Graph",
     "section": "Network Graph",
-    "text": "Network Graph\nNodes currently connected to GB7CAM\nTwo renderings of the same routing data, side by side. Spoke draws an edge from each node to the peer it was learned through - that is what the NODES table actually records, and it produces a star shape because the multi-hop chain behind each entry isn’t preserved. Matrix instead joins every pair of nodes that share a peer, treating “reachable via the same neighbour” as a connection. Neither is the real network topology; the gap between the two is the point.\n\n\n\n\n\n\nSpoke\n\n\n\n\n\n\n\nMatrix"
+    "text": "Network Graph\nThe real peer-to-peer topology of the network around GB7CAM. Every few hours each of GB7CAM’s peers is asked for its own ROUTES table (its direct neighbours), and those are drawn here as the true edges between stations: who actually links to whom. This is very different from a plain nodes table, which only records which neighbour each destination was learned through and collapses into a star.\nLarger dots are better-connected hubs; highlighted dots are GB7CAM’s direct peers. Green edges are RF links, blue are internet (AXIP). By default the view shows the connected backbone; switch to Show all to include every single-link leaf node as well.\n\n\n BackboneShow all Window: 3 days 7 days 14 days  loading…\n\n\nGB7CAM Direct peer Other node RF link Internet (AXIP)"
   },
   {
     "objectID": "bulletins.html#bulletins",
