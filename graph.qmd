@@ -22,6 +22,15 @@ peers. **Green** edges are RF links, **blue** are internet (AXIP). By default th
 view shows the connected backbone; switch to *Show all* to include every
 single-link leaf node as well.
 
+Two different peer figures are shown below the controls, and they measure
+different things. **Peers linked** is how many stations GB7CAM currently holds a
+route to — that is the node-health number, and it is normally steady.
+**Reporting routes** is how many of those peers answered a route-capture poll
+during the selected window; polls run every few hours and a distant peer will
+sometimes miss one. A gap between the two is normal and does not mean anything
+is wrong: it only means the graph below is drawn from slightly fewer stations
+than GB7CAM is actually linked to.
+
 <style>
 .g-controls { font-family:sans-serif; display:flex; gap:14px; flex-wrap:wrap; align-items:center; margin:10px 0; }
 .g-controls input[type=search]{ padding:6px; width:220px; }
@@ -116,8 +125,25 @@ function render(data){
 }
 
 function updateCounts(){
-  document.getElementById("counts").textContent =
-    `${visNodes.length} nodes · ${visEdges.length} links · ${allData.peer_count} peers · last ${allData.window_days} days`;
+  /* Two distinct peer figures. `linked` is how many stations GB7CAM holds a
+     route to right now (node health, steady). `reporting` is how many of them
+     answered a route-capture poll in this window (data collection, varies).
+     Older API builds only returned peer_count, which was the reporting one. */
+  const linked    = allData.linked_peer_count;
+  const reporting = (allData.reporting_peer_count !== undefined)
+                      ? allData.reporting_peer_count : allData.peer_count;
+  const el = document.getElementById("counts");
+
+  let txt = `${visNodes.length} nodes · ${visEdges.length} links`;
+  if (linked !== undefined) txt += ` · ${linked} peers linked`;
+  txt += ` · ${reporting} reporting routes · last ${allData.window_days} days`;
+  el.textContent = txt;
+
+  const silent = allData.silent_peers || [];
+  el.title = "Peers linked = stations GB7CAM currently has a route to (node health).\n"
+           + "Reporting routes = how many of those answered a route poll in this window.\n"
+           + "A gap between them is normal - polls are every few hours and can be missed."
+           + (silent.length ? "\n\nNot reporting in this window: " + silent.join(", ") : "");
 }
 
 /* filter, with +1 neighbour hop, applied to the single view (batched updates) */
