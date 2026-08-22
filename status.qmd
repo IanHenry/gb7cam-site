@@ -128,15 +128,14 @@ async function fetchDashboardData() {
       return;
     }
 
-    /* /routes returns its data as raw_text_lines - one string per route,
-       "port call quality nodecount" - not a `routes` array, so accept either.
+    /* Read every body exactly ONCE - a Response body cannot be read twice,
+       and the routes JSON is needed again further down for the routes table.
+       /routes returns its data as raw_text_lines (one string per route,
+       "port call quality nodecount"), not a `routes` array.
        /links is usually right but can go stale until linbpq is restarted. */
     const links = (await linksRes.json()).links || [];
-    let routes = [];
-    try {
-      const rj = await routesRes.json();
-      routes = rj.raw_text_lines || rj.routes || [];
-    } catch (e) { routes = []; }
+    const routesJson = routesRes.ok ? await routesRes.json().catch(() => ({})) : {};
+    const routes = routesJson.raw_text_lines || routesJson.routes || [];
     const rawMheard = (await mheardRes.json()).mheard || [];
     allNodes = (await nodesRes.json()).nodes || [];
     const ports = (await portsRes.json()).ports || [];
@@ -262,9 +261,10 @@ async function fetchDashboardData() {
        TELNET ROUTES INTERPRETER
     ---------------------------- */
     if (routesRes.ok) {
-      const routesJson = await routesRes.json();
-      const routeLines = routesJson.raw_text_lines || [];
-      
+      /* routesJson was already read above - do NOT call routesRes.json()
+         again here, the body stream can only be consumed once. */
+      const routeLines = routes;
+
       const parsedRoutes = routeLines.map(line => {
         const tokens = line.trim().split(/\s+/);
         if (tokens.length >= 4) {
