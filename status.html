@@ -169,8 +169,11 @@ ul.task-list li input[type="checkbox"] {
 <div class="metric">
 <strong>Status:</strong> <span id="w-status">Operational</span>
 </div>
-<div class="metric">
-<strong>Active Links:</strong> <span id="w-links">…</span>
+<div class="metric" title="Peers GB7CAM currently holds a route to. This is the node-health figure.">
+<strong>Peers Linked:</strong> <span id="w-peers">…</span>
+</div>
+<div class="metric" title="Reported by LinBPQ's /api/links, which currently under-reports and may show 0 even when the node's LINKS command lists established links.">
+<strong>Active Sessions:</strong> <span id="w-links">…</span>
 </div>
 <div class="metric">
 <strong>RF Stations Heard (&lt; 24 hrs):</strong> <span id="w-rf">…</span>
@@ -303,7 +306,17 @@ async function fetchDashboardData() {
       return;
     }
 
+    /* NOTE: /links is unreliable. LinBPQ 6.0.25.23's own /api/links returns an
+       empty array even when the node's LINKS command shows established links
+       (11 at S=5 when this was written). Health must not depend on it.
+       /routes does work, but returns its data as raw_text_lines - one string
+       per route, "port call quality nodecount" - not a `routes` array. */
     const links = (await linksRes.json()).links || [];
+    let routes = [];
+    try {
+      const rj = await routesRes.json();
+      routes = rj.raw_text_lines || rj.routes || [];
+    } catch (e) { routes = []; }
     const rawMheard = (await mheardRes.json()).mheard || [];
     allNodes = (await nodesRes.json()).nodes || [];
     const ports = (await portsRes.json()).ports || [];
@@ -490,7 +503,12 @@ async function fetchDashboardData() {
       ? `${latestCall} - ${Math.floor((Date.now()-latest)/60000)} mins ago`
       : "No data";
 
-    const ok = links.length > 0;
+    document.getElementById("w-peers").innerText = routes.length;
+
+    /* Operational if the node holds routes to peers. Do not use links.length:
+       BPQ's /api/links under-reports (see above). If the API were unreachable
+       we would already have gone through setOffline(). */
+    const ok = routes.length > 0;
     statusEl.classList.remove("status-card--good", "status-card--bad");
     if (ok) {
       statusEl.classList.add("status-card--good");
