@@ -11,7 +11,7 @@
     "href": "status.html#current-status",
     "title": "System Status",
     "section": "Current Status",
-    "text": "Current Status\n\n\nStatus: Operational\n\n\nPeers Linked: …\n\n\nActive Sessions: …\n\n\nRF Stations Heard (&lt; 24 hrs): …\n\n\nAXIP Stations Heard (&lt; 24 hrs): …\n\n\nLast Packet: …"
+    "text": "Current Status\n\n\nStatus: Operational\n\n\nPeers Linked: …\n\n\nActive Links: …\n\n\nRF Stations Heard (&lt; 24 hrs): …\n\n\nAXIP Stations Heard (&lt; 24 hrs): …\n\n\nLast Packet: …"
   },
   {
     "objectID": "status.html#linbpq-ports",
