@@ -167,25 +167,207 @@ ul.task-list li input[type="checkbox"] {
 <h2 class="anchored" data-anchor-id="current-status">Current Status</h2>
 <div id="api-status-widget" class="status-card metric-grid">
 <div class="metric">
-<strong>Status:</strong> <span id="w-status">Operational</span>
+<strong>Status:</strong> <span id="w-status">checking</span>
 </div>
-<div class="metric" title="Peers GB7CAM currently holds a route to. This is the node-health figure.">
-<strong>Peers Linked:</strong> <span id="w-peers">…</span>
+<div class="metric" title="NET/ROM peers linked right now, against the number configured in the node's MAP lines.">
+<strong>Peers:</strong> <span id="w-peers">…</span>
 </div>
-<div class="metric" title="Established AX.25 links right now. If this reads 0 while Peers Linked is healthy, BPQ's link list has gone stale - restarting linbpq repopulates it.">
+<div class="metric" title="Established AX.25 links right now. If this reads 0 while peers are linked, BPQ's link list has gone stale and restarting linbpq repopulates it.">
 <strong>Active Links:</strong> <span id="w-links">…</span>
 </div>
-<div class="metric">
-<strong>RF Stations Heard (&lt; 24 hrs):</strong> <span id="w-rf">…</span>
+<div class="metric" title="Distinct stations heard on the 2m RF port in the last 24 hours.">
+<strong>RF Heard (24h):</strong> <span id="w-rf">…</span>
 </div>
-<div class="metric">
-<strong>AXIP Stations Heard (&lt; 24 hrs):</strong> <span id="w-axip">…</span>
+<div class="metric" title="Routes learned over each uplink. Zero on either means that path is down.">
+<strong>Uplinks:</strong> <span id="w-uplinks">…</span>
 </div>
 <div class="metric">
 <strong>Last Packet:</strong> <span id="w-last">…</span>
 </div>
 </div>
+<p id="w-why" class="status-note">
+</p>
+<p id="w-fresh" class="status-note">
+</p>
 <hr>
+</section>
+<section id="partner-map" class="level2">
+<h2 class="anchored" data-anchor-id="partner-map">Partner Map</h2>
+<p>Every AXUDP peer GB7CAM is configured to reach, not only the ones answering at this moment. That distinction matters: the node carries far more configured peers than are up at any instant, and a map of only the live ones would flatter the network.</p>
+<p>Colour is how long each link has been up without a break, so a peer added last week is not marked down for being new. Grey with a dashed line means configured but not linked right now, and the table below the map gives the last time each of those was seen. Positions are supplied by the operators; where none is known the station is drawn hollow at the centre of its country rather than guessed at.</p>
+<style>
+.pm-legend { font-family:sans-serif; font-size:0.82em; color:#555; display:flex; gap:16px; flex-wrap:wrap; margin:6px 0 10px; }
+.pm-legend span::before { content:""; display:inline-block; width:11px; height:11px; border-radius:50%; margin-right:5px; vertical-align:-1px; }
+.pm-cam::before{ background:#ff6b6b; } .pm-30::before{ background:#2f9e44; }
+.pm-7::before{ background:#74b816; } .pm-1::before{ background:#f59f00; }
+.pm-0::before{ background:#e03131; } .pm-down::before{ background:#adb5bd; }
+.status-note { font-family:sans-serif; font-size:0.85em; color:#666; margin:4px 0; }
+#pm-canvas svg { width:100%; height:auto; display:block; }
+.pm-down-table { font-family:sans-serif; font-size:0.85em; border-collapse:collapse; margin:10px 0; }
+.pm-down-table td, .pm-down-table th { padding:4px 14px 4px 0; border-bottom:1px solid #e6ebf1; text-align:left; }
+</style>
+<div class="pm-legend">
+<p><span class="pm-cam">GB7CAM</span> <span class="pm-30">Linked a month or more</span> <span class="pm-7">A week</span> <span class="pm-1">A day</span> <span class="pm-0">Less than a day</span> <span class="pm-down">Configured, not linked</span></p>
+</div>
+<!-- Not id="partner-map": Quarto slugs the "## Partner Map" heading to
+     <section id="partner-map">, and getElementById would return the whole
+     section. Writing the SVG into it wiped the section, heading included. -->
+<div id="pm-canvas" style="border:1px solid #ddd; background:#ffffff;">
+<p class="status-note">
+Loading map.
+</p>
+</div>
+<div id="pm-down">
+<p class="status-note">
+Loading partner detail.
+</p>
+</div>
+<script>
+(function () {
+  const API = "https://api.gb7cam.org.uk";
+  const W = 1000, H = 500;
+
+  // Equirectangular. land.json holds [lon, lat] pairs in degrees, from Natural
+  // Earth 110m, which is public domain.
+  const px = (lon, lat) => [ (lon + 180) / 360 * W, (90 - lat) / 180 * H ];
+
+  const band = st => {
+    if (!st.live) return "#adb5bd";
+    const d = st.linked_days;
+    if (d === null || d === undefined) return "#adb5bd";
+    if (d >= 30) return "#2f9e44";
+    if (d >= 7) return "#74b816";
+    if (d >= 1) return "#f59f00";
+    return "#e03131";
+  };
+  const humanDays = d => {
+    if (d === null || d === undefined) return "";
+    if (d < 1) return Math.max(1, Math.round(d * 24)) + " h";
+    if (d < 60) return Math.floor(d) + " d";
+    return Math.floor(d / 30.4) + " months";
+  };
+  // Tolerates a missing element. Quarto can drop an empty raw div, and one
+  // absent container should not take the whole map down with it.
+  const put = (id, html) => {
+    const e = document.getElementById(id);
+    if (e) { e.innerHTML = html; } else { console.warn("missing element: " + id); }
+  };
+  const esc = t => String(t).replace(/[<>&"]/g, c =>
+    ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;" }[c]));
+
+  Promise.all([
+    fetch("data/land.json").then(r => r.json()),
+    fetch(API + "/partners").then(r => r.json())
+  ]).then(([land, data]) => {
+    const out = [];
+    out.push(`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Map of GB7CAM partner stations">`);
+    out.push(`<rect width="${W}" height="${H}" fill="#f7fafc"/>`);
+    for (const ring of land) {
+      const d = ring.map((p, i) => (i ? "L" : "M") + px(p[0], p[1]).map(v => v.toFixed(1)).join(" ")).join("");
+      out.push(`<path d="${d}Z" fill="#e8eef5" stroke="#d4dde8" stroke-width="0.6"/>`);
+    }
+
+    const home = px(data.home.lon, data.home.lat);
+    for (const st of data.stations) {
+      const p = px(st.lon, st.lat);
+      out.push(`<line x1="${home[0].toFixed(1)}" y1="${home[1].toFixed(1)}" x2="${p[0].toFixed(1)}" y2="${p[1].toFixed(1)}" stroke="${st.live ? "#4dabf7" : "#adb5bd"}" stroke-width="1" opacity="${st.live ? 0.42 : 0.3}"${st.live ? "" : ' stroke-dasharray="3 3"'}/>`);
+    }
+    for (const st of data.stations) {
+      const p = px(st.lon, st.lat);
+      const r = 3 + Math.sqrt(st.nodes || 0) * 0.22;
+      const where = st.place || (st.country + " (country only)");
+      const when = st.live ? "linked " + humanDays(st.linked_days) : "not linked";
+      const fill = st.exact ? band(st) : "none";
+      out.push(`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${r.toFixed(2)}" fill="${fill}" stroke="${band(st)}" stroke-width="1.2" opacity="0.85"><title>${esc(st.call)} · ${esc(where)} · ${st.nodes} nodes · ${esc(when)}</title></circle>`);
+    }
+    out.push(`<circle cx="${home[0].toFixed(1)}" cy="${home[1].toFixed(1)}" r="5" fill="#ff6b6b" stroke="#fff" stroke-width="1.4"><title>${esc(data.home.call)} · ${esc(data.home.place)} · ${esc(data.home.locator)}</title></circle>`);
+    out.push("</svg>");
+    put("pm-canvas", out.join(""));
+
+    const down = data.stations.filter(s => s.configured && !s.live);
+    put("pm-down", down.length === 0
+      ? '<p class="status-note">Every configured peer is linked.</p>'
+      : '<table class="pm-down-table"><thead><tr><th>Configured but not linked</th><th>Where</th><th>Seen in</th></tr></thead><tbody>'
+        + down.map(s => `<tr><td>${esc(s.call)}</td><td>${esc(s.place || s.country)}</td><td>${s.since_pct === null ? "&ndash;" : s.since_pct + "% of snapshots"}</td></tr>`).join("")
+        + "</tbody></table>");
+  }).catch(err => {
+    // Say which stage failed. Reporting "unavailable" for a rendering bug
+    // sent us looking at the data, which was fine.
+    console.error("partner map:", err);
+    put("pm-canvas", '<p class="status-note">Partner map unavailable: '
+        + esc(err && err.message ? err.message : err) + '</p>');
+  });
+
+  /* ------------------------------------------------------------------
+     Health rollup, from the same /metrics the HAMNET status page reads.
+     ------------------------------------------------------------------ */
+  const parseMetrics = text => {
+    const out = {};
+    for (const line of text.split("\n")) {
+      if (!line || line[0] === "#") continue;
+      const sp = line.lastIndexOf(" ");
+      if (sp < 0) continue;
+      const key = line.slice(0, sp), val = parseFloat(line.slice(sp + 1));
+      let name = key, labels = {};
+      const br = key.indexOf("{");
+      if (br > -1) {
+        name = key.slice(0, br);
+        key.slice(br + 1, key.lastIndexOf("}")).replace(
+          /([a-zA-Z_]+)="((?:[^"\\]|\\.)*)"/g, (_, k, v) => { labels[k] = v; return ""; });
+      }
+      (out[name] = out[name] || []).push({ labels, value: val });
+    }
+    return out;
+  };
+
+  Promise.all([
+    fetch(API + "/metrics").then(r => r.text()).then(parseMetrics),
+    fetch(API + "/partners").then(r => r.json())
+  ]).then(([m, data]) => {
+    const problems = [];
+
+    const services = m.gb7cam_service_up || [];
+    const dead = services.filter(s => !s.value).map(s => s.labels.unit);
+    if (dead.length) problems.push("service down: " + dead.join(", "));
+
+    const routes = {};
+    (m.gb7cam_routes_total || []).forEach(s => { routes[s.labels.source] = s.value; });
+    if (!routes.hamnet) problems.push("no HAMNET routes");
+    if (!routes.amprnet) problems.push("no AMPRNet routes");
+    document.getElementById("w-uplinks").innerText =
+      `HAMNET ${(routes.hamnet || 0).toLocaleString()} · AMPRNet ${(routes.amprnet || 0).toLocaleString()}`;
+
+    const conf = data.stations.filter(s => s.configured);
+    const live = conf.filter(s => s.live);
+    const downNames = conf.filter(s => !s.live).map(s => s.call);
+    document.getElementById("w-peers").innerText = `${live.length} of ${conf.length} linked`;
+    if (conf.length && live.length / conf.length < 0.8) {
+      problems.push(`only ${live.length} of ${conf.length} peers linked`);
+    }
+
+    let age = 0;
+    (m.gb7cam_cache_age_seconds || []).forEach(s => { if (s.value > age) age = s.value; });
+    if (age > 900) problems.push(`node figures ${Math.round(age / 60)} minutes stale`);
+
+    const el = document.getElementById("api-status-widget");
+    el.classList.remove("status-card--good", "status-card--bad");
+    el.classList.add(problems.length ? "status-card--bad" : "status-card--good");
+    document.getElementById("w-status").innerText = problems.length ? "Degraded" : "Operational";
+
+    document.getElementById("w-why").innerText = problems.length
+      ? "Reason: " + problems.join("; ") + "."
+      : (downNames.length
+         ? "All checks pass. Configured but not linked right now: " + downNames.join(", ") + "."
+         : "All checks pass.");
+
+    document.getElementById("w-fresh").innerText =
+      `Node figures come from the collector cache, oldest entry ${Math.round(age)} s old. Uplink and service figures are read live.`;
+  }).catch(() => {
+    document.getElementById("w-why").innerText =
+      "Status detail unavailable: the node's metrics endpoint could not be reached.";
+  });
+})();
+</script>
 </section>
 <section id="linbpq-ports" class="level2">
 <h2 class="anchored" data-anchor-id="linbpq-ports">LINBPQ Ports</h2>
@@ -284,9 +466,9 @@ async function fetchDashboardData() {
     statusEl.classList.add("status-card--bad");
 
     document.getElementById("w-status").innerText = "Offline";
+    document.getElementById("w-peers").innerText = "—";
     document.getElementById("w-links").innerText = "—";
     document.getElementById("w-rf").innerText = "—";
-    document.getElementById("w-axip").innerText = "—";
     document.getElementById("w-last").innerText = "No data";
   }
 
@@ -495,28 +677,15 @@ async function fetchDashboardData() {
 
     document.getElementById("w-links").innerText = links.length;
     document.getElementById("w-rf").innerText = rf;
-    document.getElementById("w-axip").innerText = axip;
 
     document.getElementById("w-last").innerText = latest
       ? `${latestCall} - ${Math.floor((Date.now()-latest)/60000)} mins ago`
       : "No data";
 
-    document.getElementById("w-peers").innerText = routes.length;
+    /* Peers, uplinks and the health rollup are set from /metrics and
+       /partners further down the page, so this page and the HAMNET one
+       report the same thing. */
 
-    /* Healthy if EITHER signal is present. Links is the more meaningful one,
-       but BPQ's link list can go empty and stay empty until linbpq is
-       restarted (seen 22 Aug: LINKS showed 17 over telnet while the API and
-       BPQ's own web page both showed 0; a restart repopulated it instantly).
-       Routes keeps working through that, so requiring both would report a
-       false Degraded on an otherwise healthy node. */
-    const ok = links.length > 0 || routes.length > 0;
-    statusEl.classList.remove("status-card--good", "status-card--bad");
-    if (ok) {
-      statusEl.classList.add("status-card--good");
-    } else {
-      statusEl.classList.add("status-card--bad");
-    }
-    document.getElementById("w-status").innerText = ok ? "Operational" : "Degraded";
 
     renderNodes(allNodes);
 

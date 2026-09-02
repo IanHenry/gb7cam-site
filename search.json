@@ -11,7 +11,14 @@
     "href": "status.html#current-status",
     "title": "System Status",
     "section": "Current Status",
-    "text": "Current Status\n\n\nStatus: Operational\n\n\nPeers Linked: …\n\n\nActive Links: …\n\n\nRF Stations Heard (&lt; 24 hrs): …\n\n\nAXIP Stations Heard (&lt; 24 hrs): …\n\n\nLast Packet: …"
+    "text": "Current Status\n\n\nStatus: checking\n\n\nPeers: …\n\n\nActive Links: …\n\n\nRF Heard (24h): …\n\n\nUplinks: …\n\n\nLast Packet: …"
+  },
+  {
+    "objectID": "status.html#partner-map",
+    "href": "status.html#partner-map",
+    "title": "System Status",
+    "section": "Partner Map",
+    "text": "Partner Map\nEvery AXUDP peer GB7CAM is configured to reach, not only the ones answering at this moment. That distinction matters: the node carries far more configured peers than are up at any instant, and a map of only the live ones would flatter the network.\nColour is how long each link has been up without a break, so a peer added last week is not marked down for being new. Grey with a dashed line means configured but not linked right now, and the table below the map gives the last time each of those was seen. Positions are supplied by the operators; where none is known the station is drawn hollow at the centre of its country rather than guessed at.\n\n\nGB7CAM Linked a month or more A week A day Less than a day Configured, not linked\n\n\n\n\nLoading map.\n\n\n\n\nLoading partner detail."
   },
   {
     "objectID": "status.html#linbpq-ports",
