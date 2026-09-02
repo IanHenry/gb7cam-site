@@ -207,7 +207,7 @@ ul.task-list li input[type="checkbox"] {
 .pm-down-table td, .pm-down-table th { padding:4px 14px 4px 0; border-bottom:1px solid #e6ebf1; text-align:left; }
 </style>
 <div class="pm-legend">
-<p><span class="pm-cam">GB7CAM</span> <span class="pm-30">Linked a month or more</span> <span class="pm-7">A week</span> <span class="pm-1">A day</span> <span class="pm-0">Less than a day</span> <span class="pm-down">Configured, not linked</span></p>
+<p><span class="pm-cam">GB7CAM</span> <span class="pm-30">Linked a week or more</span> <span class="pm-7">Three days</span> <span class="pm-1">A day</span> <span class="pm-0">Under a day</span> <span class="pm-down">Configured, not linked</span></p>
 </div>
 <!-- Not id="partner-map": Quarto slugs the "## Partner Map" heading to
      <section id="partner-map">, and getElementById would return the whole
@@ -235,8 +235,11 @@ Loading partner detail.
     if (!st.live) return "#adb5bd";
     const d = st.linked_days;
     if (d === null || d === undefined) return "#adb5bd";
-    if (d >= 30) return "#2f9e44";
-    if (d >= 7) return "#74b816";
+    // Bands match the HAMNET map. Thirty days was unreachable: the record
+    // starts 24 July and any linbpq restart resets every streak, so nothing
+    // was ever green and a healthy three day link drew amber.
+    if (d >= 7) return "#2f9e44";
+    if (d >= 3) return "#74b816";
     if (d >= 1) return "#f59f00";
     return "#e03131";
   };
