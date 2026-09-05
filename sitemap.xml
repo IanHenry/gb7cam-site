@@ -1,43 +1,43 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://gb7cam.org.uk/tech.html</loc>
-    <lastmod>2026-09-02T19:02:33.838Z</lastmod>
-  </url>
-  <url>
-    <loc>https://gb7cam.org.uk/status.html</loc>
-    <lastmod>2026-09-02T19:02:33.838Z</lastmod>
-  </url>
-  <url>
     <loc>https://gb7cam.org.uk/privacy.html</loc>
-    <lastmod>2026-09-02T19:02:33.838Z</lastmod>
-  </url>
-  <url>
-    <loc>https://gb7cam.org.uk/bulletins.html</loc>
-    <lastmod>2026-09-02T19:02:33.831Z</lastmod>
-  </url>
-  <url>
-    <loc>https://gb7cam.org.uk/trends.html</loc>
-    <lastmod>2026-09-02T19:02:33.838Z</lastmod>
-  </url>
-  <url>
-    <loc>https://gb7cam.org.uk/graph.html</loc>
-    <lastmod>2026-09-02T19:02:33.831Z</lastmod>
-  </url>
-  <url>
-    <loc>https://gb7cam.org.uk/contact.html</loc>
-    <lastmod>2026-09-02T19:02:33.831Z</lastmod>
-  </url>
-  <url>
-    <loc>https://gb7cam.org.uk/index.html</loc>
-    <lastmod>2026-09-02T19:02:33.838Z</lastmod>
+    <lastmod>2026-09-05T10:26:24.991Z</lastmod>
   </url>
   <url>
     <loc>https://gb7cam.org.uk/services.html</loc>
-    <lastmod>2026-09-02T19:02:33.838Z</lastmod>
+    <lastmod>2026-09-05T10:26:24.991Z</lastmod>
+  </url>
+  <url>
+    <loc>https://gb7cam.org.uk/bulletins.html</loc>
+    <lastmod>2026-09-05T10:26:24.983Z</lastmod>
+  </url>
+  <url>
+    <loc>https://gb7cam.org.uk/contact.html</loc>
+    <lastmod>2026-09-05T10:26:24.983Z</lastmod>
+  </url>
+  <url>
+    <loc>https://gb7cam.org.uk/status.html</loc>
+    <lastmod>2026-09-05T10:26:24.991Z</lastmod>
+  </url>
+  <url>
+    <loc>https://gb7cam.org.uk/index.html</loc>
+    <lastmod>2026-09-05T10:26:24.991Z</lastmod>
   </url>
   <url>
     <loc>https://gb7cam.org.uk/credits.html</loc>
-    <lastmod>2026-09-02T19:02:33.831Z</lastmod>
+    <lastmod>2026-09-05T10:26:24.983Z</lastmod>
+  </url>
+  <url>
+    <loc>https://gb7cam.org.uk/graph.html</loc>
+    <lastmod>2026-09-05T10:26:24.983Z</lastmod>
+  </url>
+  <url>
+    <loc>https://gb7cam.org.uk/tech.html</loc>
+    <lastmod>2026-09-05T10:26:24.991Z</lastmod>
+  </url>
+  <url>
+    <loc>https://gb7cam.org.uk/trends.html</loc>
+    <lastmod>2026-09-05T10:26:24.991Z</lastmod>
   </url>
 </urlset>
